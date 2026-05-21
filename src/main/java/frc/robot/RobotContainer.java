@@ -18,7 +18,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.commands.DriveAutoTrenchCommand;
 import frc.robot.subsystems.Drive.Drive;
+import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.Drive.GyroIO;
 import frc.robot.subsystems.Drive.GyroIOPigeon2;
 import frc.robot.subsystems.Drive.GyroIOSim;
@@ -142,12 +144,24 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     drive.setDefaultCommand(
-        drive.run(
+        Commands.run(
             () ->
                 drive.driveFieldCentric(
                     () -> -driverController.getLeftY(),
                     () -> -driverController.getLeftX(),
-                    () -> -driverController.getRightX())));
+                    () -> -driverController.getRightX()),
+            drive));
+
+    driverController
+        .a()
+        .whileTrue(
+            new DriveAutoTrenchCommand(
+                    drive,
+                    () -> -driverController.getLeftY(),
+                    () -> -driverController.getLeftX(),
+                    () -> -driverController.getRightX())
+                .beforeStarting(() -> superStructure.setDriveMode(DriveMode.HYBRID_TRENCH))
+                .finallyDo(() -> superStructure.setDriveMode(DriveMode.MANUAL)));
 
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController

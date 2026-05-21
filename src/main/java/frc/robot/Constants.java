@@ -101,6 +101,19 @@ public final class Constants {
     public static final double PP_TRANSLATION_KD = 0.4;
     public static final double PP_ROTATION_KP = 5.;
     public static final double PP_ROTATION_KD = 0.4;
+
+    /** Pure-pursuit-style lookahead distance along the trench centerline (m). */
+    public static final double TRENCH_LOOKAHEAD_METERS = 0.6;
+    /** Field-relative driver speed (m/s) required to set path traversal direction. */
+    public static final double TRENCH_DRIVER_INTENT_THRESHOLD = 0.08;
+    /** Epsilon (m) for finite-difference path tangent at the nearest point. */
+    public static final double TRENCH_TANGENT_EPSILON = 0.05;
+    /** Maximum fraction of max linear speed applied as trench guidance assist. */
+    public static final double TRENCH_MAX_ASSIST = 0.65;
+    /** Minimum driver–guidance alignment (dot product) before assist ramps up. */
+    public static final double TRENCH_MIN_ALIGNMENT = -0.2;
+    /** Degrees: new square edge must beat current edge by this much to switch. */
+    public static final double EDGE_SNAP_HYSTERESIS_DEG = 20.0;
   }
 
   public final class OperatorConstants {

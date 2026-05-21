@@ -26,6 +26,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathPoint;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -63,8 +64,11 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.LimelightHelpers;
 import frc.robot.util.LocalADStarAK;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
@@ -160,6 +164,10 @@ public class Drive extends SubsystemBase {
   private final ProfiledPIDController thetaController;
   private final ProfiledPIDController fieldCentricAngleController;
 
+  private PathPlannerPath trenchPathAtl;
+  private PathPlannerPath trenchPathAtr;
+  private Rotation2d snappedSquareEdge = new Rotation2d();
+
   private void initializeAutoMoveToPoseControllers() {
     // Initialize X and Y PID controllers
     xController.setPID(DriveConstants.MOVE_TO_X_KP, 0.0, DriveConstants.MOVE_TO_X_KD);
@@ -230,6 +238,7 @@ public class Drive extends SubsystemBase {
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
     Pathfinding.setPathfinder(new LocalADStarAK());
+    loadTrenchPaths();
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
           Logger.recordOutput(
@@ -665,5 +674,340 @@ public class Drive extends SubsystemBase {
    */
   public boolean atTargetPose() {
     return xController.atSetpoint() && yController.atSetpoint() && thetaController.atGoal();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shared-control holonomic lane assist (AutoTrench + AutoIntake)
+  // ---------------------------------------------------------------------------
+
+  private void loadTrenchPaths() {
+    trenchPathAtl = allianceFlipPath(generatePPPath(TrenchLane.ATLtoNTL.pathName));
+    trenchPathAtr = allianceFlipPath(generatePPPath(TrenchLane.ATRtoNTR.pathName));
+  }
+
+  private PathPlannerPath allianceFlipPath(PathPlannerPath path) {
+    if (path == null) {
+      return null;
+    }
+    return isRedAlliance() ? path.flipPath() : path;
+  }
+
+  private static boolean isRedAlliance() {
+    return DriverStation.getAlliance().isPresent()
+        && DriverStation.getAlliance().get() == Alliance.Red;
+  }
+
+  /**
+   * Field-relative shared-control trench drive. Caller must only invoke this while {@link
+   * frc.robot.subsystems.SuperStructure.DriveMode#HYBRID_TRENCH} is active (e.g. via {@link
+   * frc.robot.commands.DriveAutoTrenchCommand}).
+   */
+  public void driveAutoTrench(
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      DoubleSupplier omegaSupplier,
+      double maxLinearSpeed,
+      double maxAngularSpeed) {
+    IntakeMode intakeMode = SuperStructure.getInstance().getIntakeMode();
+
+    Translation2d driverLinear =
+        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble())
+            .times(maxLinearSpeed);
+
+    double omegaInput =
+        MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
+    double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
+
+    AutoTrenchReference trenchRef = computeAutoTrenchReference(getPose(), driverLinear);
+    Translation2d fieldLinear = blendDriverInput(driverLinear, trenchRef, maxLinearSpeed);
+    Logger.recordOutput("AutoTrench/Lane", trenchRef.lane().name());
+    Logger.recordOutput("AutoTrench/PathTraversalSign", trenchRef.pathTraversalSign());
+    Logger.recordOutput("AutoTrench/GuidanceVector", trenchRef.guidanceVector());
+    Logger.recordOutput(
+        "AutoTrench/Lookahead", new Pose2d(trenchRef.lookaheadPoint(), new Rotation2d()));
+    Logger.recordOutput(
+        "AutoTrench/Nearest", new Pose2d(trenchRef.nearestPoint(), new Rotation2d()));
+
+    Rotation2d desiredFacing = getDesiredFacing(fieldLinear, intakeMode);
+
+    double omega;
+    if (fieldLinear.getNorm() > 0.08) {
+      omega = calculateOmega(desiredFacing);
+    } else {
+      omega = stickOmega;
+    }
+
+    ChassisSpeeds speeds = new ChassisSpeeds(fieldLinear.getX(), fieldLinear.getY(), omega);
+    runVelocity(
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+            speeds,
+            isRedAlliance() ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+    Logger.recordOutput("Drive/DesiredFacing", desiredFacing);
+    Logger.recordOutput("Drive/BlendedFieldLinear", fieldLinear);
+  }
+
+  /**
+   * Selects lane, nearest spline point, and robotPose→lookahead guidance vector.
+   *
+   * @param driverFieldLinear field-relative linear intent from the left stick (m/s), same frame as
+   *     {@link #driveAutoTrench}
+   */
+  public AutoTrenchReference computeAutoTrenchReference(
+      Pose2d robotPose, Translation2d driverFieldLinear) {
+    TrenchLane lane = selectTrenchLane(robotPose, driverFieldLinear);
+    PathPlannerPath path = getTrenchPath(lane);
+    List<PathPoint> points = path.getAllPathPoints();
+
+    int nearestIndex = findNearestPointIndex(robotPose.getTranslation(), points);
+    PathPoint nearest = points.get(nearestIndex);
+    double distanceAlong = nearest.distanceAlongPath;
+
+    double pathLength = points.get(points.size() - 1).distanceAlongPath;
+    double traversalSign =
+        pathTraversalSign(points, distanceAlong, driverFieldLinear, robotPose);
+    double lookaheadDistance =
+        MathUtil.clamp(
+            distanceAlong + traversalSign * DriveConstants.TRENCH_LOOKAHEAD_METERS,
+            0.0,
+            pathLength);
+    Translation2d lookaheadPoint = sampleTranslationAtDistance(points, lookaheadDistance);
+
+    Translation2d guidanceVector = lookaheadPoint.minus(robotPose.getTranslation());
+
+    return new AutoTrenchReference(
+        lane,
+        guidanceVector,
+        lookaheadPoint,
+        nearest.position,
+        distanceAlong,
+        traversalSign,
+        robotPose);
+  }
+
+  /**
+   * +1 = lookahead moves with path parameterization; -1 = opposite (reverse trench entry). Uses
+   * field-relative driver intent when moving; otherwise falls back to geometry near path ends.
+   */
+  private static double pathTraversalSign(
+      List<PathPoint> points,
+      double distanceAlong,
+      Translation2d driverFieldLinear,
+      Pose2d robotPose) {
+    Translation2d tangent = pathTangentAtDistance(points, distanceAlong);
+    if (driverFieldLinear.getNorm() > DriveConstants.TRENCH_DRIVER_INTENT_THRESHOLD) {
+      Translation2d driverDir = driverFieldLinear.div(driverFieldLinear.getNorm());
+      double alongTangent = driverDir.dot(tangent);
+      if (alongTangent < -0.1) {
+        return -1.0;
+      }
+      if (alongTangent > 0.1) {
+        return 1.0;
+      }
+    }
+
+    double pathLength = points.get(points.size() - 1).distanceAlongPath;
+    Translation2d pathStart = points.get(0).position;
+    Translation2d pathEnd = points.get(points.size() - 1).position;
+    double distToStart = robotPose.getTranslation().getDistance(pathStart);
+    double distToEnd = robotPose.getTranslation().getDistance(pathEnd);
+
+    if (distToStart + distToEnd < 1e-6) {
+      return 1.0;
+    }
+    if (distanceAlong < pathLength * 0.35 && distToStart < distToEnd) {
+      return -1.0;
+    }
+    if (distanceAlong > pathLength * 0.65 && distToEnd < distToStart) {
+      return 1.0;
+    }
+    return 1.0;
+  }
+
+  private static Translation2d pathTangentAtDistance(List<PathPoint> points, double distanceAlong) {
+    double pathLength = points.get(points.size() - 1).distanceAlongPath;
+    double eps = DriveConstants.TRENCH_TANGENT_EPSILON;
+    Translation2d ahead =
+        sampleTranslationAtDistance(points, Math.min(distanceAlong + eps, pathLength));
+    Translation2d behind =
+        sampleTranslationAtDistance(points, Math.max(distanceAlong - eps, 0.0));
+    Translation2d tangent = ahead.minus(behind);
+    if (tangent.getNorm() < 1e-6) {
+      return new Translation2d(1.0, 0.0);
+    }
+    return tangent.div(tangent.getNorm());
+  }
+
+  private TrenchLane selectTrenchLane(Pose2d robotPose, Translation2d driverFieldLinear) {
+    if (driverFieldLinear.getNorm() <= DriveConstants.TRENCH_DRIVER_INTENT_THRESHOLD) {
+      double distAtl = distanceToPath(robotPose, trenchPathAtl);
+      double distAtr = distanceToPath(robotPose, trenchPathAtr);
+      return distAtl <= distAtr ? TrenchLane.ATLtoNTL : TrenchLane.ATRtoNTR;
+    }
+
+    double scoreAtl = trenchLaneAlignmentScore(robotPose, trenchPathAtl, driverFieldLinear);
+    double scoreAtr = trenchLaneAlignmentScore(robotPose, trenchPathAtr, driverFieldLinear);
+    if (Math.abs(scoreAtl - scoreAtr) < 0.05) {
+      double distAtl = distanceToPath(robotPose, trenchPathAtl);
+      double distAtr = distanceToPath(robotPose, trenchPathAtr);
+      return distAtl <= distAtr ? TrenchLane.ATLtoNTL : TrenchLane.ATRtoNTR;
+    }
+    return scoreAtl >= scoreAtr ? TrenchLane.ATLtoNTL : TrenchLane.ATRtoNTR;
+  }
+
+  private double trenchLaneAlignmentScore(
+      Pose2d robotPose, PathPlannerPath path, Translation2d driverFieldLinear) {
+    if (path == null) {
+      return Double.NEGATIVE_INFINITY;
+    }
+    List<PathPoint> points = path.getAllPathPoints();
+    int idx = findNearestPointIndex(robotPose.getTranslation(), points);
+    Translation2d tangent = pathTangentAtDistance(points, points.get(idx).distanceAlongPath);
+    Translation2d driverDir = driverFieldLinear.div(driverFieldLinear.getNorm());
+    double alignment = Math.abs(driverDir.dot(tangent));
+    double crossTrack = robotPose.getTranslation().getDistance(points.get(idx).position);
+    return alignment - crossTrack * 0.25;
+  }
+
+  private double distanceToPath(Pose2d robotPose, PathPlannerPath path) {
+    if (path == null) {
+      return Double.MAX_VALUE;
+    }
+    List<PathPoint> points = path.getAllPathPoints();
+    int idx = findNearestPointIndex(robotPose.getTranslation(), points);
+    return robotPose.getTranslation().getDistance(points.get(idx).position);
+  }
+
+  private PathPlannerPath getTrenchPath(TrenchLane lane) {
+    return lane == TrenchLane.ATLtoNTL ? trenchPathAtl : trenchPathAtr;
+  }
+
+  private static int findNearestPointIndex(Translation2d robot, List<PathPoint> points) {
+    int best = 0;
+    double bestDist = Double.MAX_VALUE;
+    for (int i = 0; i < points.size(); i++) {
+      double d = robot.getDistance(points.get(i).position);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  private static Translation2d sampleTranslationAtDistance(
+      List<PathPoint> points, double distanceMeters) {
+    if (points.isEmpty()) {
+      return new Translation2d();
+    }
+    if (distanceMeters <= points.get(0).distanceAlongPath) {
+      return points.get(0).position;
+    }
+    PathPoint last = points.get(points.size() - 1);
+    if (distanceMeters >= last.distanceAlongPath) {
+      return last.position;
+    }
+    for (int i = 1; i < points.size(); i++) {
+      PathPoint a = points.get(i - 1);
+      PathPoint b = points.get(i);
+      if (distanceMeters <= b.distanceAlongPath) {
+        double span = b.distanceAlongPath - a.distanceAlongPath;
+        double t =
+            span < 1e-9
+                ? 0.0
+                : (distanceMeters - a.distanceAlongPath) / span;
+        return a.position.interpolate(b.position, t);
+      }
+    }
+    return last.position;
+  }
+
+  /**
+   * Continuous shared-control blend: strong driver/guidance misalignment reduces assist; aligned
+   * motion is projected toward the guidance direction.
+   */
+  public Translation2d blendDriverInput(
+      Translation2d driverVelocity, AutoTrenchReference ref, double maxLinearSpeed) {
+    Translation2d guidance = ref.guidanceVector();
+    double guidanceNorm = guidance.getNorm();
+    if (guidanceNorm < 1e-6) {
+      return driverVelocity;
+    }
+
+    Translation2d guidanceDir = guidance.div(guidanceNorm);
+    double driverNorm = driverVelocity.getNorm();
+
+    Translation2d driverDir =
+        driverNorm > 1e-6 ? driverVelocity.div(driverNorm) : guidanceDir;
+
+    double alignment = driverDir.dot(guidanceDir);
+    double alignment01 =
+        MathUtil.clamp(
+            (alignment - DriveConstants.TRENCH_MIN_ALIGNMENT)
+                / (1.0 - DriveConstants.TRENCH_MIN_ALIGNMENT),
+            0.0,
+            1.0);
+    double assistWeight = alignment01 * DriveConstants.TRENCH_MAX_ASSIST;
+
+    double alongGuidance = driverVelocity.dot(guidanceDir);
+    Translation2d projected = guidanceDir.times(alongGuidance);
+
+    Translation2d assistPull = guidanceDir.times(maxLinearSpeed * assistWeight);
+
+    return driverVelocity
+        .interpolate(projected, assistWeight)
+        .plus(assistPull.times(0.35 * assistWeight));
+  }
+
+  /**
+   * Final blended velocity heading for rotation. Hybrid intake uses velocity direction; otherwise
+   * a square robot edge (0/90/180/270°) with hysteresis.
+   */
+  public Rotation2d getDesiredFacing(Translation2d blendedVelocity, IntakeMode intakeMode) {
+    if (blendedVelocity.getNorm() < 0.08) {
+      return getRotation();
+    }
+    Rotation2d velocityHeading =
+        new Rotation2d(Math.atan2(blendedVelocity.getY(), blendedVelocity.getX()));
+    if (intakeMode == IntakeMode.HYBRID) {
+      return velocityHeading;
+    }
+    return snapToNearestEdge(velocityHeading);
+  }
+
+  /** Snaps to 0/90/180/270° field headings; only switches when improvement exceeds hysteresis. */
+  public Rotation2d snapToNearestEdge(Rotation2d velocityHeading) {
+    Rotation2d[] edges = {
+      new Rotation2d(),
+      new Rotation2d(Math.PI / 2),
+      new Rotation2d(Math.PI),
+      new Rotation2d(-Math.PI / 2)
+    };
+
+    Rotation2d bestEdge = edges[0];
+    double bestError = Double.MAX_VALUE;
+    for (Rotation2d edge : edges) {
+      double error =
+          Math.abs(velocityHeading.minus(edge).getRadians());
+      if (error < bestError) {
+        bestError = error;
+        bestEdge = edge;
+      }
+    }
+
+    double currentError = Math.abs(velocityHeading.minus(snappedSquareEdge).getRadians());
+    double improvementRad =
+        Units.degreesToRadians(DriveConstants.EDGE_SNAP_HYSTERESIS_DEG);
+    if (currentError - bestError < improvementRad) {
+      return snappedSquareEdge;
+    }
+
+    snappedSquareEdge = bestEdge;
+    return snappedSquareEdge;
+  }
+
+  /** Field-centric rotation PID toward {@code desiredFacing}. */
+  public double calculateOmega(Rotation2d desiredFacing) {
+    return fieldCentricAngleController.calculate(
+        getRotation().getRadians(), desiredFacing.getRadians());
   }
 }

@@ -3,29 +3,40 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.DriveMode;
+import frc.robot.subsystems.SuperStructure.IntakeMode;
 import java.util.function.DoubleSupplier;
 
 /**
- * Shared-control holonomic drive: driver retains authority; trench assist only stabilizes
- * translation. Schedule with {@code whileTrue} to override the drive default command while held.
+ * Hybrid intake drive: heading tracks travel. Lower priority than {@link DriveHybridTrenchCommand}.
+ *
+ * <p>While held: IntakeMode=HYBRID, DriveMode=HYBRID_INTAKE_DRIVE. On normal end: DriveMode=MANUAL,
+ * IntakeMode=INTAKE.
  */
-public class DriveAutoTrenchCommand extends Command {
+public class DriveHybridIntakeCommand extends Command {
   private final Drive drive;
+  private final SuperStructure superStructure = SuperStructure.getInstance();
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
   private final DoubleSupplier omegaSupplier;
   private final DoubleSupplier maxLinearSpeedSupplier;
   private final DoubleSupplier maxAngularSpeedSupplier;
 
-  public DriveAutoTrenchCommand(
+  public DriveHybridIntakeCommand(
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
-    this(drive, xSupplier, ySupplier, omegaSupplier, drive::getMaxLinearSpeedMetersPerSec, drive::getMaxAngularSpeedRadPerSec);
+    this(
+        drive,
+        xSupplier,
+        ySupplier,
+        omegaSupplier,
+        drive::getMaxLinearSpeedMetersPerSec,
+        drive::getMaxAngularSpeedRadPerSec);
   }
 
-  public DriveAutoTrenchCommand(
+  public DriveHybridIntakeCommand(
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
@@ -42,13 +53,28 @@ public class DriveAutoTrenchCommand extends Command {
   }
 
   @Override
+  public void initialize() {
+    superStructure.setDriveMode(DriveMode.HYBRID_INTAKE_DRIVE);
+    superStructure.setIntakeMode(IntakeMode.HYBRID);
+  }
+
+  @Override
   public void execute() {
-    drive.driveAutoTrench(
+    drive.driveHybridIntake(
         xSupplier,
         ySupplier,
         omegaSupplier,
         maxLinearSpeedSupplier.getAsDouble(),
         maxAngularSpeedSupplier.getAsDouble());
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    if (interrupted) {
+      return;
+    }
+    superStructure.setDriveMode(DriveMode.MANUAL);
+    superStructure.setIntakeMode(IntakeMode.INTAKE);
   }
 
   @Override

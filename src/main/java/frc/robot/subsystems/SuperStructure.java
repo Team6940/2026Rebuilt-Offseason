@@ -39,7 +39,7 @@ public class SuperStructure extends SubsystemBase {
 
   private DriveMode driveModeMode = DriveMode.MANUAL;
   private ShootMode shootMode = ShootMode.SCORE;
-  private IntakeMode intakeMode = IntakeMode.OFF;
+  private IntakeMode intakeMode = IntakeMode.INTAKE;
 
   public void setDriveMode(DriveMode mode) {
     driveModeMode = mode;

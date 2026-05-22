@@ -112,8 +112,15 @@ public final class Constants {
     public static final double TRENCH_MAX_ASSIST = 0.65;
     /** Minimum driver–guidance alignment (dot product) before assist ramps up. */
     public static final double TRENCH_MIN_ALIGNMENT = -0.2;
+    /** Cross-track distance (m) at which path adhesion reaches zero. */
+    public static final double TRENCH_MAX_CROSS_TRACK_METERS = 1.0;
+    /** Exponent on blended adhesion (0.5 = sqrt); boosts assist when near/on the path. */
+    public static final double TRENCH_BLEND_EXPONENT = 0.5;
     /** Degrees: new square edge must beat current edge by this much to switch. */
     public static final double EDGE_SNAP_HYSTERESIS_DEG = 20.0;
+    /** Trench heading hold (stronger than default field-centric rotate). */
+    public static final double TRENCH_ANGLE_KP = 9.0;
+    public static final double TRENCH_ANGLE_KD = 0.65;
   }
 
   public final class OperatorConstants {

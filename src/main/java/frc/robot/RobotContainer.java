@@ -17,10 +17,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.commands.DriveHybridTrenchCommand;
+import frc.robot.commands.DriveHybridIntakeCommand;
 import frc.robot.generated.TunerConstants;
-import frc.robot.commands.DriveAutoTrenchCommand;
 import frc.robot.subsystems.Drive.Drive;
-import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.Drive.GyroIO;
 import frc.robot.subsystems.Drive.GyroIOPigeon2;
 import frc.robot.subsystems.Drive.GyroIOSim;
@@ -29,9 +29,7 @@ import frc.robot.subsystems.Drive.ModuleIOTalonFXReal;
 import frc.robot.subsystems.Drive.ModuleIOTalonFXSim;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
-import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Vision.VisionSubsystem;
-import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
@@ -52,7 +50,6 @@ public class RobotContainer {
 
   private final Drive drive;
   private final VisionSubsystem vision;
-  private final SuperStructure superStructure = SuperStructure.getInstance();
   // Simulated subsystems
   private SwerveDriveSimulation driveSimulation = null;
 
@@ -128,20 +125,13 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-
     configureButtonBindings();
     // testBindings();
   }
 
-  private void testBindings() {
-  
+  private void testBindings() {}
 
-  }
-
-  /**
-   * ***** THE CONTROL LOGIC IS SUCH ******
-   *
-   */
+  /** ***** THE CONTROL LOGIC IS SUCH ****** */
   private void configureButtonBindings() {
     drive.setDefaultCommand(
         Commands.run(
@@ -152,29 +142,42 @@ public class RobotContainer {
                     () -> -driverController.getRightX()),
             drive));
 
+    // A (HybridTrench) interrupts RT (HybridIntake) via end(true). IntakeMode rules in commands.
+    driverController
+        .rightTrigger()
+        .whileTrue(
+            new DriveHybridIntakeCommand(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> -driverController.getRightX()));
+
     driverController
         .a()
         .whileTrue(
-            new DriveAutoTrenchCommand(
-                    drive,
-                    () -> -driverController.getLeftY(),
-                    () -> -driverController.getLeftX(),
-                    () -> -driverController.getRightX())
-                .beforeStarting(() -> superStructure.setDriveMode(DriveMode.HYBRID_TRENCH))
-                .finallyDo(() -> superStructure.setDriveMode(DriveMode.MANUAL)));
+            new DriveHybridTrenchCommand(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> -driverController.getRightX(),
+                driverController.a()::getAsBoolean,
+                driverController.rightTrigger()::getAsBoolean));
 
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController
         .b()
         .onTrue(
             Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                    () -> {
+                      drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
+                      if (Constants.currentMode == Constants.Mode.SIM) {
+                        driveSimulation.setSimulationWorldPose(
+                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
+                      }
+                    },
                     drive)
                 .ignoringDisable(true));
 
-    
     driverController
         .leftTrigger()
         .whileTrue(
@@ -201,7 +204,7 @@ public class RobotContainer {
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
-    driveSimulation.setSimulationWorldPose(new Pose2d(0, 0, new Rotation2d()));
+    driveSimulation.setSimulationWorldPose(new Pose2d(0.7, 0.7, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 

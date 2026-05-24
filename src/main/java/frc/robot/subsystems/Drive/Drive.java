@@ -172,7 +172,10 @@ public class Drive extends SubsystemBase {
   private PathPlannerPath trenchPathAtlRed;
   private PathPlannerPath trenchPathAtrRed;
   private Rotation2d snappedSquareEdge = new Rotation2d();
+  /** Path traversal direction (+1 / -1) for HybridTrench; latched at A press, updatable by driver. */
+  private double trenchTraversalSign = 1.0;
   private final PIDController trenchAngleController;
+  private SuperStructure superStructure = SuperStructure.getInstance();
 
   private void initializeAutoMoveToPoseControllers() {
     // Initialize X and Y PID controllers
@@ -402,6 +405,7 @@ public class Drive extends SubsystemBase {
 
   public void driveFieldCentric(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+    superStructure.setDriveMode(SuperStructure.DriveMode.MANUAL);
     // Get linear velocity
     Translation2d linearVelocity =
         getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
@@ -443,6 +447,9 @@ public class Drive extends SubsystemBase {
       DoubleSupplier omegaSupplier,
       double maxLinearSpeed,
       double maxAngularSpeed) {
+  
+    superStructure.setDriveMode(SuperStructure.DriveMode.MANUAL);
+
     // Get linear velocity
     Translation2d linearVelocity =
         getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
@@ -475,6 +482,7 @@ public class Drive extends SubsystemBase {
    */
   public void driveFieldCentricAtAngle(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Rotation2d> rotationSupplier) {
+    superStructure.setDriveMode(SuperStructure.DriveMode.MANUAL);
     // Get linear velocity
     Translation2d linearVelocity =
         getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
@@ -710,9 +718,9 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Field-relative trench assist: blends driver translation toward the path; heading depends on
-   * {@link frc.robot.subsystems.SuperStructure.IntakeMode} (HYBRID = face travel, else square-edge
-   * snap). Invoke only while {@link frc.robot.subsystems.SuperStructure.DriveMode#HYBRID_TRENCH}.
+   * Field-relative trench assist: no stick input auto-tracks the path; with input, blends toward the
+   * path. {@link #trenchTraversalSign} is set at trench start and updated when the driver steers.
+   * Invoke only while {@link frc.robot.subsystems.SuperStructure.DriveMode#HYBRID_TRENCH}.
    */
   public void driveHybridTrench(
       DoubleSupplier xSupplier,
@@ -720,21 +728,34 @@ public class Drive extends SubsystemBase {
       DoubleSupplier omegaSupplier,
       double maxLinearSpeed,
       double maxAngularSpeed) {
+    
+    superStructure.setDriveMode(SuperStructure.DriveMode.HYBRID_TRENCH);
+
     IntakeMode intakeMode = SuperStructure.getInstance().getIntakeMode();
 
+    double xInput = xSupplier.getAsDouble();
+    double yInput = ySupplier.getAsDouble();
+    boolean driverHasInput =
+        MathUtil.applyDeadband(Math.hypot(xInput, yInput), DriveConstants.DEADBAND) > 0.0;
+
     Translation2d driverLinear =
-        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble())
-            .times(maxLinearSpeed);
+        getLinearVelocityFromJoysticks(xInput, yInput).times(maxLinearSpeed);
 
     double omegaInput =
         MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
     double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
 
     Pose2d robotPose = getPose();
-    HybridTrenchReference trenchRef = computeHybridTrenchReference(robotPose, driverLinear);
-    Translation2d fieldLinear = blendDriverInput(driverLinear, trenchRef);
+    if (driverHasInput) {
+      trenchTraversalSign =
+          updateTraversalSignFromDriver(robotPose, driverLinear, trenchTraversalSign);
+    }
+    HybridTrenchReference trenchRef =
+        computeHybridTrenchReference(robotPose, trenchTraversalSign);
+    Translation2d fieldLinear =
+        blendDriverInput(driverLinear, trenchRef, driverHasInput, maxLinearSpeed);
 
-    Rotation2d desiredFacing = getDesiredFacing(fieldLinear, intakeMode);
+    Rotation2d desiredFacing = getDesiredFacingHybridTrench(intakeMode, trenchTraversalSign);
     logHybridTrench(trenchRef, desiredFacing, fieldLinear);
 
     boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
@@ -758,6 +779,7 @@ public class Drive extends SubsystemBase {
       DoubleSupplier omegaSupplier,
       double maxLinearSpeed,
       double maxAngularSpeed) {
+    superStructure.setDriveMode(SuperStructure.DriveMode.HYBRID_INTAKE_DRIVE);
     Translation2d driverLinear =
         getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble())
             .times(maxLinearSpeed);
@@ -766,7 +788,7 @@ public class Drive extends SubsystemBase {
         MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
     double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
 
-    Rotation2d desiredFacing = getDesiredFacing(driverLinear, IntakeMode.HYBRID);
+    Rotation2d desiredFacing = getDesiredFacingHybridIntake(driverLinear, IntakeMode.HYBRID);
 
     boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
     double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
@@ -796,7 +818,7 @@ public class Drive extends SubsystemBase {
 
   /** Nearest lane, lookahead guidance vector, and traversal sign for one cycle. */
   private HybridTrenchReference computeHybridTrenchReference(
-      Pose2d robotPose, Translation2d driverFieldLinear) {
+      Pose2d robotPose, double traversalSign) {
     TrenchLane lane = selectTrenchLane(robotPose);
     PathPlannerPath path = getTrenchPath(lane, robotPose);
     List<PathPoint> points = path.getAllPathPoints();
@@ -806,8 +828,6 @@ public class Drive extends SubsystemBase {
     double distanceAlong = nearest.distanceAlongPath;
 
     double pathLength = points.get(points.size() - 1).distanceAlongPath;
-    double traversalSign =
-        pathTraversalSign(points, distanceAlong, driverFieldLinear, robotPose);
     double lookaheadDistance =
         MathUtil.clamp(
             distanceAlong + traversalSign * DriveConstants.TRENCH_LOOKAHEAD_METERS,
@@ -825,14 +845,30 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * +1 = lookahead moves with path parameterization; -1 = opposite (reverse trench entry). Uses
-   * field-relative driver intent when moving; otherwise falls back to geometry near path ends.
+   * Initial traversal sign when A is pressed (geometry near path ends). +1 = with path
+   * parameterization; -1 = reverse.
    */
-  private static double pathTraversalSign(
-      List<PathPoint> points,
-      double distanceAlong,
-      Translation2d driverFieldLinear,
-      Pose2d robotPose) {
+  private double computeInitialTraversalSign(Pose2d robotPose) {
+    TrenchLane lane = selectTrenchLane(robotPose);
+    PathPlannerPath path = getTrenchPath(lane, robotPose);
+    List<PathPoint> points = path.getAllPathPoints();
+    int nearestIndex = findNearestPointIndex(robotPose.getTranslation(), points);
+    double distanceAlong = points.get(nearestIndex).distanceAlongPath;
+    return traversalSignFromGeometry(points, distanceAlong, robotPose);
+  }
+
+  /**
+   * Updates traversal sign from driver intent while the stick is outside {@link
+   * DriveConstants#DEADBAND}. Ambiguous input keeps {@code currentSign}.
+   */
+  private double updateTraversalSignFromDriver(
+      Pose2d robotPose, Translation2d driverFieldLinear, double currentSign) {
+    TrenchLane lane = selectTrenchLane(robotPose);
+    PathPlannerPath path = getTrenchPath(lane, robotPose);
+    List<PathPoint> points = path.getAllPathPoints();
+    int nearestIndex = findNearestPointIndex(robotPose.getTranslation(), points);
+    double distanceAlong = points.get(nearestIndex).distanceAlongPath;
+
     Translation2d tangent = pathTangentAtDistance(points, distanceAlong);
     if (driverFieldLinear.getNorm() > DriveConstants.TRENCH_DRIVER_INTENT_THRESHOLD) {
       Translation2d driverDir = driverFieldLinear.div(driverFieldLinear.getNorm());
@@ -844,7 +880,12 @@ public class Drive extends SubsystemBase {
         return 1.0;
       }
     }
+    return currentSign;
+  }
 
+  /** Geometry fallback for traversal sign when the driver is not steering. */
+  private static double traversalSignFromGeometry(
+      List<PathPoint> points, double distanceAlong, Pose2d robotPose) {
     double pathLength = points.get(points.size() - 1).distanceAlongPath;
     Translation2d pathStart = points.get(0).position;
     Translation2d pathEnd = points.get(points.size() - 1).position;
@@ -937,16 +978,29 @@ public class Drive extends SubsystemBase {
     return last.position;
   }
 
-  /** Shared-control translation blend; no assist when driver intent is below threshold. */
+  /**
+   * No stick input: auto-track along the path. With input: shared-control blend toward guidance.
+   */
   private Translation2d blendDriverInput(
-      Translation2d driverVelocity, HybridTrenchReference ref) {
-    double driverNorm = driverVelocity.getNorm();
-    if (driverNorm < DriveConstants.TRENCH_DRIVER_INTENT_THRESHOLD) {
-      return new Translation2d();
-    }
-
+      Translation2d driverVelocity,
+      HybridTrenchReference ref,
+      boolean driverHasInput,
+      double maxLinearSpeed) {
     Translation2d guidance = ref.guidanceVector();
     double guidanceNorm = guidance.getNorm();
+
+    if (!driverHasInput) {
+      if (guidanceNorm < 1e-6) {
+        return new Translation2d();
+      }
+      return guidance.div(guidanceNorm).times(maxLinearSpeed);
+    }
+
+    double driverNorm = driverVelocity.getNorm();
+    if (driverNorm < DriveConstants.TRENCH_DRIVER_INTENT_THRESHOLD) {
+      return driverVelocity;
+    }
+
     if (guidanceNorm < 1e-6) {
       return driverVelocity;
     }
@@ -978,10 +1032,22 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * {@link IntakeMode#HYBRID}: face travel direction. Otherwise lock a chassis edge perpendicular
-   * to travel (smallest rotation from the current heading).
+   * HybridTrench heading: HYBRID intake faces field 0° / 180° from traversal sign; otherwise
+   * nearest field orthogonal edge (0° / 90° / 180° / 270°).
    */
-  private Rotation2d getDesiredFacing(Translation2d blendedVelocity, IntakeMode intakeMode) {
+  private Rotation2d getDesiredFacingHybridTrench(IntakeMode intakeMode, double traversalSign) {
+    if (intakeMode == IntakeMode.HYBRID) {
+      return traversalSign >= 0.0 ? Rotation2d.kZero : Rotation2d.k180deg;
+    }
+    return snapNearestFieldOrthogonalEdge(getRotation());
+  }
+
+  /**
+   * HybridIntake heading: {@link IntakeMode#HYBRID} faces travel; otherwise lock a chassis edge
+   * perpendicular to travel (smallest rotation from the current heading).
+   */
+  private Rotation2d getDesiredFacingHybridIntake(
+      Translation2d blendedVelocity, IntakeMode intakeMode) {
     if (blendedVelocity.getNorm() < DriveConstants.TRENCH_DRIVER_INTENT_THRESHOLD) {
       return intakeMode == IntakeMode.HYBRID ? getRotation() : snappedSquareEdge;
     }
@@ -991,6 +1057,32 @@ public class Drive extends SubsystemBase {
       return travelHeading;
     }
     return snapPerpendicularChassisEdge(getRotation(), travelHeading);
+  }
+
+  /** Nearest field cardinal heading with hysteresis on {@code snappedSquareEdge}. */
+  private Rotation2d snapNearestFieldOrthogonalEdge(Rotation2d currentHeading) {
+    Rotation2d[] options = {
+      Rotation2d.kZero,
+      Rotation2d.kCCW_90deg,
+      Rotation2d.k180deg,
+      Rotation2d.kCW_90deg
+    };
+    Rotation2d bestEdge = options[0];
+    double bestCost = Double.MAX_VALUE;
+    for (Rotation2d option : options) {
+      double cost = Math.abs(currentHeading.minus(option).getRadians());
+      if (cost < bestCost) {
+        bestCost = cost;
+        bestEdge = option;
+      }
+    }
+
+    if (Math.abs(snappedSquareEdge.minus(bestEdge).getRadians())
+        < Units.degreesToRadians(DriveConstants.EDGE_SNAP_HYSTERESIS_DEG)) {
+      return snappedSquareEdge;
+    }
+    snappedSquareEdge = bestEdge;
+    return snappedSquareEdge;
   }
 
   /** Picks travel ± 90° with least rotation from {@code currentHeading}; hysteresis on {@code snappedSquareEdge}. */
@@ -1010,9 +1102,10 @@ public class Drive extends SubsystemBase {
     return snappedSquareEdge;
   }
 
-  /** Resets chassis-edge hysteresis when trench assist starts. */
-  public void resetSnappedChassisEdge() {
+  /** Resets trench assist state when A is pressed. */
+  public void resetHybridTrenchState() {
     snappedSquareEdge = getRotation();
+    trenchTraversalSign = computeInitialTraversalSign(getPose());
   }
 
   /** Heading PID used by trench and hybrid intake (continuous, not profiled). */

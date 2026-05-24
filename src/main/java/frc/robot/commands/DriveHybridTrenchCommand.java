@@ -68,7 +68,7 @@ public class DriveHybridTrenchCommand extends Command {
   @Override
   public void initialize() {
     intakeModeBeforeTrench = superStructure.getIntakeMode();
-    drive.resetSnappedChassisEdge();
+    drive.resetHybridTrenchState();
     applyTrenchDriveState();
   }
 
@@ -95,9 +95,7 @@ public class DriveHybridTrenchCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    if (!interrupted) {
-      superStructure.setDriveMode(DriveMode.MANUAL);
-    }
+
   }
 
   @Override

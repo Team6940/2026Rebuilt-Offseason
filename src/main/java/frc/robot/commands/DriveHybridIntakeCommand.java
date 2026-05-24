@@ -54,8 +54,6 @@ public class DriveHybridIntakeCommand extends Command {
 
   @Override
   public void initialize() {
-    superStructure.setDriveMode(DriveMode.HYBRID_INTAKE_DRIVE);
-    superStructure.setIntakeMode(IntakeMode.HYBRID);
   }
 
   @Override
@@ -73,8 +71,6 @@ public class DriveHybridIntakeCommand extends Command {
     if (interrupted) {
       return;
     }
-    superStructure.setDriveMode(DriveMode.MANUAL);
-    superStructure.setIntakeMode(IntakeMode.INTAKE);
   }
 
   @Override

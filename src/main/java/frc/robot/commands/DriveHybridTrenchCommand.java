@@ -95,7 +95,9 @@ public class DriveHybridTrenchCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-
+    if (!interrupted) {
+      superStructure.setDriveMode(DriveMode.MANUAL);
+    }
   }
 
   @Override

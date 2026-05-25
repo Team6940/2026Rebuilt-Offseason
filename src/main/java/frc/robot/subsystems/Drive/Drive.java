@@ -718,6 +718,14 @@ public class Drive extends SubsystemBase {
   }
 
   /**
+   * Path traversal sign is in blue-field path parameterization; red DriverStation alliance is
+   * opposite to stick field-frame intent, so negate when {@link #isRedAlliance()}.
+   */
+  private static double allianceAdjustedTraversalSign(double sign) {
+    return isRedAlliance() ? -sign : sign;
+  }
+
+  /**
    * Field-relative trench assist: no stick input auto-tracks the path; with input, blends toward the
    * path. {@link #trenchTraversalSign} is set at trench start and updated when the driver steers.
    * Invoke only while {@link frc.robot.subsystems.SuperStructure.DriveMode#HYBRID_TRENCH}.
@@ -747,15 +755,18 @@ public class Drive extends SubsystemBase {
 
     Pose2d robotPose = getPose();
     if (driverHasInput) {
+      Translation2d driverForTraversal =
+          isRedAlliance() ? driverLinear.unaryMinus() : driverLinear;
       trenchTraversalSign =
-          updateTraversalSignFromDriver(robotPose, driverLinear, trenchTraversalSign);
+          updateTraversalSignFromDriver(robotPose, driverForTraversal, trenchTraversalSign);
     }
     HybridTrenchReference trenchRef =
         computeHybridTrenchReference(robotPose, trenchTraversalSign);
     Translation2d fieldLinear =
         blendDriverInput(driverLinear, trenchRef, driverHasInput, maxLinearSpeed);
 
-    Rotation2d desiredFacing = getDesiredFacingHybridTrench(intakeMode, trenchTraversalSign);
+    Rotation2d desiredFacing =
+        getDesiredFacingHybridTrench(intakeMode, trenchTraversalSign, robotPose);
     logHybridTrench(trenchRef, desiredFacing, fieldLinear);
 
     boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
@@ -988,7 +999,9 @@ public class Drive extends SubsystemBase {
       double maxLinearSpeed) {
     Translation2d guidance = ref.guidanceVector();
     double guidanceNorm = guidance.getNorm();
-
+    if (isRedAlliance()) {
+      guidance = guidance.unaryMinus();
+    }
     if (!driverHasInput) {
       if (guidanceNorm < 1e-6) {
         return new Translation2d();
@@ -1032,14 +1045,34 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * HybridTrench heading: HYBRID intake faces field 0° / 180° from traversal sign; otherwise
-   * nearest field orthogonal edge (0° / 90° / 180° / 270°).
+   * HybridTrench heading: HYBRID faces travel along the path tangent; otherwise nearest field
+   * orthogonal edge (0° / 90° / 180° / 270°).
    */
-  private Rotation2d getDesiredFacingHybridTrench(IntakeMode intakeMode, double traversalSign) {
+  private Rotation2d getDesiredFacingHybridTrench(
+      IntakeMode intakeMode, double traversalSign, Pose2d robotPose) {
     if (intakeMode == IntakeMode.HYBRID) {
-      return traversalSign >= 0.0 ? Rotation2d.kZero : Rotation2d.k180deg;
+      return travelHeadingAlongPath(robotPose, traversalSign);
     }
     return snapNearestFieldOrthogonalEdge(getRotation());
+  }
+
+  /** Field-frame heading along the active trench path (respects traversal sign). */
+  private Rotation2d travelHeadingAlongPath(Pose2d robotPose, double traversalSign) {
+    TrenchLane lane = selectTrenchLane(robotPose);
+    PathPlannerPath path = getTrenchPath(lane, robotPose);
+    List<PathPoint> points = path.getAllPathPoints();
+    if (points.isEmpty()) {
+      return getRotation();
+    }
+    int nearestIndex = findNearestPointIndex(robotPose.getTranslation(), points);
+    Translation2d tangent =
+        pathTangentAtDistance(points, points.get(nearestIndex).distanceAlongPath);
+    if (tangent.getNorm() < 1e-6) {
+      return getRotation();
+    }
+    Rotation2d alongPath =
+        new Rotation2d(Math.atan2(tangent.getY(), tangent.getX()));
+    return traversalSign >= 0.0 ? alongPath : alongPath.plus(Rotation2d.kPi);
   }
 
   /**
@@ -1105,7 +1138,8 @@ public class Drive extends SubsystemBase {
   /** Resets trench assist state when A is pressed. */
   public void resetHybridTrenchState() {
     snappedSquareEdge = getRotation();
-    trenchTraversalSign = computeInitialTraversalSign(getPose());
+    trenchTraversalSign =
+        -allianceAdjustedTraversalSign(computeInitialTraversalSign(getPose()));
   }
 
   /** Heading PID used by trench and hybrid intake (continuous, not profiled). */

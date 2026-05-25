@@ -717,13 +717,6 @@ public class Drive extends SubsystemBase {
         && DriverStation.getAlliance().get() == Alliance.Red;
   }
 
-  /**
-   * Path traversal sign is in blue-field path parameterization; red DriverStation alliance is
-   * opposite to stick field-frame intent, so negate when {@link #isRedAlliance()}.
-   */
-  private static double allianceAdjustedTraversalSign(double sign) {
-    return isRedAlliance() ? -sign : sign;
-  }
 
   /**
    * Field-relative trench assist: no stick input auto-tracks the path; with input, blends toward the
@@ -904,12 +897,12 @@ public class Drive extends SubsystemBase {
     double distToEnd = robotPose.getTranslation().getDistance(pathEnd);
 
     if (distanceAlong < pathLength * 0.35 && distToStart < distToEnd) {
-      return -1.0;
-    }
-    if (distanceAlong > pathLength * 0.65 && distToEnd < distToStart) {
       return 1.0;
     }
-    return 1.0;
+    if (distanceAlong > pathLength * 0.65 && distToEnd < distToStart) {
+      return -1.0;
+    }
+    return -1.0;
   }
 
   private static Translation2d pathTangentAtDistance(List<PathPoint> points, double distanceAlong) {
@@ -1138,7 +1131,7 @@ public class Drive extends SubsystemBase {
   /** Resets trench assist state when A is pressed. */
   public void resetHybridTrenchState() {
     snappedSquareEdge = getRotation();
-    trenchTraversalSign = isRedAlliance() ? allianceAdjustedTraversalSign(computeInitialTraversalSign(getPose())) : -allianceAdjustedTraversalSign(computeInitialTraversalSign(getPose()));
+    trenchTraversalSign = computeInitialTraversalSign(getPose());
   }
 
   /** Heading PID used by trench and hybrid intake (continuous, not profiled). */

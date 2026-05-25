@@ -808,7 +808,7 @@ public class Drive extends SubsystemBase {
     runVelocity(
         ChassisSpeeds.fromFieldRelativeSpeeds(
             speeds,
-            isRedAlliance() ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+            getRotation()));
 
     Logger.recordOutput("HybridIntake/DesiredFacing", desiredFacing);
     Logger.recordOutput("HybridIntake/FieldLinear", driverLinear);
@@ -1138,8 +1138,7 @@ public class Drive extends SubsystemBase {
   /** Resets trench assist state when A is pressed. */
   public void resetHybridTrenchState() {
     snappedSquareEdge = getRotation();
-    trenchTraversalSign =
-        -allianceAdjustedTraversalSign(computeInitialTraversalSign(getPose()));
+    trenchTraversalSign = isRedAlliance() ? allianceAdjustedTraversalSign(computeInitialTraversalSign(getPose())) : -allianceAdjustedTraversalSign(computeInitialTraversalSign(getPose()));
   }
 
   /** Heading PID used by trench and hybrid intake (continuous, not profiled). */

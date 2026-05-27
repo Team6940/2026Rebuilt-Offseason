@@ -798,10 +798,14 @@ public class Drive extends SubsystemBase {
     double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
 
     ChassisSpeeds speeds = new ChassisSpeeds(driverLinear.getX(), driverLinear.getY(), omega);
+
+    boolean isFlipped =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+            
     runVelocity(
         ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds,
-            getRotation()));
+            speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
 
     Logger.recordOutput("HybridIntake/DesiredFacing", desiredFacing);
     Logger.recordOutput("HybridIntake/FieldLinear", driverLinear);
@@ -1080,9 +1084,12 @@ public class Drive extends SubsystemBase {
     Rotation2d travelHeading =
         new Rotation2d(Math.atan2(blendedVelocity.getY(), blendedVelocity.getX()));
     if (intakeMode == IntakeMode.HYBRID) {
+      if (isRedAlliance()) {
+        travelHeading = travelHeading.plus(Rotation2d.kPi);
+      }
       return travelHeading;
     }
-    return snapPerpendicularChassisEdge(getRotation(), travelHeading);
+    return travelHeading;
   }
 
   /** Nearest field cardinal heading with hysteresis on {@code snappedSquareEdge}. */
@@ -1111,22 +1118,6 @@ public class Drive extends SubsystemBase {
     return snappedSquareEdge;
   }
 
-  /** Picks travel ± 90° with least rotation from {@code currentHeading}; hysteresis on {@code snappedSquareEdge}. */
-  private Rotation2d snapPerpendicularChassisEdge(
-      Rotation2d currentHeading, Rotation2d travelHeading) {
-    Rotation2d optionCcw = travelHeading.plus(Rotation2d.kCCW_90deg);
-    Rotation2d optionCw = travelHeading.plus(Rotation2d.kCW_90deg);
-    double costCcw = Math.abs(currentHeading.minus(optionCcw).getRadians());
-    double costCw = Math.abs(currentHeading.minus(optionCw).getRadians());
-    Rotation2d bestEdge = costCcw <= costCw ? optionCcw : optionCw;
-
-    if (Math.abs(snappedSquareEdge.minus(bestEdge).getRadians())
-        < Units.degreesToRadians(DriveConstants.EDGE_SNAP_HYSTERESIS_DEG)) {
-      return snappedSquareEdge;
-    }
-    snappedSquareEdge = bestEdge;
-    return snappedSquareEdge;
-  }
 
   /** Resets trench assist state when A is pressed. */
   public void resetHybridTrenchState() {

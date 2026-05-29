@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Drive;
+package frc.robot.subsystems.Chassis;
 
 /** Trench centerline splines loaded from PathPlanner path files. */
 public enum TrenchLane {

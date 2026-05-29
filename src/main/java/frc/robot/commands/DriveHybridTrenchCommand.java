@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Drive.Drive;
+import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
@@ -15,7 +15,7 @@ import java.util.function.DoubleSupplier;
  * while held; MANUAL on normal end.
  */
 public class DriveHybridTrenchCommand extends Command {
-  private final Drive drive;
+  private final CommandSwerveDrivetrain drive;
   private final SuperStructure superStructure = SuperStructure.getInstance();
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
@@ -28,7 +28,7 @@ public class DriveHybridTrenchCommand extends Command {
   private IntakeMode intakeModeBeforeTrench = IntakeMode.OFF;
 
   public DriveHybridTrenchCommand(
-      Drive drive,
+      CommandSwerveDrivetrain drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier,
@@ -46,7 +46,7 @@ public class DriveHybridTrenchCommand extends Command {
   }
 
   public DriveHybridTrenchCommand(
-      Drive drive,
+      CommandSwerveDrivetrain drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier,

@@ -13,26 +13,18 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.DriveHybridIntakeCommand;
+import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Drive.Drive;
-import frc.robot.subsystems.Drive.GyroIO;
-import frc.robot.subsystems.Drive.GyroIOPigeon2;
-import frc.robot.subsystems.Drive.GyroIOSim;
-import frc.robot.subsystems.Drive.ModuleIO;
-import frc.robot.subsystems.Drive.ModuleIOTalonFXReal;
-import frc.robot.subsystems.Drive.ModuleIOTalonFXSim;
+import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
-import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Vision.VisionSubsystem;
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -48,10 +40,8 @@ public class RobotContainer {
   public static final String limelightRight = "limelight";
   public static final String photonCameraName = "photonvision";
 
-  private final Drive drive;
+  private final CommandSwerveDrivetrain drive;
   private final VisionSubsystem vision;
-  // Simulated subsystems
-  private SwerveDriveSimulation driveSimulation = null;
 
   // Controller
   public static final ImprovedCommandXboxController driverController =
@@ -64,46 +54,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    switch (Constants.currentMode) {
-      case REAL:
-        // Real robot, instantiate hardware IO implementations
-        drive =
-            new Drive(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
-                new ModuleIOTalonFXReal(TunerConstants.FrontRight),
-                new ModuleIOTalonFXReal(TunerConstants.BackLeft),
-                new ModuleIOTalonFXReal(TunerConstants.BackRight));
-        break;
-
-      case SIM:
-        // Sim robot, instantiate physics sim IO implementations
-
-        SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
-        driveSimulation =
-            new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
-        SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
-        drive =
-            new Drive(
-                new GyroIOSim(driveSimulation.getGyroSimulation()),
-                new ModuleIOTalonFXSim(TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
-                new ModuleIOTalonFXSim(TunerConstants.FrontRight, driveSimulation.getModules()[1]),
-                new ModuleIOTalonFXSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]),
-                new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]));
-        break;
-
-      default:
-        // Replayed robot, disable IO implementations
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {});
-        break;
-    }
-
+    drive = TunerConstants.createDrivetrain();
     vision = new VisionSubsystem(drive);
 
     // Set up auto routines
@@ -127,6 +78,9 @@ public class RobotContainer {
 
     configureButtonBindings();
     // testBindings();
+    
+    // Warmup PathPlanner to avoid Java pauses
+    CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
   }
 
   private void testBindings() {}
@@ -168,13 +122,7 @@ public class RobotContainer {
         .b()
         .onTrue(
             Commands.runOnce(
-                    () -> {
-                      drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
-                      if (Constants.currentMode == Constants.Mode.SIM) {
-                        driveSimulation.setSimulationWorldPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
-                      }
-                    },
+                    () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
 
@@ -200,21 +148,13 @@ public class RobotContainer {
     return autoChooser.get();
   }
 
-  // Simulation methods
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
-
-    driveSimulation.setSimulationWorldPose(new Pose2d(0.7, 0.7, new Rotation2d()));
-    SimulatedArena.getInstance().resetFieldForAuto();
+    drive.setPose(new Pose2d(0.7, 0.7, new Rotation2d()));
   }
 
   public void updateSimulation() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
-
-    SimulatedArena.getInstance().simulationPeriodic();
-    Logger.recordOutput(
-        "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
-    Logger.recordOutput(
-        "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
+    Logger.recordOutput("FieldSimulation/RobotPosition", drive.getPose());
   }
 }

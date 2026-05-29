@@ -19,7 +19,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.PoseEstimatorConstants;
 import frc.robot.Constants.VisionFusion;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.Drive.Drive;
+import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +37,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
  */
 public class VisionSubsystem extends SubsystemBase {
 
-  private final Drive drive;
+  private final CommandSwerveDrivetrain drive;
   private final PhotonCamera photonCamera;
   private final PhotonPoseEstimator photonPoseEstimator;
   public static VisionSubsystem m_instance;
@@ -50,11 +50,11 @@ public class VisionSubsystem extends SubsystemBase {
           .getEntry("snapshot");
 
 
-  public static VisionSubsystem getInstance(Drive drive) {
+  public static VisionSubsystem getInstance(CommandSwerveDrivetrain drive) {
     return m_instance == null ? m_instance = new VisionSubsystem(drive) : m_instance;
   }
 
-  public VisionSubsystem(Drive drive) {
+  public VisionSubsystem(CommandSwerveDrivetrain drive) {
     this.drive = drive;
     this.photonCamera = new PhotonCamera(RobotContainer.photonCameraName);
     this.photonPoseEstimator =

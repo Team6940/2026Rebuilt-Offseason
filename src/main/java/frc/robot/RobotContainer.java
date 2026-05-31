@@ -19,11 +19,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.DriveHybridIntakeCommand;
-import frc.robot.commands.DriveHybridTrenchCommand;
+import frc.robot.commands.Drive.DefaultDriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
+import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.Vision.VisionSubsystem;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -42,12 +43,13 @@ public class RobotContainer {
 
   private final CommandSwerveDrivetrain drive;
   private final VisionSubsystem vision;
+  private final SuperStructure superStructure = SuperStructure.getInstance();
 
   // Controller
   public static final ImprovedCommandXboxController driverController =
       new ImprovedCommandXboxController(0);
-  // public static final ImprovedCommandXboxController operatorController =
-  //     new ImprovedCommandXboxController(1);
+  public static final ImprovedCommandXboxController operatorController =
+      new ImprovedCommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -88,34 +90,30 @@ public class RobotContainer {
   /** ***** THE CONTROL LOGIC IS SUCH ****** */
   private void configureButtonBindings() {
     drive.setDefaultCommand(
-        Commands.run(
-            () ->
-                drive.driveFieldCentric(
-                    () -> -driverController.getLeftY(),
-                    () -> -driverController.getLeftX(),
-                    () -> -driverController.getRightX()),
-            drive));
+        DefaultDriveCommands.defaultDrive(
+            drive,
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX(),
+            driverController.a()::getAsBoolean,
+            driverController.rightTrigger()::getAsBoolean));
 
-    // A (HybridTrench) interrupts RT (HybridIntake) via end(true). IntakeMode rules in commands.
     driverController
         .rightTrigger()
         .whileTrue(
-            new DriveHybridIntakeCommand(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> -driverController.getRightX()));
+            Commands.run(() -> superStructure.setDriveMode(DriveMode.HYBRID_INTAKE_DRIVE, true))
+                .finallyDo(
+                    () -> superStructure.setDriveMode(DriveMode.HYBRID_INTAKE_DRIVE, false)));
 
     driverController
         .a()
         .whileTrue(
-            new DriveHybridTrenchCommand(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> -driverController.getRightX(),
-                driverController.a()::getAsBoolean,
-                driverController.rightTrigger()::getAsBoolean));
+            Commands.run(() -> superStructure.setDriveMode(DriveMode.HYBRID_TRENCH, true))
+                .finallyDo(() -> superStructure.setDriveMode(DriveMode.HYBRID_TRENCH, false)));
+
+    operatorController
+        .back()
+        .onTrue(Commands.runOnce(superStructure::resetAllModes));
 
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController

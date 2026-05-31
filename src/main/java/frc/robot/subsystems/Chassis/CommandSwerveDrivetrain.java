@@ -122,7 +122,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final ProfiledPIDController thetaController;
     private final ProfiledPIDController fieldCentricAngleController;
     private final PIDController trenchAngleController;
-    private final SuperStructure superStructure = SuperStructure.getInstance();
 
     private PathPlannerPath trenchPathAtlBlue;
     private PathPlannerPath trenchPathAtrBlue;
@@ -470,7 +469,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public void driveFieldCentric(
         DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
-        superStructure.setDriveMode(SuperStructure.DriveMode.MANUAL);
         Translation2d linearVelocity =
             getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
         double omega =
@@ -496,7 +494,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         DoubleSupplier omegaSupplier,
         double maxLinearSpeed,
         double maxAngularSpeed) {
-        superStructure.setDriveMode(SuperStructure.DriveMode.MANUAL);
         Translation2d linearVelocity =
             getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
         double omega =
@@ -518,7 +515,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public void driveFieldCentricAtAngle(
         DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Rotation2d> rotationSupplier) {
-        superStructure.setDriveMode(SuperStructure.DriveMode.MANUAL);
         Translation2d linearVelocity =
             getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
         double omega =
@@ -665,7 +661,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         DoubleSupplier omegaSupplier,
         double maxLinearSpeed,
         double maxAngularSpeed) {
-        superStructure.setDriveMode(SuperStructure.DriveMode.HYBRID_TRENCH);
         IntakeMode intakeMode = SuperStructure.getInstance().getIntakeMode();
         double xInput = xSupplier.getAsDouble();
         double yInput = ySupplier.getAsDouble();
@@ -705,7 +700,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         DoubleSupplier omegaSupplier,
         double maxLinearSpeed,
         double maxAngularSpeed) {
-        superStructure.setDriveMode(SuperStructure.DriveMode.HYBRID_INTAKE_DRIVE);
         Translation2d driverLinear =
             getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble())
                 .times(maxLinearSpeed);

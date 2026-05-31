@@ -1,0 +1,75 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.792814597800927,
+        "y": 4.4636336082175925
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.166299623842593,
+        "y": 5.113440321180556
+      },
+      "isLocked": false,
+      "linkedName": "L-AftIntake1"
+    },
+    {
+      "anchor": {
+        "x": 5.960115596064815,
+        "y": 5.417348307291666
+      },
+      "prevControl": {
+        "x": 6.505535951967593,
+        "y": 5.394056568287038
+      },
+      "nextControl": {
+        "x": 5.512362258741874,
+        "y": 5.436469254572989
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.9070606915509263,
+        "y": 5.417348307291666
+      },
+      "prevControl": {
+        "x": 3.47925432341639,
+        "y": 5.443423695533359
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": -45.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -45.0
+  },
+  "reversed": false,
+  "folder": "Left",
+  "idealStartingState": {
+    "velocity": 0.0,
+    "rotation": -90.0
+  },
+  "useDefaultConstraints": true
+}

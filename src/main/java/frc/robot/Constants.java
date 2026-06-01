@@ -450,6 +450,18 @@ public final class Constants {
      * — very large so fusion weights gyro for heading.
      */
     public static final double PHOTON_THETA_STDDEV_RADIANS = 100_000_000.0;
+
+    /** Down-weights unreliable heading during multi-source inverse-variance fusion. */
+    public static final double LARGE_VARIANCE = 1e6;
+
+    /** Limelight NT {@code stddevs} array length and MegaTag index offsets. */
+    public static final int LL_STDDEV_ARRAY_LENGTH = 12;
+    public static final int LL_MT1_X_STDDEV_INDEX = 0;
+    public static final int LL_MT1_Y_STDDEV_INDEX = 1;
+    public static final int LL_MT1_YAW_STDDEV_INDEX = 5;
+    public static final int LL_MT2_X_STDDEV_INDEX = 6;
+    public static final int LL_MT2_Y_STDDEV_INDEX = 7;
+    public static final int LL_MT2_YAW_STDDEV_INDEX = 11;
   }
 
   /**

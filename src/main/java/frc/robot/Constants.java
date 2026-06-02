@@ -42,6 +42,13 @@ public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
+  /**
+   * Publish AdvantageKit outputs to NetworkTables. On the roboRIO, the first write per topic can
+   * block the robot loop while NT4 publishers are created; keep {@link #enableNtTelemetry} false
+   * during competition if you only need USB wpilog. SIM may leave this true for AdvantageScope.
+   */
+  public static final boolean enableNtTelemetry = true;
+
   public static enum Mode {
     /** Running on a real robot. */
     REAL,

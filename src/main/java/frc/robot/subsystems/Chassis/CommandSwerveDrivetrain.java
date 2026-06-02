@@ -129,6 +129,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private PathPlannerPath trenchPathAtrRed;
     private Rotation2d snappedSquareEdge = new Rotation2d();
     private double trenchTraversalSign = 1.0;
+    private boolean hybridTrenchControlWarmedUp = false;
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -661,6 +662,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         DoubleSupplier omegaSupplier,
         double maxLinearSpeed,
         double maxAngularSpeed) {
+        driveHybridTrench(xSupplier, ySupplier, omegaSupplier, maxLinearSpeed, maxAngularSpeed, true);
+    }
+
+    private void driveHybridTrench(
+        DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier,
+        DoubleSupplier omegaSupplier,
+        double maxLinearSpeed,
+        double maxAngularSpeed,
+        boolean applySetpoints) {
         IntakeMode intakeMode = SuperStructure.getInstance().getIntakeMode();
         double xInput = xSupplier.getAsDouble();
         double yInput = ySupplier.getAsDouble();
@@ -688,10 +699,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
         double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
         ChassisSpeeds speeds = new ChassisSpeeds(fieldLinear.getX(), fieldLinear.getY(), omega);
-        runVelocity(
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                speeds,
-                isRedAlliance() ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+        if (applySetpoints) {
+            runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    speeds,
+                    isRedAlliance() ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+        }
     }
 
     public void driveHybridIntake(
@@ -994,6 +1007,24 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void resetHybridTrenchState() {
         snappedSquareEdge = getRotation();
         trenchTraversalSign = computeInitialTraversalSign(getPose());
+    }
+
+    /**
+     * One-shot HybridTrench run for A/B testing vs {@link frc.robot.NtTelemetryBootstrap}. Does not
+     * call {@link #runVelocity}; zero max speeds so auto-guidance cannot command motion.
+     */
+    public void warmupHybridTrenchControlLoop() {
+        if (hybridTrenchControlWarmedUp) {
+            return;
+        }
+        driveHybridTrench(
+            () -> 0.0,
+            () -> 0.0,
+            () -> 0.0,
+            0.0,
+            0.0,
+            false);
+        hybridTrenchControlWarmedUp = true;
     }
 
     private double calculateTrenchOmega(Rotation2d desiredFacing) {

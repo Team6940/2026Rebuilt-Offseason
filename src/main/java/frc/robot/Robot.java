@@ -59,11 +59,15 @@ public class Robot extends LoggedRobot {
     switch (Constants.currentMode) {
       case REAL:
         Logger.addDataReceiver(new WPILOGWriter());
-        Logger.addDataReceiver(new NT4Publisher());
+        if (Constants.enableNtTelemetry) {
+          Logger.addDataReceiver(new NT4Publisher());
+        }
         break;
 
       case SIM:
-        Logger.addDataReceiver(new NT4Publisher());
+        if (Constants.enableNtTelemetry) {
+          Logger.addDataReceiver(new NT4Publisher());
+        }
         break;
 
       case REPLAY:
@@ -75,6 +79,10 @@ public class Robot extends LoggedRobot {
     }
 
     Logger.start();
+
+    if (Constants.enableNtTelemetry) {
+      NtTelemetryBootstrap.preannounceHotPathTopics();
+    }
 
     var modules =
         new SwerveModuleConstants[] {

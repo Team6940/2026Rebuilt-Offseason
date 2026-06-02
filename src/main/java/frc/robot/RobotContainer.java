@@ -80,9 +80,10 @@ public class RobotContainer {
 
     configureButtonBindings();
     // testBindings();
-    
-    // Warmup PathPlanner to avoid Java pauses
+
     CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
+    CommandScheduler.getInstance().schedule(
+        Commands.runOnce(drive::warmupHybridTrenchControlLoop, drive).ignoringDisable(true));
   }
 
   private void testBindings() {}

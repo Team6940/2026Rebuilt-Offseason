@@ -30,8 +30,6 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.NavigableMap;
-import java.util.TreeMap;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -86,6 +84,21 @@ public final class Constants {
     public static final int kIntakeLeaderMotorId = 22;
     public static final int kIntakeFollowerMotorId = 24;
     public static final int kIntakeRackMotorId = 23;
+
+    /* Shooter (two leader/follower pairs) */
+    public static final int kShooterLeaderMotorIdA = 30;
+    public static final int kShooterFollowerMotorIdA = 31;
+    public static final int kShooterLeaderMotorIdB = 33;
+    public static final int kShooterFollowerMotorIdB = 34;
+
+    /* Hood */
+    public static final int kHoodMotorId = 32;
+
+    /* Indexer (two feeder + two indexer rollers) */
+    public static final int kIndexerFeederLeaderMotorId = 21;
+    public static final int kIndexerFeederFollowerMotorId = 25;
+    public static final int kIndexerLeaderMotorId = 26;
+    public static final int kIndexerFollowerMotorId = 27;
   }
 
   public static final class IntakeConstants {
@@ -474,6 +487,122 @@ public final class Constants {
     }
   }
 
+
+  public static final class ProjectileConstants {
+    /** Distance (m) -> shooter RPS for static (SCORE) shots. */
+    public static final InterpolatingDoubleTreeMap DistanceToShooterRps =
+        new InterpolatingDoubleTreeMap();
+
+    /** Distance (m) -> hood angle (deg) for static (SCORE) shots. */
+    public static final InterpolatingDoubleTreeMap DistanceToHoodDegs =
+        new InterpolatingDoubleTreeMap();
+
+    /** Distance (m) -> flight time (s); used by PASS motion solver only. */
+    public static final InterpolatingDoubleTreeMap DistanceToFlightTimeSecs =
+        new InterpolatingDoubleTreeMap();
+
+    /** Distance (m) -> shooter RPS for PASS motion solver lookups. */
+    public static final InterpolatingDoubleTreeMap PassDistanceToShooterRps =
+        new InterpolatingDoubleTreeMap();
+
+    /** Distance (m) -> hood angle (deg) for PASS motion solver lookups. */
+    public static final InterpolatingDoubleTreeMap PassDistanceToHoodDegs =
+        new InterpolatingDoubleTreeMap();
+
+    static {
+      DistanceToShooterRps.put(1.05, 38.9);
+      DistanceToShooterRps.put(1.32, 39.61);
+      DistanceToShooterRps.put(1.88, 41.84);
+      DistanceToShooterRps.put(2.6, 44.8);
+      DistanceToShooterRps.put(3.4, 47.4);
+      DistanceToShooterRps.put(4.1, 51.4);
+      DistanceToShooterRps.put(4.99, 54.9);
+      DistanceToShooterRps.put(5.2, 57.5);
+
+      DistanceToHoodDegs.put(1.05, 17.8);
+      DistanceToHoodDegs.put(1.32, 18.49);
+      DistanceToHoodDegs.put(1.88, 23.40);
+      DistanceToHoodDegs.put(2.6, 27.3);
+      DistanceToHoodDegs.put(3.4, 33.9);
+      DistanceToHoodDegs.put(4.1, 38.5);
+      DistanceToHoodDegs.put(4.99, 43.5);
+      DistanceToHoodDegs.put(5.2, 43.5);
+
+      DistanceToFlightTimeSecs.put(0.96, 0.8);
+      DistanceToFlightTimeSecs.put(1.2, 0.95);
+      DistanceToFlightTimeSecs.put(3.0, 1.18);
+      DistanceToFlightTimeSecs.put(5.0, 1.28);
+
+      PassDistanceToShooterRps.put(3.0, 55.0);
+      PassDistanceToShooterRps.put(4.0, 58.0);
+      PassDistanceToShooterRps.put(5.0, 62.0);
+      PassDistanceToShooterRps.put(6.0, 65.0);
+      PassDistanceToShooterRps.put(7.0, 68.0);
+
+      PassDistanceToHoodDegs.put(3.0, 40.0);
+      PassDistanceToHoodDegs.put(4.0, 42.0);
+      PassDistanceToHoodDegs.put(5.0, 43.5);
+      PassDistanceToHoodDegs.put(6.0, 43.5);
+      PassDistanceToHoodDegs.put(7.0, 43.5);
+    }
+  }
+
+  public static final class ShooterConstants {
+    public static final double ShooterRatio = 1.0;
+    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final double VelocityToleranceRps = 2.5;
+    public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
+    public static final double kP = 11.5;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kV = 0.115;
+    public static final double kS = 19.5;
+    public static final double SupplyCurrentLimit = 120.0;
+    public static final double StatorCurrentLimit = 100.0;
+
+    /** Robot origin to shooter exit point (+X forward, +Y left), meters. */
+    public static final Translation2d ShooterOffset = new Translation2d(0.30, 0.0);
+  }
+
+  public static final class HoodConstants {
+    public static final double HoodRatio = 182. / 12. * 50. / 8.;
+    public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
+    public static final double SupplyCurrentLimit = 40.0;
+    public static final double kP = 360.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kV = 0.0;
+    public static final double kS = 0.29;
+    public static final double MotionMagicMaxVelocity = 10.0;
+    public static final double MotionMagicAcceleration = 20.0;
+    public static final double PositionToleranceDegs = 3.0;
+    public static final double MinDegs = 17.842;
+    public static final double MaxDegs = 43.5;
+    public static final double IdlePositionDegs = 17.842;
+    public static final double HybridRangeDegs = 3.0;
+  }
+
+  public static final class IndexerConstants {
+    public static final double FeederRatio = 31.2 * 5. / 9.;
+    public static final double IndexerRatio = 1.0;
+    public static final InvertedValue FeederInverted = InvertedValue.CounterClockwise_Positive;
+    public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
+    public static final double FeederSupplyCurrentLimit = 60.0;
+    public static final double IndexerSupplyCurrentLimit = 60.0;
+    public static final double FeederkP = 0.5;
+    public static final double FeederkI = 0.0;
+    public static final double FeederkD = 0.0;
+    public static final double FeederkV = 2.15;
+    public static final double FeederkS = 0.35;
+    public static final double IndexerkP = 0.5;
+    public static final double IndexerkI = 0.0;
+    public static final double IndexerkD = 0.0;
+    public static final double IndexerkV = 2.15;
+    public static final double IndexerkS = 0.35;
+    public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
+    public static final double FeedRps = 100.0;
+    public static final double IndexerRps = 6.2;
+  }
 
   /** Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants. */
   public static final class VisionFusion {

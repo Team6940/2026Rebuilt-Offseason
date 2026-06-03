@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.subsystems.SuperStructure;
@@ -578,6 +579,55 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Rotation2d getRotation() {
         return getPose().getRotation();
+    }
+
+    public static Translation2d getAllianceHubCenter() {
+        boolean isBlue =
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Blue;
+        return isBlue ? FieldConstants.Hub.centerPoint : FieldConstants.Hub.oppCenterPoint;
+    }
+
+    public Translation2d getShooterWorldPosition() {
+        return getPose()
+            .getTranslation()
+            .plus(ShooterConstants.ShooterOffset.rotateBy(getRotation()));
+    }
+
+    public Translation2d getFieldVelocity() {
+        ChassisSpeeds fieldSpeeds =
+            ChassisSpeeds.fromRobotRelativeSpeeds(getChassisSpeeds(), getRotation());
+        return new Translation2d(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond);
+    }
+
+    public double getDistanceToTarget(Translation2d target) {
+        return getShooterWorldPosition().getDistance(target);
+    }
+
+    public void driveAutoAim(
+        DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier,
+        Supplier<Rotation2d> baseTargetRotation,
+        double headingCompDegs) {
+        driveFieldCentricAtAngle(
+            xSupplier,
+            ySupplier,
+            () -> baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs)));
+    }
+
+    /**
+     * Shoot lock: X-config brake by default. When the operator trims heading, switch to
+     * zero-translation rotation hold instead of fighting the brake request with velocity.
+     */
+    public void driveAutoAimLocked(
+        Rotation2d baseTargetRotation, double headingCompDegs, boolean operatorTrimmingHeading) {
+        if (operatorTrimmingHeading) {
+            Rotation2d desired = baseTargetRotation.plus(Rotation2d.fromDegrees(headingCompDegs));
+            double omega = calculateOmega(desired);
+            runFieldRelativeVelocity(new ChassisSpeeds(0.0, 0.0, omega));
+        } else {
+            stopWithX();
+        }
     }
 
     public void setPose(Pose2d pose) {

@@ -10,8 +10,8 @@ import frc.robot.subsystems.SuperStructure.IntakeMode;
 import java.util.function.DoubleSupplier;
 
 /**
- * LT while held: slow field-centric drive. Short press → {@link IntakeMode#INTAKE}; hold past
- * threshold → {@link IntakeMode#HYBRID}.
+ * LT while held: {@link CommandSwerveDrivetrain#driveHybridIntake}. Short press →
+ * {@link IntakeMode#INTAKE}; hold past threshold → {@link IntakeMode#HYBRID}.
  */
 public class IntakeHybridCommand extends Command {
   private final CommandSwerveDrivetrain drive;
@@ -56,8 +56,13 @@ public class IntakeHybridCommand extends Command {
     ltWasPressed = ltPressed;
 
     if (ltPressed) {
-      drive.driveFieldCentricWithMaxSpeed(xSupplier, ySupplier, omegaSupplier, 1.6, 5.4);
+      drive.driveHybridIntake(xSupplier, ySupplier, omegaSupplier, 1.6, 5.4);
     }
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    superStructure.setIntakeMode(IntakeMode.INTAKE);
   }
 
   @Override

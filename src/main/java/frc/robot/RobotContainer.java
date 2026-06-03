@@ -20,8 +20,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.IntakeHybridCommand;
-import frc.robot.commands.DriveHybridIntakeCommand;
 import frc.robot.commands.DriveHybridTrenchCommand;
+import frc.robot.commands.HeatupCommand;
+import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
@@ -106,15 +107,25 @@ public class RobotContainer {
                     () -> -driverController.getRightX()),
             drive));
 
-    // A (HybridTrench) interrupts RT (HybridIntake) via end(true). IntakeMode rules in commands.
     driverController
-        .rightTrigger()
+        .rightBumper()
+        .or(driverController.y())
         .whileTrue(
-            new DriveHybridIntakeCommand(
+            new HybridShootCommand(
                 drive,
+                () -> driverController.getButton(ImprovedCommandXboxController.Button.kRightBumper),
+                () -> driverController.getButton(ImprovedCommandXboxController.Button.kY),
+                driverController::getRightTrigger,
                 () -> -driverController.getLeftY(),
                 () -> -driverController.getLeftX(),
-                () -> -driverController.getRightX()));
+                () -> -operatorController.getLeftY(),
+                () -> -operatorController.getRightX(),
+                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kB),
+                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kA),
+                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kX),
+                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kY)));
+
+    operatorController.rightTrigger().whileTrue(new HeatupCommand(drive));
 
     driverController
         .a()

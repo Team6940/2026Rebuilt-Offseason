@@ -529,7 +529,7 @@ public final class Constants {
         LEDPattern DISABLED = LEDPattern.solid(Color.kPurple);
         LEDPattern HYBRID_TRENCH = LEDPattern.solid(Color.kGreen);
         LEDPattern HYBRID_INTAKE_DRIVE = LEDPattern.solid(Color.kBlue);
-        LEDPattern MANUAL = LEDPattern.solid(Color.kRed);
+        LEDPattern MANUAL = LEDPattern.solid(Color.kPurple);
         LEDPattern SCORE = LEDPattern.solid(Color.kYellow);
         LEDPattern PASS = LEDPattern.solid(Color.kGreen);
 

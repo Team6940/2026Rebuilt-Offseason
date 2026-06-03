@@ -37,59 +37,16 @@ public class SuperStructure extends SubsystemBase {
 
   private DriveMode driveModeMode = DriveMode.MANUAL;
   private ShootMode shootMode = ShootMode.SCORE;
-  private IntakeMode intakeMode = IntakeMode.HYBRID;
+  private IntakeMode intakeMode = IntakeMode.OFF;
 
-  private boolean hybridTrenchRequested = false;
-  private boolean hybridIntakeRequested = false;
-
-  /** Priority follows {@link DriveMode} enum order: HYBRID_TRENCH &gt; HYBRID_INTAKE_DRIVE &gt; MANUAL. */
-  public void setDriveMode(DriveMode mode, boolean requested) {
-    switch (mode) {
-      case HYBRID_TRENCH -> hybridTrenchRequested = requested;
-      case HYBRID_INTAKE_DRIVE -> hybridIntakeRequested = requested;
-      case MANUAL -> {
-        if (requested) {
-          hybridTrenchRequested = false;
-          hybridIntakeRequested = false;
-        }
-      }
-    }
-    resolveDriveMode();
-  }
-
-  private void resolveDriveMode() {
-    for (DriveMode mode : DriveMode.values()) {
-      switch (mode) {
-        case HYBRID_TRENCH -> {
-          if (hybridTrenchRequested) {
-            driveModeMode = DriveMode.HYBRID_TRENCH;
-            return;
-          }
-        }
-        case HYBRID_INTAKE_DRIVE -> {
-          if (hybridIntakeRequested) {
-            driveModeMode = DriveMode.HYBRID_INTAKE_DRIVE;
-            return;
-          }
-        }
-        case MANUAL -> driveModeMode = DriveMode.MANUAL;
-      }
-    }
-  }
-
-  public void resetDriveMode() {
-    hybridTrenchRequested = false;
-    hybridIntakeRequested = false;
-    driveModeMode = DriveMode.MANUAL;
-  }
-
-  public void resetIntakeMode() {
-    intakeMode = IntakeMode.OFF;
+  /** Claim the active drive mode while a hybrid command is running (or MANUAL when released). */
+  public void claimDriveMode(DriveMode mode) {
+    driveModeMode = mode;
   }
 
   public void resetAllModes() {
-    resetDriveMode();
-    resetIntakeMode();
+    claimDriveMode(DriveMode.MANUAL);
+    setIntakeMode(IntakeMode.OFF);
   }
 
   public void setShootMode(ShootMode mode) {

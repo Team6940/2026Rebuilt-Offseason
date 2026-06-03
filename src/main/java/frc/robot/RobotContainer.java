@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.DriveHybridTrenchCommand;
+import frc.robot.commands.leds.LEDDefaultCommand;
 import frc.robot.commands.DriveHybridIntakeCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drive.Drive;
@@ -30,6 +31,8 @@ import frc.robot.subsystems.Drive.ModuleIOTalonFXSim;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Vision.VisionSubsystem;
+import frc.robot.subsystems.leds.LEDController;
+
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
@@ -52,6 +55,9 @@ public class RobotContainer {
   private final VisionSubsystem vision;
   // Simulated subsystems
   private SwerveDriveSimulation driveSimulation = null;
+  //led
+  private final LEDController m_LedController = LEDController.getInstance();
+
 
   // Controller
   public static final ImprovedCommandXboxController driverController =
@@ -127,6 +133,11 @@ public class RobotContainer {
 
     configureButtonBindings();
     // testBindings();
+
+
+
+    m_LedController.setDefaultCommand(new LEDDefaultCommand(m_LedController).ignoringDisable(true));
+
   }
 
   private void testBindings() {}

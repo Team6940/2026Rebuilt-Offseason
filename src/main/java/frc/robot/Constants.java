@@ -508,22 +508,22 @@ public final class Constants {
 
   public static class Ports {
     public static class LED {
-      public static final int LED_PWM_PORT = 9;
+      public static final int LED_PWM_PORT = 8;
     }
   }
 
   public static class Settings {
     public static class LED {
-      public static final int LED_LENGTH = 400;
-      public static final int[] GYRO_BUFFER = {0, 300};
-      public static final int[] SHOOTER_BUFFER = {301, 400};
+      public static final int LED_LENGTH = 240;
+      public static final int[] GYRO_BUFFER = {0, 179};
+      public static final int[] SHOOTER_BUFFER = {180, 239};
 
     }
       
     public interface LEDs {
 
         // TODO: Get actual length of led, along with length of individual sections
-        int LED_LENGTH = 60;
+        int LED_LENGTH = 240;
         // LED Pattern
         
         LEDPattern DISABLED = LEDPattern.solid(Color.kPurple);

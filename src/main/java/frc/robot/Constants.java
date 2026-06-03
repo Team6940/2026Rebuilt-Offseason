@@ -82,6 +82,47 @@ public final class Constants {
     public static final int kBackRightSteerMotorId = 8;
     public static final int kBackRightEncoderId = 12;
 
+    /* Intake */
+    public static final int kIntakeLeaderMotorId = 22;
+    public static final int kIntakeFollowerMotorId = 24;
+    public static final int kIntakeRackMotorId = 23;
+  }
+
+  public static final class IntakeConstants {
+    /* Rollers */
+    public static final double RollerRatio = 26. / 12.;
+    public static final InvertedValue RollerInverted = InvertedValue.Clockwise_Positive;
+    public static final double RollerSupplyCurrentLimit = 40.0;
+    public static final double RollerkP = 0.1;
+    public static final double RollerkI = 0.0;
+    public static final double RollerkD = 0.0;
+    public static final double RollerkV = 0.18;
+    public static final double RollerkS = 0.45;
+    public static final double RollerVelocityToleranceRps = 0.5;
+    public static final double IntakingRps = 45.0;
+    public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Aligned;
+
+    /* Rack (stretcher) */
+    public static final double RackRatio = 27. * 26. / 46.;
+    public static final InvertedValue RackInverted = InvertedValue.CounterClockwise_Positive;
+    public static final double RackSupplyCurrentLimit = 40.0;
+    public static final double RackStatorCurrentLimit = 120.0;
+    public static final double RackkP = 96.;
+    public static final double RackkI = 0.0;
+    public static final double RackkD = 0.0;
+    public static final double RackkV = 0.0;
+    public static final double RackkS = 0.34;
+    public static final double RackMotionMagicMaxVelocity = 20.0;
+    public static final double RackMotionMagicAcceleration = 48.0;
+    public static final double RackPositionToleranceRotations = 0.01;
+    public static final double RackMinRotations = 0.;
+    public static final double RackMaxRotations = 3.11;
+    public static final double RackIdleRotations = 0.0;
+    public static final double RackRetractedRotations = 2.0;
+    public static final double RackExtendedRotations = 2.65;
+
+    /** LT held longer than this sets {@link frc.robot.subsystems.SuperStructure.IntakeMode#HYBRID}. */
+    public static final double LtHoldThresholdSec = 0.25;
   }
 
   public final class DriveConstants {

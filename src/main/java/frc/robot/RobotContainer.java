@@ -19,12 +19,16 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.commands.DriveHybridIntakeCommand;
 import frc.robot.commands.DriveHybridTrenchCommand;
+import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.VisionSubsystem;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -43,6 +47,7 @@ public class RobotContainer {
 
   private final CommandSwerveDrivetrain drive;
   private final VisionSubsystem vision;
+  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
 
   // Controller
@@ -77,6 +82,8 @@ public class RobotContainer {
     //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    intake.setDefaultCommand(new IntakeDefaultCommand());
 
     configureButtonBindings();
     // testBindings();
@@ -136,14 +143,29 @@ public class RobotContainer {
     driverController
         .leftTrigger()
         .whileTrue(
-            drive.run(
-                () ->
-                    drive.driveFieldCentricWithMaxSpeed(
-                        () -> -driverController.getLeftY(),
-                        () -> -driverController.getLeftX(),
-                        () -> -driverController.getRightX(),
-                        1.6,
-                        5.4)));
+            new IntakeHybridCommand(
+                drive,
+                driverController,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> -driverController.getRightX()));
+
+    driverController
+        .leftBumper()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  switch (superStructure.getIntakeMode()) {
+                    case INTAKE, HYBRID -> superStructure.setIntakeMode(IntakeMode.RETRACTED);
+                    case RETRACTED -> superStructure.setIntakeMode(IntakeMode.OFF);
+                    default -> {}
+                  }
+                },
+                superStructure));
+
+    driverController
+        .povUp()
+        .onTrue(Commands.runOnce(() -> superStructure.setIntakeMode(IntakeMode.REVERSE), superStructure));
   }
 
   /**

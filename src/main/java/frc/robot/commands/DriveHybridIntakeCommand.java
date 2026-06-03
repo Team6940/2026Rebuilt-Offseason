@@ -4,14 +4,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.DriveMode;
-import frc.robot.subsystems.SuperStructure.IntakeMode;
 import java.util.function.DoubleSupplier;
 
 /**
  * Hybrid intake drive: heading tracks travel. Lower priority than {@link DriveHybridTrenchCommand}.
  *
- * <p>While held: IntakeMode=HYBRID, DriveMode=HYBRID_INTAKE_DRIVE. On normal end: DriveMode=MANUAL,
- * IntakeMode=INTAKE.
+ * <p>While held: DriveMode=HYBRID_INTAKE_DRIVE. IntakeMode is set by LT/LB/POV, not this command.
  */
 public class DriveHybridIntakeCommand extends Command {
   private final CommandSwerveDrivetrain drive;
@@ -55,7 +53,6 @@ public class DriveHybridIntakeCommand extends Command {
   @Override
   public void initialize() {
     superStructure.claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE);
-    superStructure.setIntakeMode(IntakeMode.HYBRID);
   }
 
   @Override
@@ -74,7 +71,6 @@ public class DriveHybridIntakeCommand extends Command {
       return;
     }
     superStructure.claimDriveMode(DriveMode.MANUAL);
-    superStructure.setIntakeMode(IntakeMode.INTAKE);
   }
 
   @Override

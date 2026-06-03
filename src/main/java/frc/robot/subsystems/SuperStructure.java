@@ -31,6 +31,7 @@ public class SuperStructure extends SubsystemBase {
   public enum IntakeMode {
     INTAKE,
     HYBRID,
+    RETRACTED,
     OFF,
     REVERSE
   }
@@ -59,11 +60,6 @@ public class SuperStructure extends SubsystemBase {
 
   public void toggleShootMode() {
     shootMode = shootMode == ShootMode.SCORE ? ShootMode.PASS : ShootMode.SCORE;
-  }
-
-  public void toggleIntakeMode() {
-    IntakeMode newMode = intakeMode == IntakeMode.INTAKE ? IntakeMode.OFF : IntakeMode.INTAKE;
-    setIntakeMode(newMode);
   }
 
   public DriveMode getDriveMode() {

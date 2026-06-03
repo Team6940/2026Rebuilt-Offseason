@@ -1,17 +1,7 @@
 package frc.robot.subsystems.Shooter;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.MotorIDs;
-import frc.robot.Constants.ShooterConstants;
 import org.littletonrobotics.junction.Logger;
 
 /** Dual leader/follower shooter pairs running at a common target velocity. */
@@ -25,71 +15,22 @@ public class ShooterSubsystem extends SubsystemBase {
     return instance;
   }
 
-  private final TalonFX leaderA;
-  private final TalonFX followerA;
-  private final TalonFX leaderB;
-  private final TalonFX followerB;
-  private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
+  private final ShooterIO io;
+  private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
 
   private double targetRps = 0.0;
-  private double velocityRps = 0.0;
 
   private ShooterSubsystem() {
     if (Constants.currentMode == Constants.Mode.REAL) {
-      leaderA = new TalonFX(MotorIDs.kShooterLeaderMotorIdA, CANBus.roboRIO());
-      followerA = new TalonFX(MotorIDs.kShooterFollowerMotorIdA, CANBus.roboRIO());
-      leaderB = new TalonFX(MotorIDs.kShooterLeaderMotorIdB, CANBus.roboRIO());
-      followerB = new TalonFX(MotorIDs.kShooterFollowerMotorIdB, CANBus.roboRIO());
-      configureLeader(leaderA);
-      configureLeader(leaderB);
-      configureFollower(followerA);
-      configureFollower(followerB);
-      followerA.setControl(new Follower(leaderA.getDeviceID(), ShooterConstants.FollowerAlignment));
-      followerB.setControl(new Follower(leaderB.getDeviceID(), ShooterConstants.FollowerAlignment));
+      io = new ShooterIOPhoenix6();
     } else {
-      leaderA = null;
-      followerA = null;
-      leaderB = null;
-      followerB = null;
+      io = new ShooterIO() {};
     }
-  }
-
-  private void configureLeader(TalonFX motor) {
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.Feedback.SensorToMechanismRatio = ShooterConstants.ShooterRatio;
-    config.Slot0.kP = ShooterConstants.kP;
-    config.Slot0.kI = ShooterConstants.kI;
-    config.Slot0.kD = ShooterConstants.kD;
-    config.Slot0.kV = ShooterConstants.kV;
-    config.Slot0.kS = ShooterConstants.kS;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.SupplyCurrentLimit;
-    config.CurrentLimits.StatorCurrentLimit = ShooterConstants.StatorCurrentLimit;
-    config.MotorOutput.Inverted = ShooterConstants.Inverted;
-    motor.getConfigurator().apply(config);
-  }
-
-  private void configureFollower(TalonFX motor) {
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.MotorOutput.Inverted = ShooterConstants.Inverted;
-    motor.getConfigurator().apply(config);
   }
 
   public void setVelocityRps(double rps) {
     targetRps = rps;
-    if (leaderA == null) {
-      velocityRps = rps;
-      return;
-    }
-    if (rps == 0.0) {
-      leaderA.stopMotor();
-      leaderB.stopMotor();
-    } else {
-      leaderA.setControl(velocityRequest.withVelocity(rps));
-      leaderB.setControl(velocityRequest.withVelocity(rps));
-    }
+    io.setRps(rps);
   }
 
   public void stop() {
@@ -101,19 +42,14 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public double getVelocityRps() {
-    return velocityRps;
+    return (inputs.leaderAVelocityRps + inputs.leaderBVelocityRps) / 2.0;
   }
 
   @Override
   public void periodic() {
-    if (leaderA != null) {
-      BaseStatusSignal.refreshAll(leaderA.getVelocity(), leaderB.getVelocity());
-      velocityRps =
-          (leaderA.getVelocity().getValueAsDouble() + leaderB.getVelocity().getValueAsDouble())
-              / 2.0;
-    }
-
+    io.updateInputs(inputs);
+    Logger.processInputs("Shooter", inputs);
     Logger.recordOutput("Shooter/TargetRps", targetRps);
-    Logger.recordOutput("Shooter/VelocityRps", velocityRps);
+    Logger.recordOutput("Shooter/VelocityRps", getVelocityRps());
   }
 }

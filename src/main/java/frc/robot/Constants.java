@@ -582,6 +582,31 @@ public final class Constants {
     public static final double HybridRangeDegs = 3.0;
   }
 
+  /** Tuning for {@link frc.robot.commands.HybridShootCommand}. */
+  public static final class HybridShootConstants {
+    // --- Ready gate (AIM → READY) ---
+    public static final double HeadingToleranceDegs = 3.0;
+    public static final double HoodToleranceDegs = HoodConstants.PositionToleranceDegs;
+    public static final double ShooterToleranceRps = ShooterConstants.VelocityToleranceRps;
+
+    // --- Operator trims (AIM / READY) ---
+    public static final double AimHeadingCompRangeDegs = 10.0;
+    public static final double HoodCompRangeDegs = 3.0;
+
+    // --- SHOOT: locked drive heading fine-tune (operator right stick) ---
+    public static final double ShootHeadingFineTuneDeadband = 0.3;
+
+    // --- SHOOT: indexer feed, then intake retract timing ---
+    public static final double FeedDurationSec = 2.0;
+    public static final double PostRetractWaitSec = 1.0;
+
+    // --- Operator RPS offset steps (B / A / X / Y) ---
+    public static final double RpsOffsetB = -1.0;
+    public static final double RpsOffsetA = -2.0;
+    public static final double RpsOffsetX = 1.0;
+    public static final double RpsOffsetY = 2.0;
+  }
+
   public static final class IndexerConstants {
     public static final double FeederRatio = 31.2 * 5. / 9.;
     public static final double IndexerRatio = 1.0;

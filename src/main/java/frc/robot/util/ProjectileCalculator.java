@@ -2,15 +2,48 @@ package frc.robot.util;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.ProjectileConstants;
 
 /**
- * SCORE uses static distance tables only. PASS uses the iterative motion solver ({@link #solve}).
+ * Ballistic lookups and shot planning for hybrid shoot ({@link frc.robot.commands.HybridShootCommand}).
+ *
+ * <p>SCORE uses static distance tables. PASS uses the iterative motion solver ({@link #solve}).
  */
 public final class ProjectileCalculator {
   private static final int LOOKAHEAD_ITERATIONS = 20;
 
   private ProjectileCalculator() {}
+
+  /** Immutable ballistic setpoints; operator trims are applied by the command each cycle. */
+  public static final class ShotPlan {
+    public final boolean usesMotionSolver;
+    public final Translation2d target;
+    public final double distanceMeters;
+    public final Rotation2d heading;
+    public final double hoodDegs;
+    public final double shooterRps;
+    public final Translation2d virtualTarget;
+
+    private ShotPlan(
+        boolean usesMotionSolver,
+        Translation2d target,
+        double distanceMeters,
+        Rotation2d heading,
+        double hoodDegs,
+        double shooterRps,
+        Translation2d virtualTarget) {
+      this.usesMotionSolver = usesMotionSolver;
+      this.target = target;
+      this.distanceMeters = distanceMeters;
+      this.heading = heading;
+      this.hoodDegs = hoodDegs;
+      this.shooterRps = shooterRps;
+      this.virtualTarget = virtualTarget;
+    }
+  }
 
   /** Static SCORE lookup: hood angle (deg) from distance (m). */
   public static double getHoodTargetDegs(double distanceMeters) {
@@ -20,6 +53,58 @@ public final class ProjectileCalculator {
   /** Static SCORE lookup: shooter velocity (RPS) from distance (m). */
   public static double getShooterTargetVelocity(double distanceMeters) {
     return ProjectileConstants.DistanceToShooterRps.get(distanceMeters);
+  }
+
+  /** Hub shot: distance tables only, aim straight at alliance hub center. */
+  public static ShotPlan planScore(Translation2d shooterPosition, Translation2d hubCenter) {
+    double distanceMeters = shooterPosition.getDistance(hubCenter);
+    return new ShotPlan(
+        false,
+        hubCenter,
+        distanceMeters,
+        hubCenter.minus(shooterPosition).getAngle(),
+        getHoodTargetDegs(distanceMeters),
+        getShooterTargetVelocity(distanceMeters),
+        null);
+  }
+
+  /**
+   * Pass shot: lob beside the hub into the open bump lane. Target Y follows robot side; motion
+   * solver compensates for chassis velocity.
+   */
+  public static ShotPlan planPass(Translation2d shooterPosition, Translation2d fieldVelocity) {
+    Translation2d passTarget = resolvePassTarget(shooterPosition);
+    ShotSolution sol = solve(shooterPosition, passTarget, fieldVelocity);
+    return new ShotPlan(
+        true,
+        passTarget,
+        sol.lookaheadDistance(),
+        sol.aimAngle(),
+        sol.hoodAngleDeg(),
+        sol.shooterRps(),
+        sol.virtualTarget());
+  }
+
+  /** Pass lane target beside the alliance hub (same geometry as 2026 game-dev hybrid pass). */
+  public static Translation2d resolvePassTarget(Translation2d shooterPosition) {
+    boolean isBlue =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Blue;
+    double passX = isBlue ? 0.5 : FieldConstants.fieldLength - 0.5;
+    double leftBumpCenterY =
+        (FieldConstants.LinesHorizontal.leftBumpStart
+                    + FieldConstants.LinesHorizontal.leftBumpEnd)
+                / 2.0
+            + 1.0;
+    double rightBumpCenterY =
+        (FieldConstants.LinesHorizontal.rightBumpStart
+                    + FieldConstants.LinesHorizontal.rightBumpEnd)
+                / 2.0
+            - 1.0;
+    double fieldCenterY = FieldConstants.fieldWidth / 2.0;
+    return shooterPosition.getY() > fieldCenterY
+        ? new Translation2d(passX, leftBumpCenterY)
+        : new Translation2d(passX, rightBumpCenterY);
   }
 
   public record ShotSolution(

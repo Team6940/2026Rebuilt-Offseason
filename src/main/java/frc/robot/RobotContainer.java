@@ -44,18 +44,19 @@ public class RobotContainer {
   // Subsystems
   public static final String limelightLeft = "limelight-l";
   public static final String limelightRight = "limelight";
-  public static final String photonCameraName = "photonvision";
+  public static final String photonCameraLeft = "PhotonL";
+  public static final String photonCameraRight = "PhotonR";
 
   private final CommandSwerveDrivetrain drive;
   private final VisionSubsystem vision;
-  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+  // private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
 
   // Controller
   public static final ImprovedCommandXboxController driverController =
       new ImprovedCommandXboxController(0);
-  public static final ImprovedCommandXboxController operatorController =
-      new ImprovedCommandXboxController(1);
+  // public static final ImprovedCommandXboxController operatorController =
+  //     new ImprovedCommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -84,7 +85,7 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    intake.setDefaultCommand(new IntakeDefaultCommand());
+    // intake.setDefaultCommand(new IntakeDefaultCommand());
 
     configureButtonBindings();
     // testBindings();
@@ -107,25 +108,25 @@ public class RobotContainer {
                     () -> -driverController.getRightX()),
             drive));
 
-    driverController
-        .rightBumper()
-        .or(driverController.y())
-        .whileTrue(
-            new HybridShootCommand(
-                drive,
-                () -> driverController.getButton(ImprovedCommandXboxController.Button.kRightBumper),
-                () -> driverController.getButton(ImprovedCommandXboxController.Button.kY),
-                driverController::getRightTrigger,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> -operatorController.getLeftY(),
-                () -> -operatorController.getRightX(),
-                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kB),
-                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kA),
-                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kX),
-                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kY)));
+    // driverController
+    //     .rightBumper()
+    //     .or(driverController.y())
+    //     .whileTrue(
+    //         new HybridShootCommand(
+    //             drive,
+    //             () -> driverController.getButton(ImprovedCommandXboxController.Button.kRightBumper),
+    //             () -> driverController.getButton(ImprovedCommandXboxController.Button.kY),
+    //             driverController::getRightTrigger,
+    //             () -> -driverController.getLeftY(),
+    //             () -> -driverController.getLeftX(),
+    //             () -> -operatorController.getLeftY(),
+    //             () -> -operatorController.getRightX(),
+    //             () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kB),
+    //             () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kA),
+    //             () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kX),
+    //             () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kY)));
 
-    operatorController.rightTrigger().whileTrue(new HeatupCommand(drive));
+    // operatorController.rightTrigger().whileTrue(new HeatupCommand(drive));
 
     driverController
         .a()
@@ -138,9 +139,9 @@ public class RobotContainer {
                 driverController.a()::getAsBoolean,
                 driverController.rightTrigger()::getAsBoolean));
 
-    operatorController
-        .povDown()
-        .onTrue(Commands.runOnce(superStructure::resetAllModes));
+    // operatorController
+    //     .povDown()
+    //     .onTrue(Commands.runOnce(superStructure::resetAllModes));
 
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController

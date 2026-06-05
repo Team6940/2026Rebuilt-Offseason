@@ -639,19 +639,38 @@ public final class Constants {
     public static final double REJECT_MAX_OMEGA_RAD_PER_SEC = 4.0 * Math.PI;
     public static final boolean REJECT_ON_HIGH_OMEGA = true;
 
-    /**
-     * Robot origin → Photon camera (robot coordinates). Replace with measured CAD + calibration.
-     */
-    public static final Transform3d kRobotToCamera =
+    /** PathPlanner robot frame (m); cameras mount at front-left / front-right corners. */
+    private static final double ROBOT_FRAME_HALF_EXTENT_METERS = 0.45;
+
+    /** Camera height above robot origin (m). */
+    public static final double PHOTON_CAMERA_HEIGHT_METERS = 0.285;
+
+    /** Outward yaw (rad) for corner-mounted cameras in a V  pattern. */
+    private static final double PHOTON_CAMERA_YAW_RADIANS = Units.degreesToRadians(45.0);
+
+    /** Robot origin → PhotonL at front-left frame corner (WPILib: +X forward, +Y left). */
+    public static final Transform3d kRobotToPhotonL =
         new Transform3d(
-            new Translation3d(Units.inchesToMeters(9.0), 0.0, Units.inchesToMeters(20.0)),
-            new Rotation3d(0.0, 0.0, 0.0));
+            new Translation3d(
+                ROBOT_FRAME_HALF_EXTENT_METERS,
+                ROBOT_FRAME_HALF_EXTENT_METERS,
+                PHOTON_CAMERA_HEIGHT_METERS),
+            new Rotation3d(0.0, 0.0, PHOTON_CAMERA_YAW_RADIANS));
+
+    /** Robot origin → PhotonR at front-right frame corner. */
+    public static final Transform3d kRobotToPhotonR =
+        new Transform3d(
+            new Translation3d(
+                ROBOT_FRAME_HALF_EXTENT_METERS,
+                -ROBOT_FRAME_HALF_EXTENT_METERS,
+                PHOTON_CAMERA_HEIGHT_METERS),
+            new Rotation3d(0.0, 0.0, -PHOTON_CAMERA_YAW_RADIANS));
 
     /**
      * Pose θ standard deviation (rad) for Photon when xy σ comes from {@link PoseEstimatorConstants#tAtoDev}
      * — very large so fusion weights gyro for heading.
      */
-    public static final double PHOTON_THETA_STDDEV_RADIANS = 100_000_000.0;
+    public static final double PHOTON_THETA_STDDEV_RADIANS = 100000000.0;
 
     /** Down-weights unreliable heading during multi-source inverse-variance fusion. */
     public static final double LARGE_VARIANCE = 1e6;

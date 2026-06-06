@@ -55,6 +55,11 @@ public final class ProjectileCalculator {
     return ProjectileConstants.DistanceToShooterRps.get(distanceMeters);
   }
 
+  /** Robot chassis heading so a rear-facing shooter aims at {@code towardTarget}. */
+  private static Rotation2d chassisHeadingForShooter(Rotation2d towardTarget) {
+    return towardTarget.plus(Rotation2d.kPi);
+  }
+
   /** Hub shot: distance tables only, aim straight at alliance hub center. */
   public static ShotPlan planScore(Translation2d shooterPosition, Translation2d hubCenter) {
     double distanceMeters = shooterPosition.getDistance(hubCenter);
@@ -62,7 +67,7 @@ public final class ProjectileCalculator {
         false,
         hubCenter,
         distanceMeters,
-        hubCenter.minus(shooterPosition).getAngle(),
+        chassisHeadingForShooter(hubCenter.minus(shooterPosition).getAngle()),
         getHoodTargetDegs(distanceMeters),
         getShooterTargetVelocity(distanceMeters),
         null);
@@ -134,7 +139,8 @@ public final class ProjectileCalculator {
         new Translation2d(
             realTarget.getX() - fieldVelocity.getX() * tof,
             realTarget.getY() - fieldVelocity.getY() * tof);
-    Rotation2d aimAngle = virtualTarget.minus(shooterPosition).getAngle();
+    Rotation2d aimAngle =
+        chassisHeadingForShooter(virtualTarget.minus(shooterPosition).getAngle());
     double rps = getPassShooterRps(lookaheadDistance);
     double hoodDeg = getPassHoodDegs(lookaheadDistance);
 

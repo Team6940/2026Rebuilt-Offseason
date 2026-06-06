@@ -145,6 +145,11 @@ public final class Constants {
     public static final double ANGLE_MAX_VELOCITY = 8.0;
     public static final double ANGLE_MAX_ACCELERATION = 20.0;
 
+    /** Auto-aim heading hold: plain PID, higher gain for faster snap (some overshoot is OK). */
+    public static final double AUTO_AIM_ANGLE_KP = 12.0;
+    public static final double AUTO_AIM_ANGLE_KI = 0.0;
+    public static final double AUTO_AIM_ANGLE_KD = 0.35;
+
     public static final double MOVE_TO_X_KP = 5.;
     public static final double MOVE_TO_Y_KP = 5.;
     public static final double MOVE_TO_THETA_KP = 5.;
@@ -561,7 +566,10 @@ public final class Constants {
     public static final double StatorCurrentLimit = 100.0;
 
     /** Robot origin to shooter exit point (+X forward, +Y left), meters. */
-    public static final Translation2d ShooterOffset = new Translation2d(0.30, 0.0);
+    public static final Translation2d ShooterOffset = new Translation2d(-0.30, 0.0);
+
+    /** Sim velocity lag (s): lower = faster spin-up, higher = smoother. */
+    public static final double SimSpinupTimeConstantSec = 0.35;
   }
 
   public static final class HoodConstants {
@@ -627,6 +635,37 @@ public final class Constants {
     public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
     public static final double FeedRps = 100.0;
     public static final double IndexerRps = 6.2;
+  }
+
+  /** Maple-sim field sim tuning for OverTheBumper intake, hopper, and full-width dumper shooter. */
+  public static final class FieldSimulationConstants {
+    public static final String FUEL_TYPE = "Fuel";
+
+    /** Over-the-bumper intake mounted on the front of the chassis. */
+    public static final double OverTheBumperIntakeWidthMeters = 0.85;
+    /** Rack extended length beyond bumper (m). */
+    public static final double OverTheBumperIntakeExtensionMeters = 0.25;
+    /** Simulated hopper / intake storage capacity (Fuel count). */
+    public static final int HopperCapacity = 50;
+
+    /** Full-width rear dumper: parallel fuel count per volley (left / center / right). */
+    public static final int DumperFuelPerVolley = 3;
+    /** Lateral spacing between parallel dump lanes in robot frame (+Y left), meters. */
+    public static final double DumperLateralSpacingMeters = 0.26;
+    /** Minimum time between full-width volleys while feeding (s). */
+    public static final double DumperVolleyPeriodSec = 0.16;
+
+    /** Full-width rear dumper: exit height above carpet (m). */
+    public static final double DumperExitHeightMeters = 0.52;
+    /** Full-width dumper: m/s per shooter mechanism RPS (lower than flywheel). */
+    public static final double DumperMetersPerSecondPerRps = 0.055 * 2.;
+    public static final double DumperMinLaunchSpeedMps = 2.5;
+    /** Hub goal center height for hit detection (m). Matches Rebuilt hub opening region. */
+    public static final double HubTargetHeightMeters = 1.35;
+    /** Scoring tolerance (m): X, Y full-width, Z vertical. */
+    public static final double HubTargetToleranceXMeters = 0.55;
+    public static final double HubTargetToleranceYMeters = 1.25;
+    public static final double HubTargetToleranceZMeters = 0.35;
   }
 
   /** Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants. */

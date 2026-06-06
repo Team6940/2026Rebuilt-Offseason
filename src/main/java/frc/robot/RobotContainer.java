@@ -19,6 +19,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
+import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.HeatupCommand;
@@ -28,10 +30,10 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.simulation.FieldSimulation;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.VisionSubsystem;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -49,14 +51,14 @@ public class RobotContainer {
 
   private final CommandSwerveDrivetrain drive;
   private final VisionSubsystem vision;
-  // private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
 
   // Controller
   public static final ImprovedCommandXboxController driverController =
       new ImprovedCommandXboxController(0);
-  // public static final ImprovedCommandXboxController operatorController =
-  //     new ImprovedCommandXboxController(1);
+  public static final ImprovedCommandXboxController operatorController =
+      new ImprovedCommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -64,6 +66,14 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     drive = TunerConstants.createDrivetrain();
+
+    if (Constants.currentMode == Constants.Mode.REAL) {
+      IntakeSubsystem.getInstance().setDefaultCommand(new IntakeDefaultCommand());
+    } else if (Constants.currentMode == Constants.Mode.SIM) {
+      FieldSimulation.initialize(drive, new Pose2d(0.7, 0.7, new Rotation2d()));
+      IntakeSubsystem.getInstance().setDefaultCommand(new IntakeDefaultCommand());
+    }
+
     vision = new VisionSubsystem(drive);
 
     // Set up auto routines
@@ -85,7 +95,7 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // intake.setDefaultCommand(new IntakeDefaultCommand());
+    intake.setDefaultCommand(new IntakeDefaultCommand());
 
     configureButtonBindings();
     // testBindings();
@@ -108,25 +118,25 @@ public class RobotContainer {
                     () -> -driverController.getRightX()),
             drive));
 
-    // driverController
-    //     .rightBumper()
-    //     .or(driverController.y())
-    //     .whileTrue(
-    //         new HybridShootCommand(
-    //             drive,
-    //             () -> driverController.getButton(ImprovedCommandXboxController.Button.kRightBumper),
-    //             () -> driverController.getButton(ImprovedCommandXboxController.Button.kY),
-    //             driverController::getRightTrigger,
-    //             () -> -driverController.getLeftY(),
-    //             () -> -driverController.getLeftX(),
-    //             () -> -operatorController.getLeftY(),
-    //             () -> -operatorController.getRightX(),
-    //             () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kB),
-    //             () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kA),
-    //             () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kX),
-    //             () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kY)));
+    driverController
+        .rightBumper()
+        .or(driverController.y())
+        .whileTrue(
+            new HybridShootCommand(
+                drive,
+                () -> driverController.getButton(ImprovedCommandXboxController.Button.kRightBumper),
+                () -> driverController.getButton(ImprovedCommandXboxController.Button.kY),
+                driverController::getRightTrigger,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> -operatorController.getLeftY(),
+                () -> -operatorController.getRightX(),
+                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kB),
+                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kA),
+                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kX),
+                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kY)));
 
-    // operatorController.rightTrigger().whileTrue(new HeatupCommand(drive));
+    operatorController.rightTrigger().whileTrue(new HeatupCommand(drive));
 
     driverController
         .a()
@@ -139,9 +149,9 @@ public class RobotContainer {
                 driverController.a()::getAsBoolean,
                 driverController.rightTrigger()::getAsBoolean));
 
-    // operatorController
-    //     .povDown()
-    //     .onTrue(Commands.runOnce(superStructure::resetAllModes));
+    operatorController
+        .povDown()
+        .onTrue(Commands.runOnce(superStructure::resetAllModes));
 
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController
@@ -190,12 +200,16 @@ public class RobotContainer {
   }
 
   public void resetSimulationField() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
-    drive.setPose(new Pose2d(0.7, 0.7, new Rotation2d()));
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      Pose2d pose = new Pose2d(0.7, 0.7, new Rotation2d());
+      drive.setPose(pose);
+      FieldSimulation.getInstance().resetField(pose);
+    }
   }
 
   public void updateSimulation() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
-    Logger.recordOutput("FieldSimulation/RobotPosition", drive.getPose());
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      FieldSimulation.getInstance().simulationPeriodic();
+    }
   }
 }

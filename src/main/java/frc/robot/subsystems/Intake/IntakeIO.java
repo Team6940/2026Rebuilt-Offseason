@@ -9,6 +9,7 @@ public interface IntakeIO {
     public double rackPositionRotations = 0.0;
     public boolean rollerConnected = false;
     public double rollerVelocityRps = 0.0;
+    public int fuelInIntakeCount = 0;
   }
 
   public default void setRollerRps(double rps) {}

@@ -7,6 +7,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
+import frc.robot.Constants.FieldSimulationConstants;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
@@ -79,6 +81,8 @@ public class HybridShootCommand extends Command {
   private double headingCompDegs = 0.0;
   /** Right stick during SHOOT only; overrides headingCompDegs when past deadband. */
   private double shootHeadingFineTuneDegs = 0.0;
+  /** SIM: last full-width dumper volley timestamp. */
+  private double lastSimVolleySec = 0.0;
 
   public HybridShootCommand(
       CommandSwerveDrivetrain drive,
@@ -118,6 +122,7 @@ public class HybridShootCommand extends Command {
     hoodCompDegs = 0.0;
     headingCompDegs = 0.0;
     shootHeadingFineTuneDegs = 0.0;
+    lastSimVolleySec = 0.0;
     hood.setOperatorInputScalar(0.0);
     transitionTo(ShootPhase.AIM);
   }
@@ -175,6 +180,12 @@ public class HybridShootCommand extends Command {
         double now = Timer.getFPGATimestamp();
         switch (shootSequence) {
           case FEEDING -> {
+            if (Constants.currentMode == Constants.Mode.SIM
+                && fire
+                && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec) {
+              shooter.simulateLaunch(plan.hoodDegs + hoodCompDegs);
+              lastSimVolleySec = now;
+            }
             if (now - shootSequenceStartSec >= FeedDurationSec) {
               superStructure.setIntakeMode(IntakeMode.RETRACTED);
               shootSequence = ShootSequence.RETRACT_WAIT;
@@ -299,6 +310,7 @@ public class HybridShootCommand extends Command {
     if (next == ShootPhase.SHOOT) {
       shootSequence = ShootSequence.FEEDING;
       shootSequenceStartSec = Timer.getFPGATimestamp();
+      lastSimVolleySec = 0.0;
       indexer.feed();
     }
     superStructure.setShootPhase(next);

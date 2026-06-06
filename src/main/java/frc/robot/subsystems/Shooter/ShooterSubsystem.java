@@ -21,10 +21,12 @@ public class ShooterSubsystem extends SubsystemBase {
   private double targetRps = 0.0;
 
   private ShooterSubsystem() {
-    switch (Constants.currentMode) {
-      case REAL -> io = new ShooterIOPhoenix6();
-      case SIM -> io = new ShooterIOSim();
-      default -> io = new ShooterIO() {};
+    if (Constants.currentMode == Constants.Mode.REAL) {
+      io = new ShooterIOPhoenix6();
+    } else if (Constants.currentMode == Constants.Mode.SIM) {
+      io = new ShooterIOSim();
+    } else {
+      io = new ShooterIO() {};
     }
   }
 
@@ -35,6 +37,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void stop() {
     setVelocityRps(0.0);
+  }
+
+  /** Sim-only: launch one FUEL from the simulated intake. */
+  public boolean simulateLaunch(double hoodDegs) {
+    return io.simulateLaunch(hoodDegs, targetRps);
   }
 
   public double getTargetRps() {

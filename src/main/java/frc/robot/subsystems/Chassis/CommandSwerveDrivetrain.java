@@ -122,6 +122,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final PIDController yController;
     private final ProfiledPIDController thetaController;
     private final ProfiledPIDController fieldCentricAngleController;
+    private final PIDController autoAimAngleController;
     private final PIDController trenchAngleController;
 
     private PathPlannerPath trenchPathAtlBlue;
@@ -228,6 +229,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     DriveConstants.ANGLE_MAX_VELOCITY,
                     DriveConstants.ANGLE_MAX_ACCELERATION));
         fieldCentricAngleController.enableContinuousInput(-Math.PI, Math.PI);
+        autoAimAngleController =
+            new PIDController(
+                DriveConstants.AUTO_AIM_ANGLE_KP,
+                DriveConstants.AUTO_AIM_ANGLE_KI,
+                DriveConstants.AUTO_AIM_ANGLE_KD);
+        autoAimAngleController.enableContinuousInput(-Math.PI, Math.PI);
         trenchAngleController =
             new PIDController(
                 DriveConstants.TRENCH_ANGLE_KP, 0.0, DriveConstants.TRENCH_ANGLE_KD);
@@ -273,6 +280,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     DriveConstants.ANGLE_MAX_VELOCITY,
                     DriveConstants.ANGLE_MAX_ACCELERATION));
         fieldCentricAngleController.enableContinuousInput(-Math.PI, Math.PI);
+        autoAimAngleController =
+            new PIDController(
+                DriveConstants.AUTO_AIM_ANGLE_KP,
+                DriveConstants.AUTO_AIM_ANGLE_KI,
+                DriveConstants.AUTO_AIM_ANGLE_KD);
+        autoAimAngleController.enableContinuousInput(-Math.PI, Math.PI);
         trenchAngleController =
             new PIDController(
                 DriveConstants.TRENCH_ANGLE_KP, 0.0, DriveConstants.TRENCH_ANGLE_KD);
@@ -326,6 +339,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     DriveConstants.ANGLE_MAX_VELOCITY,
                     DriveConstants.ANGLE_MAX_ACCELERATION));
         fieldCentricAngleController.enableContinuousInput(-Math.PI, Math.PI);
+        autoAimAngleController =
+            new PIDController(
+                DriveConstants.AUTO_AIM_ANGLE_KP,
+                DriveConstants.AUTO_AIM_ANGLE_KI,
+                DriveConstants.AUTO_AIM_ANGLE_KD);
+        autoAimAngleController.enableContinuousInput(-Math.PI, Math.PI);
         trenchAngleController =
             new PIDController(
                 DriveConstants.TRENCH_ANGLE_KP, 0.0, DriveConstants.TRENCH_ANGLE_KD);
@@ -609,10 +628,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         DoubleSupplier ySupplier,
         Supplier<Rotation2d> baseTargetRotation,
         double headingCompDegs) {
-        driveFieldCentricAtAngle(
-            xSupplier,
-            ySupplier,
-            () -> baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs)));
+        Translation2d linearVelocity =
+            getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        Rotation2d desired =
+            baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs));
+        double omega = calculateAutoAimOmega(desired);
+        ChassisSpeeds speeds =
+            new ChassisSpeeds(
+                linearVelocity.getX() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocity.getY() * getMaxLinearSpeedMetersPerSec(),
+                omega);
+        boolean isFlipped =
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
+        runVelocity(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
     }
 
     /**
@@ -623,7 +654,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Rotation2d baseTargetRotation, double headingCompDegs, boolean operatorTrimmingHeading) {
         if (operatorTrimmingHeading) {
             Rotation2d desired = baseTargetRotation.plus(Rotation2d.fromDegrees(headingCompDegs));
-            double omega = calculateOmega(desired);
+            double omega = calculateAutoAimOmega(desired);
             runFieldRelativeVelocity(new ChassisSpeeds(0.0, 0.0, omega));
         } else {
             stopWithX();
@@ -1084,6 +1115,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public double calculateOmega(Rotation2d desiredFacing) {
         return fieldCentricAngleController.calculate(
+            getRotation().getRadians(), desiredFacing.getRadians());
+    }
+
+    private double calculateAutoAimOmega(Rotation2d desiredFacing) {
+        return autoAimAngleController.calculate(
             getRotation().getRadians(), desiredFacing.getRadians());
     }
 

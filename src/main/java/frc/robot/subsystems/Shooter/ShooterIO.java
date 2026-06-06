@@ -13,5 +13,10 @@ public interface ShooterIO {
 
   public default void setRps(double rps) {}
 
+  /** Sim-only: launch one FUEL from the simulated intake using current hood and shooter speed. */
+  public default boolean simulateLaunch(double hoodDegs, double shooterRps) {
+    return false;
+  }
+
   public default void updateInputs(ShooterIOInputs inputs) {}
 }

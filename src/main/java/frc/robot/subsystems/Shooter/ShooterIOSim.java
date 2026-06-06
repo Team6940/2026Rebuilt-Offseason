@@ -1,45 +1,47 @@
 package frc.robot.subsystems.Shooter;
 
-import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Volts;
-
-import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Timer;
+import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.util.PhoenixUtil;
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.motorsims.MapleMotorSim;
-import org.ironmaple.simulation.motorsims.SimMotorConfigs;
+import frc.robot.simulation.FieldSimulation;
 
-/** Physics sim for dual shooter flywheel pairs. */
-public class ShooterIOSim extends ShooterIOPhoenix6 {
-  private final MapleMotorSim leaderASimulation;
-  private final MapleMotorSim leaderBSimulation;
+/**
+ * Ideal shooter sim: first-order spin-up/down toward commanded RPS (no maple-sim oscillation).
+ */
+public class ShooterIOSim implements ShooterIO {
+  private double targetRps = 0.0;
+  private double velocityRps = 0.0;
+  private double lastUpdateSec = Timer.getFPGATimestamp();
 
-  public ShooterIOSim() {
-    leaderASimulation =
-        new MapleMotorSim(
-            new SimMotorConfigs(
-                DCMotor.getKrakenX60Foc(2),
-                ShooterConstants.ShooterRatio,
-                KilogramSquareMeters.of(0.004),
-                Volts.of(0.05)));
-    leaderASimulation.useMotorController(new PhoenixUtil.TalonFXMotorControllerSim(leaderA));
-
-    leaderBSimulation =
-        new MapleMotorSim(
-            new SimMotorConfigs(
-                DCMotor.getKrakenX60Foc(2),
-                ShooterConstants.ShooterRatio,
-                KilogramSquareMeters.of(0.004),
-                Volts.of(0.05)));
-    leaderBSimulation.useMotorController(new PhoenixUtil.TalonFXMotorControllerSim(leaderB));
+  @Override
+  public void setRps(double rps) {
+    targetRps = rps;
   }
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    var dt = SimulatedArena.getSimulationDt();
-    leaderASimulation.update(dt);
-    leaderBSimulation.update(dt);
-    super.updateInputs(inputs);
+    double now = Timer.getFPGATimestamp();
+    double dt = now - lastUpdateSec;
+    lastUpdateSec = now;
+    if (dt <= 0.0 || dt > 0.5) {
+      dt = 0.02;
+    }
+
+    double alpha = dt / ShooterConstants.SimSpinupTimeConstantSec;
+    alpha = Math.min(alpha, 1.0);
+    velocityRps += (targetRps - velocityRps) * alpha;
+
+    inputs.leaderAConnected = true;
+    inputs.leaderBConnected = true;
+    inputs.leaderAVelocityRps = velocityRps;
+    inputs.leaderBVelocityRps = velocityRps;
+  }
+
+  @Override
+  public boolean simulateLaunch(double hoodDegs, double shooterRps) {
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      return FieldSimulation.getInstance().tryLaunchFuel(hoodDegs, velocityRps);
+    }
+    return false;
   }
 }

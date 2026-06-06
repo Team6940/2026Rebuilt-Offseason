@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 5.809962797619047,
-        "y": 5.287857142857144
+        "x": 5.8560572916666676,
+        "y": 5.417348307291666
       },
       "prevControl": {
-        "x": 6.49658293042478,
-        "y": 5.2462114833801
+        "x": 6.542677424472401,
+        "y": 5.375702647814623
       },
       "nextControl": {
-        "x": 5.2553125,
-        "y": 5.321498418898811
+        "x": 5.30140699404762,
+        "y": 5.4509895833333335
       },
       "isLocked": false,
       "linkedName": null
@@ -41,20 +41,30 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "L-AftSh1"
     }
   ],
   "rotationTargets": [
-    {
-      "waypointRelativePos": 0.9267461669505962,
-      "rotationDegrees": -90.0
-    },
     {
       "waypointRelativePos": 0.9880749574105625,
       "rotationDegrees": -45.0
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 1.1313849667774094,
+      "maxWaypointRelativePos": 1.7476121262458482,
+      "constraints": {
+        "maxVelocity": 2.3,
+        "maxAcceleration": 5.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {

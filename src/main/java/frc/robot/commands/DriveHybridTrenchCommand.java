@@ -9,7 +9,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 /**
- * Hybrid trench shared-control drive. Higher priority than {@link DriveHybridIntakeCommand}.
+ * Hybrid trench shared-control drive. Priority below {@link HybridShootCommand}, above
+ * {@link DriveHybridIntakeCommand}.
  *
  * <p>IntakeMode: unchanged while A only; HYBRID when A and RT together. DriveMode: HYBRID_TRENCH
  * while held; MANUAL on normal end.

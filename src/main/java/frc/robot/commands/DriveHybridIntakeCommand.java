@@ -7,7 +7,8 @@ import frc.robot.subsystems.SuperStructure.DriveMode;
 import java.util.function.DoubleSupplier;
 
 /**
- * Hybrid intake drive: heading tracks travel. Lower priority than {@link DriveHybridTrenchCommand}.
+ * Hybrid intake drive: heading tracks travel. Priority below {@link DriveHybridTrenchCommand} and
+ * {@link HybridShootCommand}.
  *
  * <p>While held: DriveMode=HYBRID_INTAKE_DRIVE. IntakeMode is set by LT/LB/POV, not this command.
  */

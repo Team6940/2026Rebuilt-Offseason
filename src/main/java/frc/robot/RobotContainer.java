@@ -19,13 +19,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.commands.IntakeDefaultCommand;
-import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.HeatupCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeDefaultCommand;
+import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
@@ -109,6 +109,16 @@ public class RobotContainer {
 
   /** ***** THE CONTROL LOGIC IS SUCH ****** */
   private void configureButtonBindings() {
+    // Drive priority (highest wins): AutoAim > HybridTrench > HybridIntake > Manual
+    Trigger autoAiming = driverController.rightBumper().or(driverController.y());
+    Trigger hybridTrenchDrive =
+        driverController.a().and(autoAiming.negate());
+    Trigger hybridIntakeDrive =
+        driverController
+            .leftTrigger()
+            .and(autoAiming.negate())
+            .and(driverController.a().negate());
+
     drive.setDefaultCommand(
         Commands.run(
             () ->
@@ -118,10 +128,7 @@ public class RobotContainer {
                     () -> -driverController.getRightX()),
             drive));
 
-    driverController
-        .rightBumper()
-        .or(driverController.y())
-        .whileTrue(
+    autoAiming.whileTrue(
             new HybridShootCommand(
                 drive,
                 () -> driverController.getButton(ImprovedCommandXboxController.Button.kRightBumper),
@@ -138,9 +145,7 @@ public class RobotContainer {
 
     operatorController.rightTrigger().whileTrue(new HeatupCommand(drive));
 
-    driverController
-        .a()
-        .whileTrue(
+    hybridTrenchDrive.whileTrue(
             new DriveHybridTrenchCommand(
                 drive,
                 () -> -driverController.getLeftY(),
@@ -162,9 +167,7 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController
-        .leftTrigger()
-        .whileTrue(
+    hybridIntakeDrive.whileTrue(
             new IntakeHybridCommand(
                 drive,
                 driverController,

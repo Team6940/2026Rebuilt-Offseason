@@ -15,6 +15,7 @@ import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
@@ -124,6 +125,7 @@ public class HybridShootCommand extends Command {
     shootHeadingFineTuneDegs = 0.0;
     lastSimVolleySec = 0.0;
     hood.setOperatorInputScalar(0.0);
+    superStructure.claimDriveMode(DriveMode.AUTO_AIM);
     transitionTo(ShootPhase.AIM);
   }
 
@@ -171,11 +173,14 @@ public class HybridShootCommand extends Command {
           shootHeadingCompDegs +=
               shootHeadingFineTuneDegs * AimHeadingCompRangeDegs;
         }
-        drive.driveAutoAimLocked(
+        if (ControlMode.SCORE.equals(superStructure.getControlMode())) {
+          drive.driveAutoAimLocked(
             plan.heading,
             shootHeadingCompDegs,
             Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband);
-
+        } else {
+          drive.driveAutoAim(driverXSupplier, driverYSupplier, ()->plan.heading, shootHeadingCompDegs);
+        }
         // Feed ball, then command intake retract / release
         double now = Timer.getFPGATimestamp();
         switch (shootSequence) {
@@ -222,6 +227,9 @@ public class HybridShootCommand extends Command {
     hood.setIdle();
     shooter.stop();
     superStructure.setShootPhase(ShootPhase.OFF);
+    if (!interrupted) {
+      superStructure.claimDriveMode(DriveMode.MANUAL);
+    }
   }
 
   @Override

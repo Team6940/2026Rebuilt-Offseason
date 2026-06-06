@@ -25,10 +25,10 @@ public class HoodSubsystem extends SubsystemBase {
   private double targetPositionDegs = HoodConstants.IdlePositionDegs;
 
   private HoodSubsystem() {
-    if (Constants.currentMode == Constants.Mode.REAL) {
-      io = new HoodIOPhoenix6();
-    } else {
-      io = new HoodIO() {};
+    switch (Constants.currentMode) {
+      case REAL -> io = new HoodIOPhoenix6();
+      case SIM -> io = new HoodIOSim();
+      default -> io = new HoodIO() {};
     }
   }
 

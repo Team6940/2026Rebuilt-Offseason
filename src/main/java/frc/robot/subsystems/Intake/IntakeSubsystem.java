@@ -24,10 +24,10 @@ public class IntakeSubsystem extends SubsystemBase {
   private double targetRollerRps = 0.0;
 
   private IntakeSubsystem() {
-    if (Constants.currentMode == Constants.Mode.REAL) {
-      io = new IntakeIOPhoenix6();
-    } else {
-      io = new IntakeIO() {};
+    switch (Constants.currentMode) {
+      case REAL -> io = new IntakeIOPhoenix6();
+      case SIM -> io = new IntakeIOSim();
+      default -> io = new IntakeIO() {};
     }
   }
 

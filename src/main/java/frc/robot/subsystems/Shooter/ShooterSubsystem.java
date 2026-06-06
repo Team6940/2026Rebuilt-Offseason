@@ -21,10 +21,10 @@ public class ShooterSubsystem extends SubsystemBase {
   private double targetRps = 0.0;
 
   private ShooterSubsystem() {
-    if (Constants.currentMode == Constants.Mode.REAL) {
-      io = new ShooterIOPhoenix6();
-    } else {
-      io = new ShooterIO() {};
+    switch (Constants.currentMode) {
+      case REAL -> io = new ShooterIOPhoenix6();
+      case SIM -> io = new ShooterIOSim();
+      default -> io = new ShooterIO() {};
     }
   }
 

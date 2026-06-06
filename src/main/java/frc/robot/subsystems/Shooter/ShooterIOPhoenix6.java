@@ -12,13 +12,13 @@ import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterIOPhoenix6 implements ShooterIO {
-  private final TalonFX leaderA =
+  protected final TalonFX leaderA =
       new TalonFX(MotorIDs.kShooterLeaderMotorIdA, CANBus.roboRIO());
-  private final TalonFX followerA =
+  protected final TalonFX followerA =
       new TalonFX(MotorIDs.kShooterFollowerMotorIdA, CANBus.roboRIO());
-  private final TalonFX leaderB =
+  protected final TalonFX leaderB =
       new TalonFX(MotorIDs.kShooterLeaderMotorIdB, CANBus.roboRIO());
-  private final TalonFX followerB =
+  protected final TalonFX followerB =
       new TalonFX(MotorIDs.kShooterFollowerMotorIdB, CANBus.roboRIO());
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
 

@@ -22,10 +22,10 @@ public class IndexerSubsystem extends SubsystemBase {
   private boolean feeding = false;
 
   private IndexerSubsystem() {
-    if (Constants.currentMode == Constants.Mode.REAL) {
-      io = new IndexerIOPhoenix6();
-    } else {
-      io = new IndexerIO() {};
+    switch (Constants.currentMode) {
+      case REAL -> io = new IndexerIOPhoenix6();
+      case SIM -> io = new IndexerIOSim();
+      default -> io = new IndexerIO() {};
     }
   }
 

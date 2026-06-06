@@ -12,13 +12,13 @@ import frc.robot.Constants.IndexerConstants;
 import frc.robot.Constants.MotorIDs;
 
 public class IndexerIOPhoenix6 implements IndexerIO {
-  private final TalonFX feederLeader =
+  protected final TalonFX feederLeader =
       new TalonFX(MotorIDs.kIndexerFeederLeaderMotorId, CANBus.roboRIO());
-  private final TalonFX feederFollower =
+  protected final TalonFX feederFollower =
       new TalonFX(MotorIDs.kIndexerFeederFollowerMotorId, CANBus.roboRIO());
-  private final TalonFX indexerLeader =
+  protected final TalonFX indexerLeader =
       new TalonFX(MotorIDs.kIndexerLeaderMotorId, CANBus.roboRIO());
-  private final TalonFX indexerFollower =
+  protected final TalonFX indexerFollower =
       new TalonFX(MotorIDs.kIndexerFollowerMotorId, CANBus.roboRIO());
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
 

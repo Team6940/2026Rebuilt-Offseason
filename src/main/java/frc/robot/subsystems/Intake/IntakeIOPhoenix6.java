@@ -12,10 +12,10 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.MotorIDs;
 
 public class IntakeIOPhoenix6 implements IntakeIO {
-  private final TalonFX rackMotor = new TalonFX(MotorIDs.kIntakeRackMotorId, CANBus.roboRIO());
-  private final TalonFX rollerLeader =
+  protected final TalonFX rackMotor = new TalonFX(MotorIDs.kIntakeRackMotorId, CANBus.roboRIO());
+  protected final TalonFX rollerLeader =
       new TalonFX(MotorIDs.kIntakeLeaderMotorId, CANBus.roboRIO());
-  private final TalonFX rollerFollower =
+  protected final TalonFX rollerFollower =
       new TalonFX(MotorIDs.kIntakeFollowerMotorId, CANBus.roboRIO());
 
   private final MotionMagicVoltage rackPositionRequest =

@@ -10,7 +10,7 @@ import frc.robot.Constants.HoodConstants;
 import frc.robot.Constants.MotorIDs;
 
 public class HoodIOPhoenix6 implements HoodIO {
-  private final TalonFX motor = new TalonFX(MotorIDs.kHoodMotorId, CANBus.roboRIO());
+  protected final TalonFX motor = new TalonFX(MotorIDs.kHoodMotorId, CANBus.roboRIO());
   private final MotionMagicVoltage positionRequest = new MotionMagicVoltage(0.0).withEnableFOC(true);
 
   public HoodIOPhoenix6() {

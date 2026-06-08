@@ -5,9 +5,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.simulation.FieldSimulation;
 
-/**
- * Ideal shooter sim: first-order spin-up/down toward commanded RPS (no maple-sim oscillation).
- */
+/** Ideal shooter sim: first-order spin-up/down toward commanded RPS (no maple-sim oscillation). */
 public class ShooterIOSim implements ShooterIO {
   private double targetRps = 0.0;
   private double velocityRps = 0.0;

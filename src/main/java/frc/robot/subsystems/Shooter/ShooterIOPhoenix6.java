@@ -12,12 +12,10 @@ import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterIOPhoenix6 implements ShooterIO {
-  protected final TalonFX leaderA =
-      new TalonFX(MotorIDs.kShooterLeaderMotorIdA, CANBus.roboRIO());
+  protected final TalonFX leaderA = new TalonFX(MotorIDs.kShooterLeaderMotorIdA, CANBus.roboRIO());
   protected final TalonFX followerA =
       new TalonFX(MotorIDs.kShooterFollowerMotorIdA, CANBus.roboRIO());
-  protected final TalonFX leaderB =
-      new TalonFX(MotorIDs.kShooterLeaderMotorIdB, CANBus.roboRIO());
+  protected final TalonFX leaderB = new TalonFX(MotorIDs.kShooterLeaderMotorIdB, CANBus.roboRIO());
   protected final TalonFX followerB =
       new TalonFX(MotorIDs.kShooterFollowerMotorIdB, CANBus.roboRIO());
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
@@ -27,10 +25,8 @@ public class ShooterIOPhoenix6 implements ShooterIO {
     configureLeader(leaderB);
     configureFollower(followerA);
     configureFollower(followerB);
-    followerA.setControl(
-        new Follower(leaderA.getDeviceID(), ShooterConstants.FollowerAlignment));
-    followerB.setControl(
-        new Follower(leaderB.getDeviceID(), ShooterConstants.FollowerAlignment));
+    followerA.setControl(new Follower(leaderA.getDeviceID(), ShooterConstants.FollowerAlignment));
+    followerB.setControl(new Follower(leaderB.getDeviceID(), ShooterConstants.FollowerAlignment));
   }
 
   private void configureLeader(TalonFX motor) {
@@ -69,12 +65,10 @@ public class ShooterIOPhoenix6 implements ShooterIO {
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    inputs.leaderAConnected =
-        BaseStatusSignal.refreshAll(leaderA.getVelocity()).isOK();
+    inputs.leaderAConnected = BaseStatusSignal.refreshAll(leaderA.getVelocity()).isOK();
     inputs.leaderAVelocityRps = leaderA.getVelocity().getValueAsDouble();
 
-    inputs.leaderBConnected =
-        BaseStatusSignal.refreshAll(leaderB.getVelocity()).isOK();
+    inputs.leaderBConnected = BaseStatusSignal.refreshAll(leaderB.getVelocity()).isOK();
     inputs.leaderBVelocityRps = leaderB.getVelocity().getValueAsDouble();
   }
 }

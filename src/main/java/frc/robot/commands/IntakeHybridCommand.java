@@ -10,8 +10,8 @@ import frc.robot.subsystems.SuperStructure.IntakeMode;
 import java.util.function.DoubleSupplier;
 
 /**
- * LT while held: {@link CommandSwerveDrivetrain#driveHybridIntake}. Short press →
- * {@link IntakeMode#INTAKE}; hold past threshold → {@link IntakeMode#HYBRID}.
+ * LT while held: {@link CommandSwerveDrivetrain#driveHybridIntake}. Short press → {@link
+ * IntakeMode#INTAKE}; hold past threshold → {@link IntakeMode#HYBRID}.
  */
 public class IntakeHybridCommand extends Command {
   private final CommandSwerveDrivetrain drive;

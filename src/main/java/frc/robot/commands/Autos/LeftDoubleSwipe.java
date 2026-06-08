@@ -19,38 +19,28 @@ public class LeftDoubleSwipe extends SequentialCommandGroup {
         new InstantCommand(
             () -> {
               if (DriverStation.getAlliance().get() == Alliance.Blue) {
-                drive.setPose(
-                    drive.generatePPPath("LSt-LInt1").getStartingHolonomicPose().get());
+                drive.setPose(drive.generatePPPath("LSt-LInt1").getStartingHolonomicPose().get());
               } else {
                 drive.setPose(
-                    drive
-                        .generatePPPath("LSt-LInt1")
-                        .flipPath()
-                        .getStartingHolonomicPose()
-                        .get());
+                    drive.generatePPPath("LSt-LInt1").flipPath().getStartingHolonomicPose().get());
               }
             }));
 
-    addCommands(
-        superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSt-LInt1"));
 
     addCommands(drive.followPPPath("LInt1-LSh1"));
     addCommands(
-        new HybridShootCommand(Button.kAutoButton, Button.kAutoButton, Button.kY)
-            .withTimeout(3.));
+        new HybridShootCommand(Button.kAutoButton, Button.kAutoButton, Button.kY).withTimeout(3.));
 
-    addCommands(
-        superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh1-LInt2"));
 
     addCommands(drive.followPPPath("LInt2-LSh2"));
     addCommands(
-        new HybridShootCommand(Button.kAutoButton, Button.kAutoButton, Button.kY)
-            .withTimeout(3.));
+        new HybridShootCommand(Button.kAutoButton, Button.kAutoButton, Button.kY).withTimeout(3.));
 
-    addCommands(
-        superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh2-LEndInt3"));
   }
 }

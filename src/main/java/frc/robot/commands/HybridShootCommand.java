@@ -41,9 +41,9 @@ import org.littletonrobotics.junction.Logger;
  *  ▲◄──────────── RT released ───────────────────────┘
  * </pre>
  *
- * <p><b>SHOOT sub-sequence</b> ({@link ShootSequence}): feed indexer → retract intake → idle. Ballistics
- * in {@link ProjectileCalculator}; tuning in {@link frc.robot.Constants.HybridShootConstants}; spin-up-only
- * is {@link HeatupCommand}.
+ * <p><b>SHOOT sub-sequence</b> ({@link ShootSequence}): feed indexer → retract intake → idle.
+ * Ballistics in {@link ProjectileCalculator}; tuning in {@link
+ * frc.robot.Constants.HybridShootConstants}; spin-up-only is {@link HeatupCommand}.
  */
 public class HybridShootCommand extends Command {
 
@@ -59,7 +59,8 @@ public class HybridShootCommand extends Command {
   private final Button shootButton;
   private final Button passButton;
   private final ImprovedCommandXboxController driverController = RobotContainer.driverController;
-  private final ImprovedCommandXboxController operatorController = RobotContainer.operatorController;
+  private final ImprovedCommandXboxController operatorController =
+      RobotContainer.operatorController;
 
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
@@ -71,8 +72,10 @@ public class HybridShootCommand extends Command {
   private double rpsOffset = 0.0;
   private double hoodCompDegs = 0.0;
   private double headingCompDegs = 0.0;
+
   /** Right stick during SHOOT only; overrides headingCompDegs when past deadband. */
   private double shootHeadingFineTuneDegs = 0.0;
+
   /** SIM: last full-width dumper volley timestamp. */
   private double lastSimVolleySec = 0.0;
 
@@ -146,8 +149,7 @@ public class HybridShootCommand extends Command {
             ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
         double shootHeadingCompDegs = headingCompDegs;
         if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
-          shootHeadingCompDegs +=
-              shootHeadingFineTuneDegs * AimHeadingCompRangeDegs;
+          shootHeadingCompDegs += shootHeadingFineTuneDegs * AimHeadingCompRangeDegs;
         }
         if (ControlMode.SCORE.equals(superStructure.getControlMode())) {
           drive.driveAutoAimLocked(
@@ -167,8 +169,8 @@ public class HybridShootCommand extends Command {
           case FEEDING -> {
             if (Constants.currentMode == Constants.Mode.SIM
                 && fire
-                && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec) {
-              shooter.simulateLaunch(plan.hoodDegs + hoodCompDegs);
+                && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec && ready) {
+              shooter.simulateLaunch(90.-(plan.hoodDegs + hoodCompDegs));
               lastSimVolleySec = now;
             }
             if (now - shootSequenceStartSec >= FeedDurationSec) {
@@ -274,8 +276,7 @@ public class HybridShootCommand extends Command {
   }
 
   private boolean isAtTargetHood(ShotPlan plan) {
-    return MathUtil.isNear(
-        plan.hoodDegs + hoodCompDegs, hood.getPositionDegs(), HoodToleranceDegs);
+    return MathUtil.isNear(plan.hoodDegs + hoodCompDegs, hood.getPositionDegs(), HoodToleranceDegs);
   }
 
   private boolean isAtTargetShooter(ShotPlan plan) {
@@ -297,8 +298,9 @@ public class HybridShootCommand extends Command {
     }
     if (next == ShootPhase.SHOOT) {
       shootSequence = ShootSequence.FEEDING;
-      shootSequenceStartSec = Timer.getFPGATimestamp();
-      lastSimVolleySec = 0.0;
+      double now = Timer.getFPGATimestamp();
+      shootSequenceStartSec = now;
+      lastSimVolleySec = now - FieldSimulationConstants.DumperVolleyPeriodSec;
       indexer.feed();
     }
     superStructure.setShootPhase(next);

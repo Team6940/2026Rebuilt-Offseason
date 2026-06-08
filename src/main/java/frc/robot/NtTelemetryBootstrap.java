@@ -7,9 +7,10 @@ import org.littletonrobotics.junction.Logger;
 
 /**
  * Pre-publishes AdvantageKit keys that are first written from a hot control path (e.g.
- * HybridTrench). On the roboRIO with {@link org.littletonrobotics.junction.networktables.NT4Publisher},
- * the first {@link Logger#recordOutput} for each key creates an NT4 publisher synchronously; doing
- * that during teleop can stall the robot loop for seconds.
+ * HybridTrench). On the roboRIO with {@link
+ * org.littletonrobotics.junction.networktables.NT4Publisher}, the first {@link Logger#recordOutput}
+ * for each key creates an NT4 publisher synchronously; doing that during teleop can stall the robot
+ * loop for seconds.
  */
 public final class NtTelemetryBootstrap {
   private NtTelemetryBootstrap() {}

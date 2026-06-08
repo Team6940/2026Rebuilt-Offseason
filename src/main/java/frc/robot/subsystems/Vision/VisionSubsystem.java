@@ -1,4 +1,3 @@
-
 package frc.robot.subsystems.Vision;
 
 import edu.wpi.first.math.Matrix;
@@ -50,7 +49,6 @@ public class VisionSubsystem extends SubsystemBase {
           .getTable(RobotContainer.limelightRight)
           .getEntry("snapshot");
 
-
   public static VisionSubsystem getInstance(CommandSwerveDrivetrain drive) {
     return m_instance == null ? m_instance = new VisionSubsystem(drive) : m_instance;
   }
@@ -85,8 +83,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     VisionMeasurement selected = selectBestMeasurement(accepted);
 
-    drive.addVisionMeasurement(
-        selected.pose(), selected.timestampSeconds(), selected.stdDevs());
+    drive.addVisionMeasurement(selected.pose(), selected.timestampSeconds(), selected.stdDevs());
     Logger.recordOutput("VisionFusion/Selected/Accepted", true);
     Logger.recordOutput("VisionFusion/Selected/Pose", selected.pose());
     Logger.recordOutput("VisionFusion/Selected/TimestampSeconds", selected.timestampSeconds());
@@ -152,12 +149,7 @@ public class VisionSubsystem extends SubsystemBase {
     double tagDistRobotM = limelightTagDistanceToRobotMeters(mt2);
 
     if (shouldReject(
-        mt2.avgTagArea,
-        mt2.tagCount,
-        mt2.timestampSeconds,
-        tagDistRobotM,
-        fpgaNow,
-        speeds)) {
+        mt2.avgTagArea, mt2.tagCount, mt2.timestampSeconds, tagDistRobotM, fpgaNow, speeds)) {
       Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", false);
       return Optional.empty();
     }
@@ -192,17 +184,18 @@ public class VisionSubsystem extends SubsystemBase {
             .orElse(null);
     if (result == null) {
       logPhotonPoseEstimate(setup.logSide, Optional.empty(), Optional.empty());
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
+      Logger.recordOutput(
+          "VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
       Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/SeesTarget", false);
       Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
       return Optional.empty();
     }
 
-    Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
+    Logger.recordOutput(
+        "VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
     Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/SeesTarget", true);
 
-    Optional<EstimatedRobotPose> multiOpt =
-        setup.poseEstimator.estimateCoprocMultiTagPose(result);
+    Optional<EstimatedRobotPose> multiOpt = setup.poseEstimator.estimateCoprocMultiTagPose(result);
     Optional<EstimatedRobotPose> pnpOpt =
         multiOpt.isPresent()
             ? Optional.empty()
@@ -218,12 +211,7 @@ public class VisionSubsystem extends SubsystemBase {
       double tagDistM = photonAvgCameraToTagDistanceMeters(targets);
 
       if (shouldReject(
-          taMean,
-          tagCount,
-          est.timestampSeconds,
-          tagDistM,
-          fpgaNow,
-          drive.getChassisSpeeds())) {
+          taMean, tagCount, est.timestampSeconds, tagDistM, fpgaNow, drive.getChassisSpeeds())) {
         Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
         return Optional.empty();
       }
@@ -256,12 +244,7 @@ public class VisionSubsystem extends SubsystemBase {
     double tagDistM = photonCameraToTagDistanceMeters(best);
 
     if (shouldReject(
-        taFrac,
-        1,
-        est.timestampSeconds,
-        tagDistM,
-        fpgaNow,
-        drive.getChassisSpeeds())) {
+        taFrac, 1, est.timestampSeconds, tagDistM, fpgaNow, drive.getChassisSpeeds())) {
       Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
       return Optional.empty();
     }
@@ -334,8 +317,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     double taFrac = avgTagArea / 100.0;
     double xyStd = PoseEstimatorConstants.tAtoDev.get(taFrac);
-    return new LlStdDevs(
-        xyStd, xyStd, VisionFusion.PHOTON_THETA_STDDEV_RADIANS, "TA_LOOKUP");
+    return new LlStdDevs(xyStd, xyStd, VisionFusion.PHOTON_THETA_STDDEV_RADIANS, "TA_LOOKUP");
   }
 
   private static Optional<LlStdDevs> parseLimelightNtStdDevs(
@@ -346,16 +328,13 @@ public class VisionSubsystem extends SubsystemBase {
     double sigmaX = arr[xIndex];
     double sigmaY = arr[yIndex];
     double sigmaYawDeg = arr[yawIndex];
-    if (!Double.isFinite(sigmaX)
-        || !Double.isFinite(sigmaY)
-        || !Double.isFinite(sigmaYawDeg)) {
+    if (!Double.isFinite(sigmaX) || !Double.isFinite(sigmaY) || !Double.isFinite(sigmaYawDeg)) {
       return Optional.empty();
     }
     if (sigmaX <= 0.0 || sigmaY <= 0.0 || sigmaYawDeg <= 0.0) {
       return Optional.empty();
     }
-    return Optional.of(
-        new LlStdDevs(sigmaX, sigmaY, Units.degreesToRadians(sigmaYawDeg), source));
+    return Optional.of(new LlStdDevs(sigmaX, sigmaY, Units.degreesToRadians(sigmaYawDeg), source));
   }
 
   private enum MeasurementSource {
@@ -381,8 +360,7 @@ public class VisionSubsystem extends SubsystemBase {
     PhotonCameraSetup(String cameraName, String logSide, Transform3d robotToCamera) {
       this.camera = new PhotonCamera(cameraName);
       this.poseEstimator =
-          new PhotonPoseEstimator(
-              Constants.FieldConstants.getAprilTagFieldLayout(), robotToCamera);
+          new PhotonPoseEstimator(Constants.FieldConstants.getAprilTagFieldLayout(), robotToCamera);
       this.logSide = logSide;
     }
   }
@@ -431,9 +409,10 @@ public class VisionSubsystem extends SubsystemBase {
    * Shared rejection gates for all vision sources. {@code ta} is Limelight-style fractional area
    * (0–1) or Photon fractional area ({@code area}/100).
    *
-   * <p>{@code tagDistanceMeters}: Limelight uses mean {@link LimelightHelpers.RawFiducial#distToRobot}
-   * when fiducials exist; otherwise {@link LimelightHelpers.PoseEstimate#avgTagDist}. Photon uses mean
-   * camera–tag range from {@code getBestCameraToTarget()} (meters).
+   * <p>{@code tagDistanceMeters}: Limelight uses mean {@link
+   * LimelightHelpers.RawFiducial#distToRobot} when fiducials exist; otherwise {@link
+   * LimelightHelpers.PoseEstimate#avgTagDist}. Photon uses mean camera–tag range from {@code
+   * getBestCameraToTarget()} (meters).
    */
   static boolean shouldReject(
       double ta,
@@ -464,8 +443,9 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   /**
-   * Tag–robot distance from Limelight: arithmetic mean {@link LimelightHelpers.RawFiducial#distToRobot};
-   * if fiducials are missing uses {@link LimelightHelpers.PoseEstimate#avgTagDist} (meters).
+   * Tag–robot distance from Limelight: arithmetic mean {@link
+   * LimelightHelpers.RawFiducial#distToRobot}; if fiducials are missing uses {@link
+   * LimelightHelpers.PoseEstimate#avgTagDist} (meters).
    */
   private static double limelightTagDistanceToRobotMeters(LimelightHelpers.PoseEstimate mt2) {
     if (mt2.rawFiducials != null && mt2.rawFiducials.length > 0) {
@@ -493,7 +473,6 @@ public class VisionSubsystem extends SubsystemBase {
   private static double photonCameraToTagDistanceMeters(PhotonTrackedTarget t) {
     return t.getBestCameraToTarget().getTranslation().getNorm();
   }
-
 
   private static double maxAbsPhotonYawRad(List<PhotonTrackedTarget> targets) {
     double maxDeg = 0.0;

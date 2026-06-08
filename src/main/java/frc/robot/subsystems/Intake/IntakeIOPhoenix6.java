@@ -20,8 +20,7 @@ public class IntakeIOPhoenix6 implements IntakeIO {
 
   private final MotionMagicVoltage rackPositionRequest =
       new MotionMagicVoltage(0.).withEnableFOC(true);
-  private final VelocityVoltage rollerVelocityRequest =
-      new VelocityVoltage(0).withEnableFOC(true);
+  private final VelocityVoltage rollerVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
   public IntakeIOPhoenix6() {
     configureRack();

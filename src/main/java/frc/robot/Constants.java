@@ -134,7 +134,9 @@ public final class Constants {
     public static final double RackRetractedRotations = 2.0;
     public static final double RackExtendedRotations = 2.65;
 
-    /** LT held longer than this sets {@link frc.robot.subsystems.SuperStructure.IntakeMode#HYBRID}. */
+    /**
+     * LT held longer than this sets {@link frc.robot.subsystems.SuperStructure.IntakeMode#HYBRID}.
+     */
     public static final double LtHoldThresholdSec = 0.25;
   }
 
@@ -147,6 +149,7 @@ public final class Constants {
 
     /** Auto-aim heading hold: plain PID, higher gain for faster snap (some overshoot is OK). */
     public static final double AUTO_AIM_ANGLE_KP = 12.0;
+
     public static final double AUTO_AIM_ANGLE_KI = 0.0;
     public static final double AUTO_AIM_ANGLE_KD = 0.35;
 
@@ -166,22 +169,31 @@ public final class Constants {
 
     /** Pure-pursuit-style lookahead distance along the trench centerline (m). */
     public static final double TRENCH_LOOKAHEAD_METERS = 0.6;
+
     /** Field-relative driver speed (m/s) required to set path traversal direction. */
     public static final double TRENCH_DRIVER_INTENT_THRESHOLD = 0.08;
+
     /** Epsilon (m) for finite-difference path tangent at the nearest point. */
     public static final double TRENCH_TANGENT_EPSILON = 0.05;
+
     /** Maximum fraction of max linear speed applied as trench guidance assist. */
     public static final double TRENCH_MAX_ASSIST = 0.65;
+
     /** Minimum driver–guidance alignment (dot product) before assist ramps up. */
     public static final double TRENCH_MIN_ALIGNMENT = -0.2;
+
     /** Cross-track distance (m) at which path adhesion reaches zero. */
     public static final double TRENCH_MAX_CROSS_TRACK_METERS = 1.0;
+
     /** Exponent on blended adhesion (0.5 = sqrt); boosts assist when near/on the path. */
     public static final double TRENCH_BLEND_EXPONENT = 0.5;
+
     /** Degrees: new square edge must beat current edge by this much to switch. */
     public static final double EDGE_SNAP_HYSTERESIS_DEG = 20.0;
+
     /** Trench heading hold (stronger than default field-centric rotate). */
     public static final double TRENCH_ANGLE_KP = 9.0;
+
     public static final double TRENCH_ANGLE_KD = 0.65;
   }
 
@@ -195,7 +207,6 @@ public final class Constants {
      */
     public static final double INPUT_POWER = 2.0;
   }
-
 
   public static final class FieldConstants {
     private static final Path LIBRARY_LAYOUT_PATH =
@@ -492,7 +503,6 @@ public final class Constants {
     }
   }
 
-
   public static final class ProjectileConstants {
     /** Distance (m) -> shooter RPS for static (SCORE) shots. */
     public static final InterpolatingDoubleTreeMap DistanceToShooterRps =
@@ -643,37 +653,52 @@ public final class Constants {
 
     /** Over-the-bumper intake mounted on the front of the chassis. */
     public static final double OverTheBumperIntakeWidthMeters = 0.85;
+
     /** Rack extended length beyond bumper (m). */
     public static final double OverTheBumperIntakeExtensionMeters = 0.25;
+
     /** Simulated hopper / intake storage capacity (Fuel count). */
     public static final int HopperCapacity = 50;
 
     /** Full-width rear dumper: parallel fuel count per volley (left / center / right). */
     public static final int DumperFuelPerVolley = 3;
+
     /** Lateral spacing between parallel dump lanes in robot frame (+Y left), meters. */
-    public static final double DumperLateralSpacingMeters = 0.26;
+    public static final double DumperLateralSpacingMeters = 0.18;
+
     /** Minimum time between full-width volleys while feeding (s). */
-    public static final double DumperVolleyPeriodSec = 0.16;
+    public static final double DumperVolleyPeriodSec = 0.10;
 
     /** Full-width rear dumper: exit height above carpet (m). */
     public static final double DumperExitHeightMeters = 0.52;
+
     /** Full-width dumper: m/s per shooter mechanism RPS (lower than flywheel). */
-    public static final double DumperMetersPerSecondPerRps = 0.055 * 2.;
+    public static final double DumperMetersPerSecondPerRps = 0.055 * 3.;
+
     public static final double DumperMinLaunchSpeedMps = 2.5;
+
     /** Hub goal center height for hit detection (m). Matches Rebuilt hub opening region. */
     public static final double HubTargetHeightMeters = 1.35;
+
     /** Scoring tolerance (m): X, Y full-width, Z vertical. */
     public static final double HubTargetToleranceXMeters = 0.55;
+
     public static final double HubTargetToleranceYMeters = 1.25;
     public static final double HubTargetToleranceZMeters = 0.35;
   }
 
-  /** Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants. */
+  /**
+   * Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants.
+   */
   public static final class VisionFusion {
     /** Minimum divisor when penalizing large horizontal targeting angles via cos(yaw). */
     public static final double REJECT_MIN_TA = 0.01;
-    /** Reject when estimated tag distance to robot exceeds this (meters). Tune per camera mounting. */
+
+    /**
+     * Reject when estimated tag distance to robot exceeds this (meters). Tune per camera mounting.
+     */
     public static final double REJECT_MAX_DISTANCE_METERS = 5.0;
+
     public static final double REJECT_STALE_SECONDS = 0.5;
     public static final double REJECT_MAX_OMEGA_RAD_PER_SEC = 4.0 * Math.PI;
     public static final boolean REJECT_ON_HIGH_OMEGA = true;
@@ -684,7 +709,7 @@ public final class Constants {
     /** Camera height above robot origin (m). */
     public static final double PHOTON_CAMERA_HEIGHT_METERS = 0.285;
 
-    /** Outward yaw (rad) for corner-mounted cameras in a V  pattern. */
+    /** Outward yaw (rad) for corner-mounted cameras in a V pattern. */
     private static final double PHOTON_CAMERA_YAW_RADIANS = Units.degreesToRadians(45.0);
 
     /** Robot origin → PhotonL at front-left frame corner (WPILib: +X forward, +Y left). */
@@ -706,8 +731,8 @@ public final class Constants {
             new Rotation3d(0.0, 0.0, -PHOTON_CAMERA_YAW_RADIANS));
 
     /**
-     * Pose θ standard deviation (rad) for Photon when xy σ comes from {@link PoseEstimatorConstants#tAtoDev}
-     * — very large so fusion weights gyro for heading.
+     * Pose θ standard deviation (rad) for Photon when xy σ comes from {@link
+     * PoseEstimatorConstants#tAtoDev} — very large so fusion weights gyro for heading.
      */
     public static final double PHOTON_THETA_STDDEV_RADIANS = 100000000.0;
 
@@ -716,6 +741,7 @@ public final class Constants {
 
     /** Limelight NT {@code stddevs} array length and MegaTag index offsets. */
     public static final int LL_STDDEV_ARRAY_LENGTH = 12;
+
     public static final int LL_MT1_X_STDDEV_INDEX = 0;
     public static final int LL_MT1_Y_STDDEV_INDEX = 1;
     public static final int LL_MT1_YAW_STDDEV_INDEX = 5;
@@ -725,8 +751,8 @@ public final class Constants {
   }
 
   /**
-   * Interpolates vision translation σ (m) from target area fraction (0–1). Used by Photon; Limelight
-   * MegaTag2 uses hardware {@code stddevs} instead.
+   * Interpolates vision translation σ (m) from target area fraction (0–1). Used by Photon;
+   * Limelight MegaTag2 uses hardware {@code stddevs} instead.
    */
   public static final class PoseEstimatorConstants {
     public static final InterpolatingDoubleTreeMap tAtoDev = new InterpolatingDoubleTreeMap();

@@ -8,7 +8,8 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.ProjectileConstants;
 
 /**
- * Ballistic lookups and shot planning for hybrid shoot ({@link frc.robot.commands.HybridShootCommand}).
+ * Ballistic lookups and shot planning for hybrid shoot ({@link
+ * frc.robot.commands.HybridShootCommand}).
  *
  * <p>SCORE uses static distance tables. PASS uses the iterative motion solver ({@link #solve}).
  */
@@ -97,8 +98,7 @@ public final class ProjectileCalculator {
             && DriverStation.getAlliance().get() == Alliance.Blue;
     double passX = isBlue ? 0.5 : FieldConstants.fieldLength - 0.5;
     double leftBumpCenterY =
-        (FieldConstants.LinesHorizontal.leftBumpStart
-                    + FieldConstants.LinesHorizontal.leftBumpEnd)
+        (FieldConstants.LinesHorizontal.leftBumpStart + FieldConstants.LinesHorizontal.leftBumpEnd)
                 / 2.0
             + 1.0;
     double rightBumpCenterY =
@@ -139,8 +139,7 @@ public final class ProjectileCalculator {
         new Translation2d(
             realTarget.getX() - fieldVelocity.getX() * tof,
             realTarget.getY() - fieldVelocity.getY() * tof);
-    Rotation2d aimAngle =
-        chassisHeadingForShooter(virtualTarget.minus(shooterPosition).getAngle());
+    Rotation2d aimAngle = chassisHeadingForShooter(virtualTarget.minus(shooterPosition).getAngle());
     double rps = getPassShooterRps(lookaheadDistance);
     double hoodDeg = getPassHoodDegs(lookaheadDistance);
 

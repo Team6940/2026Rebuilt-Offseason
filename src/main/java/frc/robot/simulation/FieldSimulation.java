@@ -14,6 +14,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldSimulationConstants;
 import frc.robot.Constants.ShooterConstants;
@@ -32,8 +37,8 @@ import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Maple-sim field layer: drivetrain collision body, OverTheBumper {@link IntakeSimulation} (hopper),
- * and full-width rear dumper {@link RebuiltFuelOnFly}. See <a
+ * Maple-sim field layer: drivetrain collision body, OverTheBumper {@link IntakeSimulation}
+ * (hopper), and full-width rear dumper {@link RebuiltFuelOnFly}. See <a
  * href="https://shenzhen-robotics-alliance.github.io/maple-sim/rebuilt/">Rebuilt Simulation</a>.
  */
 public final class FieldSimulation {
@@ -151,9 +156,7 @@ public final class FieldSimulation {
   private static Translation2d[] dumperSlotOffsets() {
     double spacing = FieldSimulationConstants.DumperLateralSpacingMeters;
     return new Translation2d[] {
-      new Translation2d(0.0, spacing),
-      new Translation2d(0.0, 0.0),
-      new Translation2d(0.0, -spacing)
+      new Translation2d(0.0, spacing), new Translation2d(0.0, 0.0), new Translation2d(0.0, -spacing)
     };
   }
 
@@ -164,35 +167,37 @@ public final class FieldSimulation {
       double hoodDegs,
       double launchSpeedMps,
       Translation2d lateralOffset) {
-    RebuiltFuelOnFly projectile =
-        new RebuiltFuelOnFly(
-            robotPose.getTranslation(),
-            ShooterConstants.ShooterOffset.plus(lateralOffset),
-            fieldSpeeds,
-            dumperFacing,
-            Meters.of(FieldSimulationConstants.DumperExitHeightMeters),
-            MetersPerSecond.of(launchSpeedMps),
-            Degrees.of(hoodDegs));
-
-    projectile
-        .withTargetPosition(this::getAllianceHubTarget)
-        .withTargetTolerance(
-            new Translation3d(
-                FieldSimulationConstants.HubTargetToleranceXMeters,
-                FieldSimulationConstants.HubTargetToleranceYMeters,
-                FieldSimulationConstants.HubTargetToleranceZMeters))
-        .withHitTargetCallBack(() -> Logger.recordOutput("FieldSimulation/HitHub", true))
-        .withProjectileTrajectoryDisplayCallBack(
-            poses -> Logger.recordOutput("FieldSimulation/SuccessfulShots", toPose3dArray(poses)),
-            poses -> Logger.recordOutput("FieldSimulation/MissedShots", toPose3dArray(poses)));
-
-    SimulatedArena.getInstance().addGamePieceProjectile(projectile);
+    launchFuelProjectile(
+        robotPose.getTranslation(),
+        ShooterConstants.ShooterOffset.plus(lateralOffset),
+        fieldSpeeds,
+        dumperFacing,
+        Meters.of(FieldSimulationConstants.DumperExitHeightMeters),
+        MetersPerSecond.of(launchSpeedMps),
+        Degrees.of(hoodDegs),
+        true);
   }
 
-  private Translation3d getAllianceHubTarget() {
-    Translation2d hubCenter = CommandSwerveDrivetrain.getAllianceHubCenter();
-    return new Translation3d(
-        hubCenter.getX(), hubCenter.getY(), FieldSimulationConstants.HubTargetHeightMeters);
+  private void launchFuelProjectile(
+      Translation2d robotPosition,
+      Translation2d shooterOffsetOnRobot,
+      ChassisSpeeds fieldSpeeds,
+      Rotation2d shooterFacing,
+      Distance initialHeight,
+      LinearVelocity launchSpeed,
+      Angle hoodAngle,
+      boolean trackHubHit) {
+    RebuiltFuelOnFly projectile =
+        new RebuiltFuelOnFly(
+            robotPosition,
+            shooterOffsetOnRobot,
+            fieldSpeeds,
+            shooterFacing,
+            initialHeight,
+            launchSpeed,
+            hoodAngle);
+
+    SimulatedArena.getInstance().addGamePieceProjectile(projectile);
   }
 
   private void spawnDefaultFuel() {

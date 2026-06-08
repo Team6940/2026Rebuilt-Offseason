@@ -21,18 +21,18 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.HeatupCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.IntakeHybridCommand;
-import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.generated.TunerConstants;
+import frc.robot.simulation.FieldSimulation;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
-import frc.robot.simulation.FieldSimulation;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.VisionSubsystem;
@@ -103,8 +103,9 @@ public class RobotContainer {
     // testBindings();
 
     CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
-    CommandScheduler.getInstance().schedule(
-        Commands.runOnce(drive::warmupHybridTrenchControlLoop, drive).ignoringDisable(true));
+    CommandScheduler.getInstance()
+        .schedule(
+            Commands.runOnce(drive::warmupHybridTrenchControlLoop, drive).ignoringDisable(true));
   }
 
   private void testBindings() {}
@@ -113,13 +114,9 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // Drive priority (highest wins): AutoAim > HybridTrench > HybridIntake > Manual
     Trigger autoAiming = driverController.rightBumper().or(driverController.y());
-    Trigger hybridTrenchDrive =
-        driverController.a().and(autoAiming.negate());
+    Trigger hybridTrenchDrive = driverController.a().and(autoAiming.negate());
     Trigger hybridIntakeDrive =
-        driverController
-            .leftTrigger()
-            .and(autoAiming.negate())
-            .and(driverController.a().negate());
+        driverController.leftTrigger().and(autoAiming.negate()).and(driverController.a().negate());
 
     drive.setDefaultCommand(
         Commands.run(
@@ -137,26 +134,26 @@ public class RobotContainer {
 
     hybridTrenchDrive.whileTrue(new DriveHybridTrenchCommand(drive));
 
-    operatorController
-        .povDown()
-        .onTrue(Commands.runOnce(superStructure::resetAllModes));
+    operatorController.povDown().onTrue(Commands.runOnce(superStructure::resetAllModes));
 
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController
         .b()
         .onTrue(
             Commands.runOnce(
-                    () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
 
     hybridIntakeDrive.whileTrue(
-            new IntakeHybridCommand(
-                drive,
-                driverController,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> -driverController.getRightX()));
+        new IntakeHybridCommand(
+            drive,
+            driverController,
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
 
     driverController
         .leftBumper()
@@ -173,7 +170,9 @@ public class RobotContainer {
 
     driverController
         .povUp()
-        .onTrue(Commands.runOnce(() -> superStructure.setIntakeMode(IntakeMode.REVERSE), superStructure));
+        .onTrue(
+            Commands.runOnce(
+                () -> superStructure.setIntakeMode(IntakeMode.REVERSE), superStructure));
   }
 
   /**

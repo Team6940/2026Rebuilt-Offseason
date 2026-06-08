@@ -103,4 +103,3 @@ public class SuperStructure extends SubsystemBase {
     Logger.recordOutput("SuperStructure/IntakeMode", intakeMode);
   }
 }
-

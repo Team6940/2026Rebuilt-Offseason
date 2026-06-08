@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.SuperStructure;
+
 /** Default intake behavior driven by {@link SuperStructure.IntakeMode}. */
 public class IntakeDefaultCommand extends Command {
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();

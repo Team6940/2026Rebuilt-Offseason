@@ -26,9 +26,11 @@ import frc.robot.commands.HeatupCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.IntakeHybridCommand;
+import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
+import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.simulation.FieldSimulation;
 import frc.robot.subsystems.SuperStructure;
@@ -78,7 +80,7 @@ public class RobotContainer {
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
-
+    autoChooser.addOption("LeftDoubleSwipe", new LeftDoubleSwipe());
     // Set up SysId routines
     // autoChooser.addOption(
     //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
@@ -129,30 +131,11 @@ public class RobotContainer {
             drive));
 
     autoAiming.whileTrue(
-            new HybridShootCommand(
-                drive,
-                () -> driverController.getButton(ImprovedCommandXboxController.Button.kRightBumper),
-                () -> driverController.getButton(ImprovedCommandXboxController.Button.kY),
-                driverController::getRightTrigger,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> -operatorController.getLeftY(),
-                () -> -operatorController.getRightX(),
-                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kB),
-                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kA),
-                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kX),
-                () -> operatorController.getButtonPressed(ImprovedCommandXboxController.Button.kY)));
+        new HybridShootCommand(drive, Button.kRightBumper, Button.kRightTrigger, Button.kY));
 
     operatorController.rightTrigger().whileTrue(new HeatupCommand(drive));
 
-    hybridTrenchDrive.whileTrue(
-            new DriveHybridTrenchCommand(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> -driverController.getRightX(),
-                driverController.a()::getAsBoolean,
-                driverController.rightTrigger()::getAsBoolean));
+    hybridTrenchDrive.whileTrue(new DriveHybridTrenchCommand(drive));
 
     operatorController
         .povDown()

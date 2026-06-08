@@ -9,20 +9,20 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldSimulationConstants;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
+import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
-import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.SuperStructure.ControlMode;
+import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
 import frc.robot.util.ProjectileCalculator;
 import frc.robot.util.ProjectileCalculator.ShotPlan;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -54,27 +54,18 @@ public class HybridShootCommand extends Command {
     COMPLETE
   }
 
-  // --- Injected inputs ---
   private final CommandSwerveDrivetrain drive;
-  private final BooleanSupplier aimScoreSupplier;
-  private final BooleanSupplier aimPassSupplier;
-  private final BooleanSupplier fireSupplier;
-  private final DoubleSupplier driverXSupplier;
-  private final DoubleSupplier driverYSupplier;
-  private final DoubleSupplier operatorHoodAxisSupplier;
-  private final DoubleSupplier operatorAimHeadingAxisSupplier;
-  private final BooleanSupplier operatorBPressed;
-  private final BooleanSupplier operatorAPressed;
-  private final BooleanSupplier operatorXPressed;
-  private final BooleanSupplier operatorYPressed;
+  private final Button aimButton;
+  private final Button shootButton;
+  private final Button passButton;
+  private final ImprovedCommandXboxController driverController = RobotContainer.driverController;
+  private final ImprovedCommandXboxController operatorController = RobotContainer.operatorController;
 
-  // --- Subsystems ---
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
 
-  // --- Mutable state (reset in initialize / transitionTo) ---
   private ShootSequence shootSequence = ShootSequence.FEEDING;
   private double shootSequenceStartSec = 0.0;
   private double rpsOffset = 0.0;
@@ -86,34 +77,17 @@ public class HybridShootCommand extends Command {
   private double lastSimVolleySec = 0.0;
 
   public HybridShootCommand(
-      CommandSwerveDrivetrain drive,
-      BooleanSupplier aimScoreSupplier,
-      BooleanSupplier aimPassSupplier,
-      BooleanSupplier fireSupplier,
-      DoubleSupplier driverXSupplier,
-      DoubleSupplier driverYSupplier,
-      DoubleSupplier operatorHoodAxisSupplier,
-      DoubleSupplier operatorAimHeadingAxisSupplier,
-      BooleanSupplier operatorBPressed,
-      BooleanSupplier operatorAPressed,
-      BooleanSupplier operatorXPressed,
-      BooleanSupplier operatorYPressed) {
+      CommandSwerveDrivetrain drive, Button aimButton, Button shootButton, Button passButton) {
     this.drive = drive;
-    this.aimScoreSupplier = aimScoreSupplier;
-    this.aimPassSupplier = aimPassSupplier;
-    this.fireSupplier = fireSupplier;
-    this.driverXSupplier = driverXSupplier;
-    this.driverYSupplier = driverYSupplier;
-    this.operatorHoodAxisSupplier = operatorHoodAxisSupplier;
-    this.operatorAimHeadingAxisSupplier = operatorAimHeadingAxisSupplier;
-    this.operatorBPressed = operatorBPressed;
-    this.operatorAPressed = operatorAPressed;
-    this.operatorXPressed = operatorXPressed;
-    this.operatorYPressed = operatorYPressed;
+    this.aimButton = aimButton;
+    this.shootButton = shootButton;
+    this.passButton = passButton;
     addRequirements(drive, hood, shooter, indexer);
   }
 
-  // --- Command lifecycle ---
+  public HybridShootCommand(Button aimButton, Button shootButton, Button passButton) {
+    this(CommandSwerveDrivetrain.getInstance(), aimButton, shootButton, passButton);
+  }
 
   @Override
   public void initialize() {
@@ -126,37 +100,40 @@ public class HybridShootCommand extends Command {
     lastSimVolleySec = 0.0;
     hood.setOperatorInputScalar(0.0);
     superStructure.claimDriveMode(DriveMode.AUTO_AIM);
+    updateControlMode();
     transitionTo(ShootPhase.AIM);
   }
 
   @Override
   public void execute() {
-    // SCORE vs PASS from held aim button
     updateControlMode();
-    // Hood / heading trims + RPS offset steps (operator)
     applyOperatorAdjustments();
 
     ShotPlan plan = computeShotPlan();
     boolean ready = isReady(plan);
-    boolean fire = fireSupplier.getAsBoolean();
+    boolean fire = driverController.getButton(shootButton);
 
-    // Hood + shooter run in every ShootPhase; drive mode differs below
     hood.setAutoSetpoint(plan.hoodDegs);
     hood.setOperatorInputScalar(hoodCompDegs / HoodCompRangeDegs);
     shooter.setVelocityRps(plan.shooterRps + rpsOffset);
 
     switch (superStructure.getShootPhase()) {
       case AIM -> {
-        // Driver translation + auto-rotate toward target
         drive.driveAutoAim(
-            driverXSupplier, driverYSupplier, () -> plan.heading, headingCompDegs);
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> plan.heading,
+            headingCompDegs);
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
       }
       case READY -> {
         drive.driveAutoAim(
-            driverXSupplier, driverYSupplier, () -> plan.heading, headingCompDegs);
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> plan.heading,
+            headingCompDegs);
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {
@@ -166,8 +143,7 @@ public class HybridShootCommand extends Command {
       case SHOOT -> {
         // Locked chassis; operator right stick fine-tunes heading
         shootHeadingFineTuneDegs =
-            ImprovedCommandXboxController.applyInputCurve(
-                operatorAimHeadingAxisSupplier.getAsDouble());
+            ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
         double shootHeadingCompDegs = headingCompDegs;
         if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
           shootHeadingCompDegs +=
@@ -175,11 +151,15 @@ public class HybridShootCommand extends Command {
         }
         if (ControlMode.SCORE.equals(superStructure.getControlMode())) {
           drive.driveAutoAimLocked(
-            plan.heading,
-            shootHeadingCompDegs,
-            Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband);
+              plan.heading,
+              shootHeadingCompDegs,
+              Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband);
         } else {
-          drive.driveAutoAim(driverXSupplier, driverYSupplier, ()->plan.heading, shootHeadingCompDegs);
+          drive.driveAutoAim(
+              () -> -driverController.getLeftY(),
+              () -> -driverController.getLeftX(),
+              () -> plan.heading,
+              shootHeadingCompDegs);
         }
         // Feed ball, then command intake retract / release
         double now = Timer.getFPGATimestamp();
@@ -240,9 +220,9 @@ public class HybridShootCommand extends Command {
   // --- Control mode (SCORE / PASS) ---
 
   private void updateControlMode() {
-    if (aimScoreSupplier.getAsBoolean()) {
+    if (driverController.getButton(aimButton)) {
       superStructure.setControlMode(ControlMode.SCORE);
-    } else if (aimPassSupplier.getAsBoolean()) {
+    } else if (driverController.getButton(passButton)) {
       superStructure.setControlMode(ControlMode.PASS);
     }
   }
@@ -261,23 +241,23 @@ public class HybridShootCommand extends Command {
   // --- Operator trims ---
 
   private void applyOperatorAdjustments() {
-    if (operatorBPressed.getAsBoolean()) {
+    if (operatorController.getButtonPressed(Button.kB)) {
       rpsOffset = RpsOffsetB;
     }
-    if (operatorAPressed.getAsBoolean()) {
+    if (operatorController.getButtonPressed(Button.kA)) {
       rpsOffset = RpsOffsetA;
     }
-    if (operatorXPressed.getAsBoolean()) {
+    if (operatorController.getButtonPressed(Button.kX)) {
       rpsOffset = RpsOffsetX;
     }
-    if (operatorYPressed.getAsBoolean()) {
+    if (operatorController.getButtonPressed(Button.kY)) {
       rpsOffset = RpsOffsetY;
     }
     hoodCompDegs =
-        ImprovedCommandXboxController.applyInputCurve(operatorHoodAxisSupplier.getAsDouble())
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY())
             * HoodCompRangeDegs;
     headingCompDegs =
-        ImprovedCommandXboxController.applyInputCurve(operatorAimHeadingAxisSupplier.getAsDouble())
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX())
             * AimHeadingCompRangeDegs;
   }
 

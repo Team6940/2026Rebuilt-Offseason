@@ -12,8 +12,6 @@ import java.util.function.DoubleSupplier;
 /**
  * LT while held: {@link CommandSwerveDrivetrain#driveHybridIntake}. Short press →
  * {@link IntakeMode#INTAKE}; hold past threshold → {@link IntakeMode#HYBRID}.
- *
- * <p>Drive priority is enforced in {@link frc.robot.RobotContainer} (below trench and auto-aim).
  */
 public class IntakeHybridCommand extends Command {
   private final CommandSwerveDrivetrain drive;

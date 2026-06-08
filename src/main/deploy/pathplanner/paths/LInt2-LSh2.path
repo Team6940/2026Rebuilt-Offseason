@@ -32,41 +32,21 @@
     },
     {
       "anchor": {
-        "x": 3.3840492621527782,
+        "x": 3.0631481481481484,
         "y": 5.549291087962963
       },
       "prevControl": {
-        "x": 4.170277376404412,
+        "x": 3.849376262399782,
         "y": 5.549291087962963
-      },
-      "nextControl": {
-        "x": 3.0357362496302915,
-        "y": 5.549291087962963
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 2.4395200376157415,
-        "y": 6.212613570601852
-      },
-      "prevControl": {
-        "x": 2.789945891203704,
-        "y": 5.830629050925926
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "L-AftSh2"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
       "waypointRelativePos": 1,
-      "rotationDegrees": 135.0
-    },
-    {
-      "waypointRelativePos": 1.9791426809210515,
       "rotationDegrees": 135.0
     }
   ],
@@ -74,7 +54,7 @@
     {
       "name": "Constraints Zone",
       "minWaypointRelativePos": 1.0224122715946844,
-      "maxWaypointRelativePos": 1.889755502491694,
+      "maxWaypointRelativePos": 1.8211430647840532,
       "constraints": {
         "maxVelocity": 2.3,
         "maxAcceleration": 5.0,
@@ -97,7 +77,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -44.5452544054145
+    "rotation": 135.0
   },
   "reversed": false,
   "folder": "Left",

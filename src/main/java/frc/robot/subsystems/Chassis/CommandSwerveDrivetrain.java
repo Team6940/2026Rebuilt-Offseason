@@ -468,7 +468,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             0);
     }
 
-    public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
+    public static Translation2d getLinearVelocityMagnitudeFromJoysticks(double x, double y) {
         double linearMagnitude =
             MathUtil.applyDeadband(Math.hypot(x, y), DriveConstants.DEADBAND);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
@@ -490,15 +490,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public void driveFieldCentric(
         DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
-        Translation2d linearVelocity =
-            getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        Translation2d linearVelocityMagnitude =
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
         double omega =
             MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
         omega = Math.copySign(omega * omega, omega);
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                linearVelocity.getX() * getMaxLinearSpeedMetersPerSec(),
-                linearVelocity.getY() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocityMagnitude.getX() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocityMagnitude.getY() * getMaxLinearSpeedMetersPerSec(),
                 omega * getMaxAngularSpeedRadPerSec());
         boolean isFlipped =
             DriverStation.getAlliance().isPresent()
@@ -516,7 +516,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         double maxLinearSpeed,
         double maxAngularSpeed) {
         Translation2d linearVelocity =
-            getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
         double omega =
             MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
         omega = Math.copySign(omega * omega, omega);
@@ -536,15 +536,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public void driveFieldCentricAtAngle(
         DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Rotation2d> rotationSupplier) {
-        Translation2d linearVelocity =
-            getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        Translation2d linearVelocityMagnitude =
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
         double omega =
             fieldCentricAngleController.calculate(
                 getRotation().getRadians(), rotationSupplier.get().getRadians());
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                linearVelocity.getX() * getMaxLinearSpeedMetersPerSec(),
-                linearVelocity.getY() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocityMagnitude.getX() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocityMagnitude.getY() * getMaxLinearSpeedMetersPerSec(),
                 omega);
         boolean isFlipped =
             DriverStation.getAlliance().isPresent()
@@ -628,15 +628,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         DoubleSupplier ySupplier,
         Supplier<Rotation2d> baseTargetRotation,
         double headingCompDegs) {
-        Translation2d linearVelocity =
-            getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        Translation2d linearVelocityMagnitude =
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
         Rotation2d desired =
             baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs));
         double omega = calculateAutoAimOmega(desired);
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                linearVelocity.getX() * getMaxLinearSpeedMetersPerSec(),
-                linearVelocity.getY() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocityMagnitude.getX() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocityMagnitude.getY() * getMaxLinearSpeedMetersPerSec(),
                 omega);
         boolean isFlipped =
             DriverStation.getAlliance().isPresent()
@@ -759,7 +759,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         boolean driverHasInput =
             MathUtil.applyDeadband(Math.hypot(xInput, yInput), DriveConstants.DEADBAND) > 0.0;
         Translation2d driverLinear =
-            getLinearVelocityFromJoysticks(xInput, yInput).times(maxLinearSpeed);
+            getLinearVelocityMagnitudeFromJoysticks(xInput, yInput).times(maxLinearSpeed);
         double omegaInput =
             MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
         double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
@@ -795,7 +795,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         double maxLinearSpeed,
         double maxAngularSpeed) {
         Translation2d driverLinear =
-            getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble())
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble())
                 .times(maxLinearSpeed);
         double omegaInput =
             MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);

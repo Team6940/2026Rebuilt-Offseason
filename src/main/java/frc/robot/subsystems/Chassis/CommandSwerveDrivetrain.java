@@ -457,14 +457,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         0);
   }
 
-  public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
-    double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DriveConstants.DEADBAND);
-    Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
-    linearMagnitude = linearMagnitude * linearMagnitude;
-    return new Pose2d(new Translation2d(), linearDirection)
-        .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
-        .getTranslation();
-  }
+    public static Translation2d getLinearVelocityMagnitudeFromJoysticks(double x, double y) {
+        double linearMagnitude =
+            MathUtil.applyDeadband(Math.hypot(x, y), DriveConstants.DEADBAND);
+        Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
+        linearMagnitude = linearMagnitude * linearMagnitude;
+        return new Pose2d(new Translation2d(), linearDirection)
+            .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+            .getTranslation();
+    }
 
   public void runVelocity(ChassisSpeeds speeds) {
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, kLoopPeriodSec);
@@ -476,67 +477,71 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getRotation()));
   }
 
-  public void driveFieldCentric(
-      DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
-    Translation2d linearVelocity =
-        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
-    omega = Math.copySign(omega * omega, omega);
-    ChassisSpeeds speeds =
-        new ChassisSpeeds(
-            linearVelocity.getX() * getMaxLinearSpeedMetersPerSec(),
-            linearVelocity.getY() * getMaxLinearSpeedMetersPerSec(),
-            omega * getMaxAngularSpeedRadPerSec());
-    boolean isFlipped =
-        DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
-    runVelocity(
-        ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
-  }
+    public void driveFieldCentric(
+        DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+        Translation2d linearVelocityMagnitude =
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        double omega =
+            MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
+        omega = Math.copySign(omega * omega, omega);
+        ChassisSpeeds speeds =
+            new ChassisSpeeds(
+                linearVelocityMagnitude.getX() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocityMagnitude.getY() * getMaxLinearSpeedMetersPerSec(),
+                omega * getMaxAngularSpeedRadPerSec());
+        boolean isFlipped =
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
+        runVelocity(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds,
+                isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+    }
 
-  public void driveFieldCentricWithMaxSpeed(
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      DoubleSupplier omegaSupplier,
-      double maxLinearSpeed,
-      double maxAngularSpeed) {
-    Translation2d linearVelocity =
-        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
-    omega = Math.copySign(omega * omega, omega);
-    ChassisSpeeds speeds =
-        new ChassisSpeeds(
-            linearVelocity.getX() * maxLinearSpeed,
-            linearVelocity.getY() * maxLinearSpeed,
-            omega * maxAngularSpeed);
-    boolean isFlipped =
-        DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
-    runVelocity(
-        ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
-  }
+    public void driveFieldCentricWithMaxSpeed(
+        DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier,
+        DoubleSupplier omegaSupplier,
+        double maxLinearSpeed,
+        double maxAngularSpeed) {
+        Translation2d linearVelocityMagnitude =
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        double omega =
+            MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
+        omega = Math.copySign(omega * omega, omega);
+        ChassisSpeeds speeds =
+            new ChassisSpeeds(
+                linearVelocityMagnitude.getX() * maxLinearSpeed,
+                linearVelocityMagnitude.getY() * maxLinearSpeed,
+                omega * maxAngularSpeed);
+        boolean isFlipped =
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
+        runVelocity(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds,
+                isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+    }
 
-  public void driveFieldCentricAtAngle(
-      DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Rotation2d> rotationSupplier) {
-    Translation2d linearVelocity =
-        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-    double omega =
-        fieldCentricAngleController.calculate(
-            getRotation().getRadians(), rotationSupplier.get().getRadians());
-    ChassisSpeeds speeds =
-        new ChassisSpeeds(
-            linearVelocity.getX() * getMaxLinearSpeedMetersPerSec(),
-            linearVelocity.getY() * getMaxLinearSpeedMetersPerSec(),
-            omega);
-    boolean isFlipped =
-        DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
-    runVelocity(
-        ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
-  }
+    public void driveFieldCentricAtAngle(
+        DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Rotation2d> rotationSupplier) {
+        Translation2d linearVelocityMagnitude =
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        double omega =
+            fieldCentricAngleController.calculate(
+                getRotation().getRadians(), rotationSupplier.get().getRadians());
+        ChassisSpeeds speeds =
+            new ChassisSpeeds(
+                linearVelocityMagnitude.getX() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocityMagnitude.getY() * getMaxLinearSpeedMetersPerSec(),
+                omega);
+        boolean isFlipped =
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
+        runVelocity(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+    }
 
   public void runCharacterization(double output) {
     setControl(m_translationCharacterization.withVolts(Volts.of(output)));
@@ -606,27 +611,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return getShooterWorldPosition().getDistance(target);
   }
 
-  public void driveAutoAim(
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      Supplier<Rotation2d> baseTargetRotation,
-      double headingCompDegs) {
-    Translation2d linearVelocity =
-        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-    Rotation2d desired = baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs));
-    double omega = calculateAutoAimOmega(desired);
-    ChassisSpeeds speeds =
-        new ChassisSpeeds(
-            linearVelocity.getX() * getMaxLinearSpeedMetersPerSec(),
-            linearVelocity.getY() * getMaxLinearSpeedMetersPerSec(),
-            omega);
-    boolean isFlipped =
-        DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
-    runVelocity(
-        ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
-  }
+    public void driveAutoAim(
+        DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier,
+        Supplier<Rotation2d> baseTargetRotation,
+        double headingCompDegs) {
+        Translation2d linearVelocityMagnitude =
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        Rotation2d desired =
+            baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs));
+        double omega = calculateAutoAimOmega(desired);
+        ChassisSpeeds speeds =
+            new ChassisSpeeds(
+                linearVelocityMagnitude.getX() * getMaxLinearSpeedMetersPerSec(),
+                linearVelocityMagnitude.getY() * getMaxLinearSpeedMetersPerSec(),
+                omega);
+        boolean isFlipped =
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
+        runVelocity(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+    }
 
   /**
    * Shoot lock: X-config brake by default. When the operator trims heading, switch to
@@ -728,71 +734,73 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     driveHybridTrench(xSupplier, ySupplier, omegaSupplier, maxLinearSpeed, maxAngularSpeed, true);
   }
 
-  private void driveHybridTrench(
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      DoubleSupplier omegaSupplier,
-      double maxLinearSpeed,
-      double maxAngularSpeed,
-      boolean applySetpoints) {
-    IntakeMode intakeMode = SuperStructure.getInstance().getIntakeMode();
-    double xInput = xSupplier.getAsDouble();
-    double yInput = ySupplier.getAsDouble();
-    boolean driverHasInput =
-        MathUtil.applyDeadband(Math.hypot(xInput, yInput), DriveConstants.DEADBAND) > 0.0;
-    Translation2d driverLinear =
-        getLinearVelocityFromJoysticks(xInput, yInput).times(maxLinearSpeed);
-    double omegaInput =
-        MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
-    double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
-    Pose2d robotPose = getPose();
-    if (driverHasInput) {
-      Translation2d driverForTraversal = isRedAlliance() ? driverLinear.unaryMinus() : driverLinear;
-      trenchTraversalSign =
-          updateTraversalSignFromDriver(robotPose, driverForTraversal, trenchTraversalSign);
+    private void driveHybridTrench(
+        DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier,
+        DoubleSupplier omegaSupplier,
+        double maxLinearSpeed,
+        double maxAngularSpeed,
+        boolean applySetpoints) {
+        IntakeMode intakeMode = SuperStructure.getInstance().getIntakeMode();
+        double xInput = xSupplier.getAsDouble();
+        double yInput = ySupplier.getAsDouble();
+        boolean driverHasInput =
+            MathUtil.applyDeadband(Math.hypot(xInput, yInput), DriveConstants.DEADBAND) > 0.0;
+        Translation2d driverLinear =
+            getLinearVelocityMagnitudeFromJoysticks(xInput, yInput).times(maxLinearSpeed);
+        double omegaInput =
+            MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
+        double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
+        Pose2d robotPose = getPose();
+        if (driverHasInput) {
+            Translation2d driverForTraversal =
+                isRedAlliance() ? driverLinear.unaryMinus() : driverLinear;
+            trenchTraversalSign =
+                updateTraversalSignFromDriver(robotPose, driverForTraversal, trenchTraversalSign);
+        }
+        HybridTrenchReference trenchRef =
+            computeHybridTrenchReference(robotPose, trenchTraversalSign);
+        Translation2d fieldLinear =
+            blendDriverInput(driverLinear, trenchRef, driverHasInput, maxLinearSpeed);
+        Rotation2d desiredFacing =
+            getDesiredFacingHybridTrench(intakeMode, trenchTraversalSign, robotPose);
+        logHybridTrench(trenchRef, desiredFacing, fieldLinear);
+        boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
+        double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
+        ChassisSpeeds speeds = new ChassisSpeeds(fieldLinear.getX(), fieldLinear.getY(), omega);
+        if (applySetpoints) {
+            runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    speeds,
+                    isRedAlliance() ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+        }
     }
-    HybridTrenchReference trenchRef = computeHybridTrenchReference(robotPose, trenchTraversalSign);
-    Translation2d fieldLinear =
-        blendDriverInput(driverLinear, trenchRef, driverHasInput, maxLinearSpeed);
-    Rotation2d desiredFacing =
-        getDesiredFacingHybridTrench(intakeMode, trenchTraversalSign, robotPose);
-    logHybridTrench(trenchRef, desiredFacing, fieldLinear);
-    boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
-    double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
-    ChassisSpeeds speeds = new ChassisSpeeds(fieldLinear.getX(), fieldLinear.getY(), omega);
-    if (applySetpoints) {
-      runVelocity(
-          ChassisSpeeds.fromFieldRelativeSpeeds(
-              speeds,
-              isRedAlliance() ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
-    }
-  }
 
-  public void driveHybridIntake(
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      DoubleSupplier omegaSupplier,
-      double maxLinearSpeed,
-      double maxAngularSpeed) {
-    Translation2d driverLinear =
-        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble())
-            .times(maxLinearSpeed);
-    double omegaInput =
-        MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
-    double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
-    Rotation2d desiredFacing = getDesiredFacingHybridIntake(driverLinear, IntakeMode.HYBRID);
-    boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
-    double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
-    ChassisSpeeds speeds = new ChassisSpeeds(driverLinear.getX(), driverLinear.getY(), omega);
-    boolean isFlipped =
-        DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
-    runVelocity(
-        ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
-    Logger.recordOutput("HybridIntake/DesiredFacing", desiredFacing);
-    Logger.recordOutput("HybridIntake/FieldLinear", driverLinear);
-  }
+    public void driveHybridIntake(
+        DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier,
+        DoubleSupplier omegaSupplier,
+        double maxLinearSpeed,
+        double maxAngularSpeed) {
+        Translation2d driverLinear =
+            getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble())
+                .times(maxLinearSpeed);
+        double omegaInput =
+            MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
+        double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
+        Rotation2d desiredFacing = getDesiredFacingHybridIntake(driverLinear, IntakeMode.HYBRID);
+        boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
+        double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
+        ChassisSpeeds speeds = new ChassisSpeeds(driverLinear.getX(), driverLinear.getY(), omega);
+        boolean isFlipped =
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
+        runVelocity(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+        Logger.recordOutput("HybridIntake/DesiredFacing", desiredFacing);
+        Logger.recordOutput("HybridIntake/FieldLinear", driverLinear);
+    }
 
   private void logHybridTrench(
       HybridTrenchReference ref, Rotation2d desiredFacing, Translation2d fieldLinear) {

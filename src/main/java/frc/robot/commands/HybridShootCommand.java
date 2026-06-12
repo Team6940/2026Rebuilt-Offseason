@@ -75,7 +75,7 @@ public class HybridShootCommand extends Command {
   private double headingCompDegs = 0.0;
 
   /** Right stick during SHOOT only; overrides headingCompDegs when past deadband. */
-  private double shootHeadingFineTuneDegs = 0.0;
+  private double shootHeadingFineTuneMagnitude = 0.0;
 
   /** SIM: last full-width dumper volley timestamp. */
   private double lastSimVolleySec = 0.0;
@@ -100,7 +100,7 @@ public class HybridShootCommand extends Command {
     rpsOffset = 0.0;
     hoodCompDegs = 0.0;
     headingCompDegs = 0.0;
-    shootHeadingFineTuneDegs = 0.0;
+    shootHeadingFineTuneMagnitude = 0.0;
     lastSimVolleySec = 0.0;
     hood.setOperatorInputScalar(0.0);
     superStructure.claimDriveMode(DriveMode.AUTO_AIM);
@@ -145,12 +145,12 @@ public class HybridShootCommand extends Command {
         }
       }
       case SHOOT -> {
-        // Locked chassis; operator right stick fine-tunes heading
-        shootHeadingFineTuneDegs =
+        // Locked chassis; operator right stick fine-tunes heading; driver left stick drive with reduced speed if necessary;
+        shootHeadingFineTuneMagnitude =
             ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
         double shootHeadingCompDegs = headingCompDegs;
-        if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
-          shootHeadingCompDegs += shootHeadingFineTuneDegs * AimHeadingCompRangeDegs;
+        if (Math.abs(shootHeadingFineTuneMagnitude) > ShootHeadingFineTuneDeadband) {
+          shootHeadingCompDegs += shootHeadingFineTuneMagnitude * AimHeadingCompRangeDegs;
         }
         Translation2d driverInput = new Translation2d(-driverController.getLeftX(), -driverController.getLeftY());
 
@@ -160,7 +160,7 @@ public class HybridShootCommand extends Command {
               () -> -driverController.getLeftX(),
               plan.heading,
               shootHeadingCompDegs,
-              Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
+              Math.abs(shootHeadingFineTuneMagnitude) > ShootHeadingFineTuneDeadband,
               driverInput.getNorm() > DriverTranslationFineTuneDeadband);
         } else {
           drive.driveAutoAim(

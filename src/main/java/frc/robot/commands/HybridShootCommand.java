@@ -5,6 +5,7 @@ import static frc.robot.Constants.HybridShootConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
@@ -151,11 +152,16 @@ public class HybridShootCommand extends Command {
         if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
           shootHeadingCompDegs += shootHeadingFineTuneDegs * AimHeadingCompRangeDegs;
         }
+        Translation2d driverInput = new Translation2d(-driverController.getLeftX(), -driverController.getLeftY());
+
         if (ControlMode.SCORE.equals(superStructure.getControlMode())) {
-          drive.driveAutoAimLocked(
+          drive.driveAutoAimWithSpeedLimitorLocked(
+              () -> -driverController.getLeftY(),
+              () -> -driverController.getLeftX(),
               plan.heading,
               shootHeadingCompDegs,
-              Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband);
+              Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
+              driverInput.getNorm() > DriverTranslationFineTuneDeadband);
         } else {
           drive.driveAutoAim(
               () -> -driverController.getLeftY(),
@@ -235,7 +241,7 @@ public class HybridShootCommand extends Command {
     var shooterPos = drive.getShooterWorldPosition();
     if (superStructure.getControlMode() == ControlMode.SCORE) {
       return ProjectileCalculator.planScore(
-          shooterPos, CommandSwerveDrivetrain.getAllianceHubCenter());
+          shooterPos, CommandSwerveDrivetrain.getAllianceHubCenter(), drive.getFieldVelocity());
     }
     return ProjectileCalculator.planPass(shooterPos, drive.getFieldVelocity());
   }

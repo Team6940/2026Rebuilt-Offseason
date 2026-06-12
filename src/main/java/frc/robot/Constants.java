@@ -611,8 +611,9 @@ public final class Constants {
     public static final double AimHeadingCompRangeDegs = 10.0;
     public static final double HoodCompRangeDegs = 3.0;
 
-    // --- SHOOT: locked drive heading fine-tune (operator right stick) ---
+    // --- SHOOT: locked drive fine-tune (operator right stick) ---
     public static final double ShootHeadingFineTuneDeadband = 0.3;
+    public static final double DriverTranslationFineTuneDeadband = 5.0;
 
     // --- SHOOT: indexer feed, then intake retract timing ---
     public static final double FeedDurationSec = 2.0;

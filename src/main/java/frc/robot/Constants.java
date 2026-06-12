@@ -33,8 +33,6 @@ import edu.wpi.first.wpilibj.util.Color;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.NavigableMap;
-import java.util.TreeMap;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -44,6 +42,13 @@ import java.util.TreeMap;
 public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+
+  /**
+   * Publish AdvantageKit outputs to NetworkTables. On the roboRIO, the first write per topic can
+   * block the robot loop while NT4 publishers are created; keep {@link #enableNtTelemetry} false
+   * during competition if you only need USB wpilog. SIM may leave this true for AdvantageScope.
+   */
+  public static final boolean enableNtTelemetry = true;
 
   public static enum Mode {
     /** Running on a real robot. */
@@ -78,6 +83,64 @@ public final class Constants {
     public static final int kBackRightSteerMotorId = 8;
     public static final int kBackRightEncoderId = 12;
 
+    /* Intake */
+    public static final int kIntakeLeaderMotorId = 22;
+    public static final int kIntakeFollowerMotorId = 24;
+    public static final int kIntakeRackMotorId = 23;
+
+    /* Shooter (two leader/follower pairs) */
+    public static final int kShooterLeaderMotorIdA = 30;
+    public static final int kShooterFollowerMotorIdA = 31;
+    public static final int kShooterLeaderMotorIdB = 33;
+    public static final int kShooterFollowerMotorIdB = 34;
+
+    /* Hood */
+    public static final int kHoodMotorId = 32;
+
+    /* Indexer (two feeder + two indexer rollers) */
+    public static final int kIndexerFeederLeaderMotorId = 21;
+    public static final int kIndexerFeederFollowerMotorId = 25;
+    public static final int kIndexerLeaderMotorId = 26;
+    public static final int kIndexerFollowerMotorId = 27;
+  }
+
+  public static final class IntakeConstants {
+    /* Rollers */
+    public static final double RollerRatio = 26. / 12.;
+    public static final InvertedValue RollerInverted = InvertedValue.Clockwise_Positive;
+    public static final double RollerSupplyCurrentLimit = 40.0;
+    public static final double RollerkP = 0.1;
+    public static final double RollerkI = 0.0;
+    public static final double RollerkD = 0.0;
+    public static final double RollerkV = 0.18;
+    public static final double RollerkS = 0.45;
+    public static final double RollerVelocityToleranceRps = 0.5;
+    public static final double IntakingRps = 45.0;
+    public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Aligned;
+
+    /* Rack (stretcher) */
+    public static final double RackRatio = 27. * 26. / 46.;
+    public static final InvertedValue RackInverted = InvertedValue.CounterClockwise_Positive;
+    public static final double RackSupplyCurrentLimit = 40.0;
+    public static final double RackStatorCurrentLimit = 120.0;
+    public static final double RackkP = 96.;
+    public static final double RackkI = 0.0;
+    public static final double RackkD = 0.0;
+    public static final double RackkV = 0.0;
+    public static final double RackkS = 0.34;
+    public static final double RackMotionMagicMaxVelocity = 20.0;
+    public static final double RackMotionMagicAcceleration = 48.0;
+    public static final double RackPositionToleranceRotations = 0.01;
+    public static final double RackMinRotations = 0.;
+    public static final double RackMaxRotations = 3.11;
+    public static final double RackIdleRotations = 0.0;
+    public static final double RackRetractedRotations = 2.0;
+    public static final double RackExtendedRotations = 2.65;
+
+    /**
+     * LT held longer than this sets {@link frc.robot.subsystems.SuperStructure.IntakeMode#HYBRID}.
+     */
+    public static final double LtHoldThresholdSec = 0.25;
   }
 
   public final class DriveConstants {
@@ -86,10 +149,12 @@ public final class Constants {
     public static final double ANGLE_KD = 0.4;
     public static final double ANGLE_MAX_VELOCITY = 8.0;
     public static final double ANGLE_MAX_ACCELERATION = 20.0;
-    public static final double FF_START_DELAY = 2.0; // Secs
-    public static final double FF_RAMP_RATE = 0.1; // Volts/Sec
-    public static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
-    public static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
+
+    /** Auto-aim heading hold: plain PID, higher gain for faster snap (some overshoot is OK). */
+    public static final double AUTO_AIM_ANGLE_KP = 12.0;
+
+    public static final double AUTO_AIM_ANGLE_KI = 0.0;
+    public static final double AUTO_AIM_ANGLE_KD = 0.35;
 
     public static final double MOVE_TO_X_KP = 5.;
     public static final double MOVE_TO_Y_KP = 5.;
@@ -107,22 +172,31 @@ public final class Constants {
 
     /** Pure-pursuit-style lookahead distance along the trench centerline (m). */
     public static final double TRENCH_LOOKAHEAD_METERS = 0.6;
+
     /** Field-relative driver speed (m/s) required to set path traversal direction. */
     public static final double TRENCH_DRIVER_INTENT_THRESHOLD = 0.08;
+
     /** Epsilon (m) for finite-difference path tangent at the nearest point. */
     public static final double TRENCH_TANGENT_EPSILON = 0.05;
+
     /** Maximum fraction of max linear speed applied as trench guidance assist. */
     public static final double TRENCH_MAX_ASSIST = 0.65;
+
     /** Minimum driver–guidance alignment (dot product) before assist ramps up. */
     public static final double TRENCH_MIN_ALIGNMENT = -0.2;
+
     /** Cross-track distance (m) at which path adhesion reaches zero. */
     public static final double TRENCH_MAX_CROSS_TRACK_METERS = 1.0;
+
     /** Exponent on blended adhesion (0.5 = sqrt); boosts assist when near/on the path. */
     public static final double TRENCH_BLEND_EXPONENT = 0.5;
+
     /** Degrees: new square edge must beat current edge by this much to switch. */
     public static final double EDGE_SNAP_HYSTERESIS_DEG = 20.0;
+
     /** Trench heading hold (stronger than default field-centric rotate). */
     public static final double TRENCH_ANGLE_KP = 9.0;
+
     public static final double TRENCH_ANGLE_KD = 0.65;
   }
 
@@ -136,7 +210,6 @@ public final class Constants {
      */
     public static final double INPUT_POWER = 2.0;
   }
-
 
   public static final class FieldConstants {
     private static final Path LIBRARY_LAYOUT_PATH =
@@ -433,35 +506,257 @@ public final class Constants {
     }
   }
 
+  public static final class ProjectileConstants {
+    /** Distance (m) -> shooter RPS for static (SCORE) shots. */
+    public static final InterpolatingDoubleTreeMap DistanceToShooterRps =
+        new InterpolatingDoubleTreeMap();
 
-  /** Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants. */
+    /** Distance (m) -> hood angle (deg) for static (SCORE) shots. */
+    public static final InterpolatingDoubleTreeMap DistanceToHoodDegs =
+        new InterpolatingDoubleTreeMap();
+
+    /** Distance (m) -> flight time (s); used by PASS motion solver only. */
+    public static final InterpolatingDoubleTreeMap DistanceToFlightTimeSecs =
+        new InterpolatingDoubleTreeMap();
+
+    /** Distance (m) -> shooter RPS for PASS motion solver lookups. */
+    public static final InterpolatingDoubleTreeMap PassDistanceToShooterRps =
+        new InterpolatingDoubleTreeMap();
+
+    /** Distance (m) -> hood angle (deg) for PASS motion solver lookups. */
+    public static final InterpolatingDoubleTreeMap PassDistanceToHoodDegs =
+        new InterpolatingDoubleTreeMap();
+
+    static {
+      DistanceToShooterRps.put(1.05, 38.9);
+      DistanceToShooterRps.put(1.32, 39.61);
+      DistanceToShooterRps.put(1.88, 41.84);
+      DistanceToShooterRps.put(2.6, 44.8);
+      DistanceToShooterRps.put(3.4, 47.4);
+      DistanceToShooterRps.put(4.1, 51.4);
+      DistanceToShooterRps.put(4.99, 54.9);
+      DistanceToShooterRps.put(5.2, 57.5);
+
+      DistanceToHoodDegs.put(1.05, 17.8);
+      DistanceToHoodDegs.put(1.32, 18.49);
+      DistanceToHoodDegs.put(1.88, 23.40);
+      DistanceToHoodDegs.put(2.6, 27.3);
+      DistanceToHoodDegs.put(3.4, 33.9);
+      DistanceToHoodDegs.put(4.1, 38.5);
+      DistanceToHoodDegs.put(4.99, 43.5);
+      DistanceToHoodDegs.put(5.2, 43.5);
+
+      DistanceToFlightTimeSecs.put(0.96, 0.8);
+      DistanceToFlightTimeSecs.put(1.2, 0.95);
+      DistanceToFlightTimeSecs.put(3.0, 1.18);
+      DistanceToFlightTimeSecs.put(5.0, 1.28);
+
+      PassDistanceToShooterRps.put(3.0, 55.0);
+      PassDistanceToShooterRps.put(4.0, 58.0);
+      PassDistanceToShooterRps.put(5.0, 62.0);
+      PassDistanceToShooterRps.put(6.0, 65.0);
+      PassDistanceToShooterRps.put(7.0, 68.0);
+
+      PassDistanceToHoodDegs.put(3.0, 40.0);
+      PassDistanceToHoodDegs.put(4.0, 42.0);
+      PassDistanceToHoodDegs.put(5.0, 43.5);
+      PassDistanceToHoodDegs.put(6.0, 43.5);
+      PassDistanceToHoodDegs.put(7.0, 43.5);
+    }
+  }
+
+  public static final class ShooterConstants {
+    public static final double ShooterRatio = 1.0;
+    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final double VelocityToleranceRps = 2.5;
+    public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
+    public static final double kP = 11.5;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kV = 0.115;
+    public static final double kS = 19.5;
+    public static final double SupplyCurrentLimit = 120.0;
+    public static final double StatorCurrentLimit = 100.0;
+
+    /** Robot origin to shooter exit point (+X forward, +Y left), meters. */
+    public static final Translation2d ShooterOffset = new Translation2d(-0.30, 0.0);
+
+    /** Sim velocity lag (s): lower = faster spin-up, higher = smoother. */
+    public static final double SimSpinupTimeConstantSec = 0.35;
+  }
+
+  public static final class HoodConstants {
+    public static final double HoodRatio = 182. / 12. * 50. / 8.;
+    public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
+    public static final double SupplyCurrentLimit = 40.0;
+    public static final double kP = 360.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kV = 0.0;
+    public static final double kS = 0.29;
+    public static final double MotionMagicMaxVelocity = 10.0;
+    public static final double MotionMagicAcceleration = 20.0;
+    public static final double PositionToleranceDegs = 3.0;
+    public static final double MinDegs = 17.842;
+    public static final double MaxDegs = 43.5;
+    public static final double IdlePositionDegs = 17.842;
+    public static final double HybridRangeDegs = 3.0;
+  }
+
+  /** Tuning for {@link frc.robot.commands.HybridShootCommand}. */
+  public static final class HybridShootConstants {
+    // --- Ready gate (AIM → READY) ---
+    public static final double HeadingToleranceDegs = 3.0;
+    public static final double HoodToleranceDegs = HoodConstants.PositionToleranceDegs;
+    public static final double ShooterToleranceRps = ShooterConstants.VelocityToleranceRps;
+
+    // --- Operator trims (AIM / READY) ---
+    public static final double AimHeadingCompRangeDegs = 10.0;
+    public static final double HoodCompRangeDegs = 3.0;
+
+    // --- SHOOT: locked drive fine-tune (operator right stick) ---
+    public static final double ShootHeadingFineTuneDeadband = 0.3;
+    public static final double DriverTranslationFineTuneDeadband = 5.0;
+
+    // --- SHOOT: indexer feed, then intake retract timing ---
+    public static final double FeedDurationSec = 2.0;
+    public static final double PostRetractWaitSec = 1.0;
+
+    // --- Operator RPS offset steps (B / A / X / Y) ---
+    public static final double RpsOffsetB = -1.0;
+    public static final double RpsOffsetA = -2.0;
+    public static final double RpsOffsetX = 1.0;
+    public static final double RpsOffsetY = 2.0;
+  }
+
+  public static final class IndexerConstants {
+    public static final double FeederRatio = 31.2 * 5. / 9.;
+    public static final double IndexerRatio = 1.0;
+    public static final InvertedValue FeederInverted = InvertedValue.CounterClockwise_Positive;
+    public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
+    public static final double FeederSupplyCurrentLimit = 60.0;
+    public static final double IndexerSupplyCurrentLimit = 60.0;
+    public static final double FeederkP = 0.5;
+    public static final double FeederkI = 0.0;
+    public static final double FeederkD = 0.0;
+    public static final double FeederkV = 2.15;
+    public static final double FeederkS = 0.35;
+    public static final double IndexerkP = 0.5;
+    public static final double IndexerkI = 0.0;
+    public static final double IndexerkD = 0.0;
+    public static final double IndexerkV = 2.15;
+    public static final double IndexerkS = 0.35;
+    public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
+    public static final double FeedRps = 100.0;
+    public static final double IndexerRps = 6.2;
+  }
+
+  /** Maple-sim field sim tuning for OverTheBumper intake, hopper, and full-width dumper shooter. */
+  public static final class FieldSimulationConstants {
+    public static final String FUEL_TYPE = "Fuel";
+
+    /** Over-the-bumper intake mounted on the front of the chassis. */
+    public static final double OverTheBumperIntakeWidthMeters = 0.85;
+
+    /** Rack extended length beyond bumper (m). */
+    public static final double OverTheBumperIntakeExtensionMeters = 0.25;
+
+    /** Simulated hopper / intake storage capacity (Fuel count). */
+    public static final int HopperCapacity = 50;
+
+    /** Full-width rear dumper: parallel fuel count per volley (left / center / right). */
+    public static final int DumperFuelPerVolley = 3;
+
+    /** Lateral spacing between parallel dump lanes in robot frame (+Y left), meters. */
+    public static final double DumperLateralSpacingMeters = 0.18;
+
+    /** Minimum time between full-width volleys while feeding (s). */
+    public static final double DumperVolleyPeriodSec = 0.10;
+
+    /** Full-width rear dumper: exit height above carpet (m). */
+    public static final double DumperExitHeightMeters = 0.52;
+
+    /** Full-width dumper: m/s per shooter mechanism RPS (lower than flywheel). */
+    public static final double DumperMetersPerSecondPerRps = 0.055 * 3.;
+
+    public static final double DumperMinLaunchSpeedMps = 2.5;
+
+    /** Hub goal center height for hit detection (m). Matches Rebuilt hub opening region. */
+    public static final double HubTargetHeightMeters = 1.35;
+
+    /** Scoring tolerance (m): X, Y full-width, Z vertical. */
+    public static final double HubTargetToleranceXMeters = 0.55;
+
+    public static final double HubTargetToleranceYMeters = 1.25;
+    public static final double HubTargetToleranceZMeters = 0.35;
+  }
+
+  /**
+   * Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants.
+   */
   public static final class VisionFusion {
     /** Minimum divisor when penalizing large horizontal targeting angles via cos(yaw). */
     public static final double REJECT_MIN_TA = 0.01;
-    /** Reject when estimated tag distance to robot exceeds this (meters). Tune per camera mounting. */
+
+    /**
+     * Reject when estimated tag distance to robot exceeds this (meters). Tune per camera mounting.
+     */
     public static final double REJECT_MAX_DISTANCE_METERS = 5.0;
+
     public static final double REJECT_STALE_SECONDS = 0.5;
     public static final double REJECT_MAX_OMEGA_RAD_PER_SEC = 4.0 * Math.PI;
     public static final boolean REJECT_ON_HIGH_OMEGA = true;
 
-    /**
-     * Robot origin → Photon camera (robot coordinates). Replace with measured CAD + calibration.
-     */
-    public static final Transform3d kRobotToCamera =
+    /** PathPlanner robot frame (m); cameras mount at front-left / front-right corners. */
+    private static final double ROBOT_FRAME_HALF_EXTENT_METERS = 0.45;
+
+    /** Camera height above robot origin (m). */
+    public static final double PHOTON_CAMERA_HEIGHT_METERS = 0.285;
+
+    /** Outward yaw (rad) for corner-mounted cameras in a V pattern. */
+    private static final double PHOTON_CAMERA_YAW_RADIANS = Units.degreesToRadians(45.0);
+
+    /** Robot origin → PhotonL at front-left frame corner (WPILib: +X forward, +Y left). */
+    public static final Transform3d kRobotToPhotonL =
         new Transform3d(
-            new Translation3d(Units.inchesToMeters(9.0), 0.0, Units.inchesToMeters(20.0)),
-            new Rotation3d(0.0, 0.0, 0.0));
+            new Translation3d(
+                ROBOT_FRAME_HALF_EXTENT_METERS,
+                ROBOT_FRAME_HALF_EXTENT_METERS,
+                PHOTON_CAMERA_HEIGHT_METERS),
+            new Rotation3d(0.0, 0.0, PHOTON_CAMERA_YAW_RADIANS));
+
+    /** Robot origin → PhotonR at front-right frame corner. */
+    public static final Transform3d kRobotToPhotonR =
+        new Transform3d(
+            new Translation3d(
+                ROBOT_FRAME_HALF_EXTENT_METERS,
+                -ROBOT_FRAME_HALF_EXTENT_METERS,
+                PHOTON_CAMERA_HEIGHT_METERS),
+            new Rotation3d(0.0, 0.0, -PHOTON_CAMERA_YAW_RADIANS));
 
     /**
-     * Pose θ standard deviation (rad) for Photon when xy σ comes from {@link PoseEstimatorConstants#tAtoDev}
-     * — very large so fusion weights gyro for heading.
+     * Pose θ standard deviation (rad) for Photon when xy σ comes from {@link
+     * PoseEstimatorConstants#tAtoDev} — very large so fusion weights gyro for heading.
      */
-    public static final double PHOTON_THETA_STDDEV_RADIANS = 100_000_000.0;
+    public static final double PHOTON_THETA_STDDEV_RADIANS = 100000000.0;
+
+    /** Down-weights unreliable heading during multi-source inverse-variance fusion. */
+    public static final double LARGE_VARIANCE = 1e6;
+
+    /** Limelight NT {@code stddevs} array length and MegaTag index offsets. */
+    public static final int LL_STDDEV_ARRAY_LENGTH = 12;
+
+    public static final int LL_MT1_X_STDDEV_INDEX = 0;
+    public static final int LL_MT1_Y_STDDEV_INDEX = 1;
+    public static final int LL_MT1_YAW_STDDEV_INDEX = 5;
+    public static final int LL_MT2_X_STDDEV_INDEX = 6;
+    public static final int LL_MT2_Y_STDDEV_INDEX = 7;
+    public static final int LL_MT2_YAW_STDDEV_INDEX = 11;
   }
 
   /**
-   * Interpolates vision translation σ (m) from target area fraction (0–1). Used by Photon; Limelight
-   * MegaTag2 uses hardware {@code stddevs} instead.
+   * Interpolates vision translation σ (m) from target area fraction (0–1). Used by Photon;
+   * Limelight MegaTag2 uses hardware {@code stddevs} instead.
    */
   public static final class PoseEstimatorConstants {
     public static final InterpolatingDoubleTreeMap tAtoDev = new InterpolatingDoubleTreeMap();

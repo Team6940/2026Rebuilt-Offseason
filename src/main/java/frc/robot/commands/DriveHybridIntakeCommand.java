@@ -1,20 +1,18 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Drive.Drive;
+import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.DriveMode;
-import frc.robot.subsystems.SuperStructure.IntakeMode;
 import java.util.function.DoubleSupplier;
 
 /**
- * Hybrid intake drive: heading tracks travel. Lower priority than {@link DriveHybridTrenchCommand}.
+ * Hybrid intake drive: heading tracks travel.
  *
- * <p>While held: IntakeMode=HYBRID, DriveMode=HYBRID_INTAKE_DRIVE. On normal end: DriveMode=MANUAL,
- * IntakeMode=INTAKE.
+ * <p>While held: DriveMode=HYBRID_INTAKE_DRIVE. IntakeMode is set by LT/LB/POV, not this command.
  */
 public class DriveHybridIntakeCommand extends Command {
-  private final Drive drive;
+  private final CommandSwerveDrivetrain drive;
   private final SuperStructure superStructure = SuperStructure.getInstance();
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
@@ -23,7 +21,7 @@ public class DriveHybridIntakeCommand extends Command {
   private final DoubleSupplier maxAngularSpeedSupplier;
 
   public DriveHybridIntakeCommand(
-      Drive drive,
+      CommandSwerveDrivetrain drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
@@ -37,7 +35,7 @@ public class DriveHybridIntakeCommand extends Command {
   }
 
   public DriveHybridIntakeCommand(
-      Drive drive,
+      CommandSwerveDrivetrain drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier,
@@ -54,6 +52,7 @@ public class DriveHybridIntakeCommand extends Command {
 
   @Override
   public void initialize() {
+    superStructure.claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE);
   }
 
   @Override
@@ -71,6 +70,7 @@ public class DriveHybridIntakeCommand extends Command {
     if (interrupted) {
       return;
     }
+    superStructure.claimDriveMode(DriveMode.MANUAL);
   }
 
   @Override

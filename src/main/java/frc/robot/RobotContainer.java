@@ -13,30 +13,29 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
+import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.commands.DriveHybridTrenchCommand;
-import frc.robot.commands.leds.LEDDefaultCommand;
-import frc.robot.commands.DriveHybridIntakeCommand;
+import frc.robot.commands.HeatupCommand;
+import frc.robot.commands.HybridShootCommand;
+import frc.robot.commands.IntakeDefaultCommand;
+import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Drive.Drive;
-import frc.robot.subsystems.Drive.GyroIO;
-import frc.robot.subsystems.Drive.GyroIOPigeon2;
-import frc.robot.subsystems.Drive.GyroIOSim;
-import frc.robot.subsystems.Drive.ModuleIO;
-import frc.robot.subsystems.Drive.ModuleIOTalonFXReal;
-import frc.robot.subsystems.Drive.ModuleIOTalonFXSim;
+import frc.robot.simulation.FieldSimulation;
+import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.VisionSubsystem;
-import frc.robot.subsystems.leds.LEDController;
-
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -49,72 +48,39 @@ public class RobotContainer {
   // Subsystems
   public static final String limelightLeft = "limelight-l";
   public static final String limelightRight = "limelight";
-  public static final String photonCameraName = "photonvision";
+  public static final String photonCameraLeft = "PhotonL";
+  public static final String photonCameraRight = "PhotonR";
 
-  private final Drive drive;
+  private final CommandSwerveDrivetrain drive;
   private final VisionSubsystem vision;
-  // Simulated subsystems
-  private SwerveDriveSimulation driveSimulation = null;
-  //led
-  private final LEDController m_LedController = LEDController.getInstance();
-
+  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+  private final SuperStructure superStructure = SuperStructure.getInstance();
 
   // Controller
   public static final ImprovedCommandXboxController driverController =
       new ImprovedCommandXboxController(0);
-  // public static final ImprovedCommandXboxController operatorController =
-  //     new ImprovedCommandXboxController(1);
+  public static final ImprovedCommandXboxController operatorController =
+      new ImprovedCommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    switch (Constants.currentMode) {
-      case REAL:
-        // Real robot, instantiate hardware IO implementations
-        drive =
-            new Drive(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
-                new ModuleIOTalonFXReal(TunerConstants.FrontRight),
-                new ModuleIOTalonFXReal(TunerConstants.BackLeft),
-                new ModuleIOTalonFXReal(TunerConstants.BackRight));
-        break;
+    drive = TunerConstants.createDrivetrain();
 
-      case SIM:
-        // Sim robot, instantiate physics sim IO implementations
-
-        SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
-        driveSimulation =
-            new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
-        SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
-        drive =
-            new Drive(
-                new GyroIOSim(driveSimulation.getGyroSimulation()),
-                new ModuleIOTalonFXSim(TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
-                new ModuleIOTalonFXSim(TunerConstants.FrontRight, driveSimulation.getModules()[1]),
-                new ModuleIOTalonFXSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]),
-                new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]));
-        break;
-
-      default:
-        // Replayed robot, disable IO implementations
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {});
-        break;
+    if (Constants.currentMode == Constants.Mode.REAL) {
+      IntakeSubsystem.getInstance().setDefaultCommand(new IntakeDefaultCommand());
+    } else if (Constants.currentMode == Constants.Mode.SIM) {
+      FieldSimulation.initialize(drive, new Pose2d(0.7, 0.7, new Rotation2d()));
+      IntakeSubsystem.getInstance().setDefaultCommand(new IntakeDefaultCommand());
     }
 
     vision = new VisionSubsystem(drive);
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
-
+    autoChooser.addOption("LeftDoubleSwipe", new LeftDoubleSwipe());
     // Set up SysId routines
     // autoChooser.addOption(
     //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
@@ -131,19 +97,27 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+    intake.setDefaultCommand(new IntakeDefaultCommand());
+
     configureButtonBindings();
     // testBindings();
 
-
-
-    m_LedController.setDefaultCommand(new LEDDefaultCommand(m_LedController).ignoringDisable(true));
-
+    CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
+    CommandScheduler.getInstance()
+        .schedule(
+            Commands.runOnce(drive::warmupHybridTrenchControlLoop, drive).ignoringDisable(true));
   }
 
   private void testBindings() {}
 
   /** ***** THE CONTROL LOGIC IS SUCH ****** */
   private void configureButtonBindings() {
+    // Drive priority (highest wins): AutoAim > HybridTrench > HybridIntake > Manual
+    Trigger autoAiming = driverController.rightBumper().or(driverController.y());
+    Trigger hybridTrenchDrive = driverController.a().and(autoAiming.negate());
+    Trigger hybridIntakeDrive =
+        driverController.leftTrigger().and(autoAiming.negate()).and(driverController.a().negate());
+
     drive.setDefaultCommand(
         Commands.run(
             () ->
@@ -153,53 +127,52 @@ public class RobotContainer {
                     () -> -driverController.getRightX()),
             drive));
 
-    // A (HybridTrench) interrupts RT (HybridIntake) via end(true). IntakeMode rules in commands.
-    driverController
-        .rightTrigger()
-        .whileTrue(
-            new DriveHybridIntakeCommand(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> -driverController.getRightX()));
+    autoAiming.whileTrue(
+        new HybridShootCommand(drive, Button.kRightBumper, Button.kRightTrigger, Button.kY));
 
-    driverController
-        .a()
-        .whileTrue(
-            new DriveHybridTrenchCommand(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> -driverController.getRightX(),
-                driverController.a()::getAsBoolean,
-                driverController.rightTrigger()::getAsBoolean));
+    operatorController.rightTrigger().whileTrue(new HeatupCommand(drive));
+
+    hybridTrenchDrive.whileTrue(new DriveHybridTrenchCommand(drive));
+
+    operatorController.povDown().onTrue(Commands.runOnce(superStructure::resetAllModes));
 
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController
         .b()
         .onTrue(
             Commands.runOnce(
-                    () -> {
-                      drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
-                      if (Constants.currentMode == Constants.Mode.SIM) {
-                        driveSimulation.setSimulationWorldPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
-                      }
-                    },
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
 
+    hybridIntakeDrive.whileTrue(
+        new IntakeHybridCommand(
+            drive,
+            driverController,
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
+
     driverController
-        .leftTrigger()
-        .whileTrue(
-            drive.run(
-                () ->
-                    drive.driveFieldCentricWithMaxSpeed(
-                        () -> -driverController.getLeftY(),
-                        () -> -driverController.getLeftX(),
-                        () -> -driverController.getRightX(),
-                        1.6,
-                        5.4)));
+        .leftBumper()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  switch (superStructure.getIntakeMode()) {
+                    case INTAKE, HYBRID -> superStructure.setIntakeMode(IntakeMode.RETRACTED);
+                    case RETRACTED -> superStructure.setIntakeMode(IntakeMode.OFF);
+                    default -> {}
+                  }
+                },
+                superStructure));
+
+    driverController
+        .povUp()
+        .onTrue(
+            Commands.runOnce(
+                () -> superStructure.setIntakeMode(IntakeMode.REVERSE), superStructure));
   }
 
   /**
@@ -211,21 +184,17 @@ public class RobotContainer {
     return autoChooser.get();
   }
 
-  // Simulation methods
   public void resetSimulationField() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
-
-    driveSimulation.setSimulationWorldPose(new Pose2d(0.7, 0.7, new Rotation2d()));
-    SimulatedArena.getInstance().resetFieldForAuto();
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      Pose2d pose = new Pose2d(0.7, 0.7, new Rotation2d());
+      drive.setPose(pose);
+      FieldSimulation.getInstance().resetField(pose);
+    }
   }
 
   public void updateSimulation() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
-
-    SimulatedArena.getInstance().simulationPeriodic();
-    Logger.recordOutput(
-        "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
-    Logger.recordOutput(
-        "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      FieldSimulation.getInstance().simulationPeriodic();
+    }
   }
 }

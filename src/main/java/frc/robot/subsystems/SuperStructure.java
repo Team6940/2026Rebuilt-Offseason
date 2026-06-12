@@ -1,8 +1,6 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import org.littletonrobotics.junction.Logger;
 
 public class SuperStructure extends SubsystemBase {
@@ -20,55 +18,77 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public enum DriveMode {
+    AUTO_AIM,
     HYBRID_TRENCH,
     HYBRID_INTAKE_DRIVE,
     MANUAL
   }
 
-  public enum ShootMode {
+  /** Hub score vs pass lane selection. */
+  public enum ControlMode {
     SCORE,
     PASS
+  }
+
+  /** Hybrid shooting sequence state. */
+  public enum ShootPhase {
+    OFF,
+    HEATUP,
+    AIM,
+    READY,
+    SHOOT
   }
 
   public enum IntakeMode {
     INTAKE,
     HYBRID,
+    RETRACTED,
     OFF,
     REVERSE
   }
 
   private DriveMode driveModeMode = DriveMode.MANUAL;
-  private ShootMode shootMode = ShootMode.SCORE;
-  private IntakeMode intakeMode = IntakeMode.HYBRID;
+  private ControlMode controlMode = ControlMode.SCORE;
+  private ShootPhase shootPhase = ShootPhase.OFF;
+  private IntakeMode intakeMode = IntakeMode.OFF;
 
-  public void setDriveMode(DriveMode mode) {
+  /** Claim the active drive mode while a hybrid command is running (or MANUAL when released). */
+  public void claimDriveMode(DriveMode mode) {
     driveModeMode = mode;
   }
 
-  public void setShootMode(ShootMode mode) {
-    shootMode = mode;
+  public void resetAllModes() {
+    claimDriveMode(DriveMode.MANUAL);
+    setIntakeMode(IntakeMode.OFF);
+    setShootPhase(ShootPhase.OFF);
+  }
+
+  public void setControlMode(ControlMode mode) {
+    controlMode = mode;
+  }
+
+  public void setShootPhase(ShootPhase phase) {
+    shootPhase = phase;
   }
 
   public void setIntakeMode(IntakeMode mode) {
     intakeMode = mode;
   }
 
-  public void toggleShootMode() {
-    shootMode = shootMode == ShootMode.SCORE ? ShootMode.PASS : ShootMode.SCORE;
-  }
-
-  public void toggleIntakeMode() {
-    // flip state
-    IntakeMode newMode = intakeMode == IntakeMode.INTAKE ? IntakeMode.OFF : IntakeMode.INTAKE;
-    setIntakeMode(newMode);
+  public void toggleControlMode() {
+    controlMode = controlMode == ControlMode.SCORE ? ControlMode.PASS : ControlMode.SCORE;
   }
 
   public DriveMode getDriveMode() {
     return driveModeMode;
   }
 
-  public ShootMode getShootMode() {
-    return shootMode;
+  public ControlMode getControlMode() {
+    return controlMode;
+  }
+
+  public ShootPhase getShootPhase() {
+    return shootPhase;
   }
 
   public IntakeMode getIntakeMode() {
@@ -78,7 +98,8 @@ public class SuperStructure extends SubsystemBase {
   @Override
   public void periodic() {
     Logger.recordOutput("SuperStructure/DriveMode", driveModeMode);
-    Logger.recordOutput("SuperStructure/ShootMode", shootMode);
+    Logger.recordOutput("SuperStructure/ControlMode", controlMode);
+    Logger.recordOutput("SuperStructure/ShootPhase", shootPhase);
     Logger.recordOutput("SuperStructure/IntakeMode", intakeMode);
   }
 }

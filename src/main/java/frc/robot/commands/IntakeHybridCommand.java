@@ -56,7 +56,7 @@ public class IntakeHybridCommand extends Command {
     ltWasPressed = ltPressed;
 
     if (ltPressed) {
-      drive.driveHybridIntake(xSupplier, ySupplier, omegaSupplier, 1.6, 5.4);
+      drive.driveHybridIntake(xSupplier, ySupplier, omegaSupplier, 2.5, 5.4);
     }
   }
 

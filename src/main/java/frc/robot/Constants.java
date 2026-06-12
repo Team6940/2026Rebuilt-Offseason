@@ -548,17 +548,27 @@ public final class Constants {
       DistanceToFlightTimeSecs.put(3.0, 1.18);
       DistanceToFlightTimeSecs.put(5.0, 1.28);
 
-      PassDistanceToShooterRps.put(3.0, 55.0);
-      PassDistanceToShooterRps.put(4.0, 58.0);
-      PassDistanceToShooterRps.put(5.0, 62.0);
-      PassDistanceToShooterRps.put(6.0, 65.0);
-      PassDistanceToShooterRps.put(7.0, 68.0);
+      PassDistanceToShooterRps.put(1.05, 24.9);
+      PassDistanceToShooterRps.put(1.32, 29.61);
+      PassDistanceToShooterRps.put(1.88, 31.84);
+      PassDistanceToShooterRps.put(2.6, 33.8);
+      PassDistanceToShooterRps.put(3.4, 37.4);
+      PassDistanceToShooterRps.put(4.1, 41.4);
+      PassDistanceToShooterRps.put(4.99, 44.9);
+      PassDistanceToShooterRps.put(6.0, 47.5);
+      PassDistanceToShooterRps.put(7.0, 51.5);
+      PassDistanceToShooterRps.put(13.0, 70.5);
 
-      PassDistanceToHoodDegs.put(3.0, 40.0);
-      PassDistanceToHoodDegs.put(4.0, 42.0);
-      PassDistanceToHoodDegs.put(5.0, 43.5);
-      PassDistanceToHoodDegs.put(6.0, 43.5);
-      PassDistanceToHoodDegs.put(7.0, 43.5);
+      PassDistanceToHoodDegs.put(1.05, 14.8);
+      PassDistanceToHoodDegs.put(1.32, 16.49);
+      PassDistanceToHoodDegs.put(1.88, 19.40);
+      PassDistanceToHoodDegs.put(2.6, 23.3);
+      PassDistanceToHoodDegs.put(3.4, 29.9);
+      PassDistanceToHoodDegs.put(4.1, 34.5);
+      PassDistanceToHoodDegs.put(4.99, 38.5);
+      PassDistanceToHoodDegs.put(5.2, 40.5);
+      PassDistanceToHoodDegs.put(7., 40.5);
+      PassDistanceToHoodDegs.put(10., 43.5);
     }
   }
 
@@ -613,7 +623,7 @@ public final class Constants {
 
     // --- SHOOT: locked drive fine-tune (operator right stick) ---
     public static final double ShootHeadingFineTuneDeadband = 0.3;
-    public static final double DriverTranslationFineTuneDeadband = 5.0;
+    public static final double DriverTranslationFineTuneDeadband = 0.3;
 
     // --- SHOOT: indexer feed, then intake retract timing ---
     public static final double FeedDurationSec = 2.0;

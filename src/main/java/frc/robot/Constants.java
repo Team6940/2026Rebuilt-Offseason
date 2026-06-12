@@ -809,24 +809,28 @@ public final class Constants {
 
   public static class Settings {
     public static class LED {
-      public static final int LED_LENGTH = 240;
-      public static final int[] GYRO_BUFFER = {0, 179};
-      public static final int[] SHOOTER_BUFFER = {180, 239};
+      public static final int LED_LENGTH = 20;
+      public static final int[] GYRO_BUFFER = {0, 1};
+      public static final int[] SHOOTER_BUFFER = {2, 19};
 
     }
       
     public interface LEDs {
 
         // TODO: Get actual length of led, along with length of individual sections
-        int LED_LENGTH = 240;
+        int LED_LENGTH  = Settings.LED.LED_LENGTH;
         // LED Pattern
         
         LEDPattern DISABLED = LEDPattern.solid(Color.kPurple);
+
         LEDPattern HYBRID_TRENCH = LEDPattern.solid(Color.kGreen);
         LEDPattern HYBRID_INTAKE_DRIVE = LEDPattern.solid(Color.kBlue);
         LEDPattern MANUAL = LEDPattern.solid(Color.kPurple);
-        LEDPattern SCORE = LEDPattern.solid(Color.kYellow);
-        LEDPattern PASS = LEDPattern.solid(Color.kGreen);
+        LEDPattern SHOOT = LEDPattern.solid(Color.kRed);
+        LEDPattern READY = LEDPattern.solid(Color.kGreen);
+        LEDPattern AUTO_AIM = LEDPattern.solid(Color.kYellow);
+        LEDPattern AIM = LEDPattern.solid(Color.kYellow);
+
 
 
     }

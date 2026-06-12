@@ -58,20 +58,29 @@ public class LEDDefaultCommand extends Command {
             {
                 leds.applyGyro( Settings.LEDs.MANUAL);
             }
+            case AUTO_AIM:
+            {
+                leds.applyGyro( Settings.LEDs.MANUAL);
+
+            }
             default:
             {
                 leds.applyGyro( Settings.LEDs.DISABLED);
             }
 
         }
-        switch (superStructure.getShootMode()) {
-            case SCORE:
+        switch (superStructure.getShootPhase()) {
+            case READY:
             {
-                leds.applyShoot( Settings.LEDs.SCORE);
+                leds.applyShoot( Settings.LEDs.READY);
             }
-            case PASS:
+            case SHOOT:
             {
-                leds.applyShoot( Settings.LEDs.PASS);
+                leds.applyShoot( Settings.LEDs.SHOOT);
+            }
+            case AIM :
+            {
+                leds.applyShoot( Settings.LEDs.AIM);
             }
             
         

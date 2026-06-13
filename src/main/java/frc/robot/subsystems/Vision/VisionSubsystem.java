@@ -3,51 +3,41 @@ package frc.robot.subsystems.Vision;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.PoseEstimatorConstants;
 import frc.robot.Constants.VisionFusion;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
- * Collects Limelight MegaTag2 and PhotonVision estimates, selects one measurement each cycle
- * (MegaTag2 preferred, then lowest XY σ), and passes it to WPILib Kalman fusion.
+ * Collects Limelight MegaTag2 and PhotonVision estimates via {@link VisionIO}, selects one
+ * measurement each cycle (hub tags preferred, then MegaTag2, then lowest XY σ), and passes it to
+ * WPILib Kalman fusion. Inputs are logged for AdvantageKit replay.
  */
 public class VisionSubsystem extends SubsystemBase {
 
-  private static final double[] LL_DEFAULT_STDDEVS =
-      new double[VisionFusion.LL_STDDEV_ARRAY_LENGTH];
-
   private final CommandSwerveDrivetrain drive;
-  private final PhotonCameraSetup photonLeft;
-  private final PhotonCameraSetup photonRight;
-  public static VisionSubsystem m_instance;
+  private final VisionIO visionIO;
+  private final VisionCameraInputsAutoLogged limelightLeftInputs =
+      new VisionCameraInputsAutoLogged();
+  private final VisionCameraInputsAutoLogged limelightRightInputs =
+      new VisionCameraInputsAutoLogged();
+  private final VisionCameraInputsAutoLogged photonLeftInputs =
+      new VisionCameraInputsAutoLogged();
+  private final VisionCameraInputsAutoLogged photonRightInputs =
+      new VisionCameraInputsAutoLogged();
 
-  private final NetworkTableEntry llLeftSnapshot =
-      NetworkTableInstance.getDefault().getTable(RobotContainer.limelightLeft).getEntry("snapshot");
-  private final NetworkTableEntry llRightSnapshot =
-      NetworkTableInstance.getDefault()
-          .getTable(RobotContainer.limelightRight)
-          .getEntry("snapshot");
+  public static VisionSubsystem m_instance;
 
   public static VisionSubsystem getInstance(CommandSwerveDrivetrain drive) {
     return m_instance == null ? m_instance = new VisionSubsystem(drive) : m_instance;
@@ -55,26 +45,37 @@ public class VisionSubsystem extends SubsystemBase {
 
   public VisionSubsystem(CommandSwerveDrivetrain drive) {
     this.drive = drive;
-    this.photonLeft =
-        new PhotonCameraSetup(
-            RobotContainer.photonCameraLeft, "Left", VisionFusion.kRobotToPhotonL);
-    this.photonRight =
-        new PhotonCameraSetup(
-            RobotContainer.photonCameraRight, "Right", VisionFusion.kRobotToPhotonR);
+    if (Constants.currentMode == Constants.Mode.REPLAY) {
+      visionIO = new VisionIO() {};
+    } else {
+      visionIO = new VisionIOLive();
+    }
   }
 
   @Override
   public void periodic() {
     double fpgaNow = Timer.getFPGATimestamp();
 
-    llLeftSnapshot.setNumber(0);
-    llRightSnapshot.setNumber(0);
+    if (!Logger.hasReplaySource()) {
+      visionIO.updateInputs(
+          limelightLeftInputs,
+          limelightRightInputs,
+          photonLeftInputs,
+          photonRightInputs,
+          drive,
+          fpgaNow);
+    }
+
+    Logger.processInputs("Vision/LimelightLeft", limelightLeftInputs);
+    Logger.processInputs("Vision/LimelightRight", limelightRightInputs);
+    Logger.processInputs("Vision/PhotonLeft", photonLeftInputs);
+    Logger.processInputs("Vision/PhotonRight", photonRightInputs);
 
     List<VisionMeasurement> accepted = new ArrayList<>(4);
-    processLimelight(RobotContainer.limelightLeft, "Left", fpgaNow).ifPresent(accepted::add);
-    processLimelight(RobotContainer.limelightRight, "Right", fpgaNow).ifPresent(accepted::add);
-    processPhoton(photonLeft, fpgaNow).ifPresent(accepted::add);
-    processPhoton(photonRight, fpgaNow).ifPresent(accepted::add);
+    measurementFromInputs(limelightLeftInputs).ifPresent(accepted::add);
+    measurementFromInputs(limelightRightInputs).ifPresent(accepted::add);
+    measurementFromInputs(photonLeftInputs).ifPresent(accepted::add);
+    measurementFromInputs(photonRightInputs).ifPresent(accepted::add);
 
     if (accepted.isEmpty()) {
       Logger.recordOutput("VisionFusion/Selected/Accepted", false);
@@ -94,16 +95,61 @@ public class VisionSubsystem extends SubsystemBase {
     Logger.recordOutput("VisionFusion/Selected/Source", selected.sourceLabel());
   }
 
+  private static Optional<VisionMeasurement> measurementFromInputs(
+      VisionIO.VisionCameraInputs inputs) {
+    if (!inputs.hasMeasurement) {
+      return Optional.empty();
+    }
+    return Optional.of(
+        new VisionMeasurement(
+            inputs.pose,
+            inputs.timestampSeconds,
+            VecBuilder.fill(inputs.stdDevX, inputs.stdDevY, inputs.stdDevYawRad),
+            MeasurementSource.values()[inputs.measurementSource],
+            inputs.sourceLabel,
+            tagIdsFromInputs(inputs)));
+  }
+
+  private static int[] tagIdsFromInputs(VisionIO.VisionCameraInputs inputs) {
+    int[] ids = new int[inputs.tagIdCount];
+    if (inputs.tagIdCount > 0) {
+      ids[0] = inputs.tagId0;
+    }
+    if (inputs.tagIdCount > 1) {
+      ids[1] = inputs.tagId1;
+    }
+    if (inputs.tagIdCount > 2) {
+      ids[2] = inputs.tagId2;
+    }
+    if (inputs.tagIdCount > 3) {
+      ids[3] = inputs.tagId3;
+    }
+    return ids;
+  }
+
   /**
-   * Prefers Limelight MegaTag2 when available; otherwise lowest XY variance among all candidates.
+   * Prefers hub-tag measurements when any are available; else Limelight MegaTag2; else lowest XY
+   * variance among all candidates.
    */
   private static VisionMeasurement selectBestMeasurement(List<VisionMeasurement> measurements) {
+    List<VisionMeasurement> hubTag =
+        measurements.stream().filter(VisionSubsystem::usesHubTag).toList();
     List<VisionMeasurement> megaTag2 =
         measurements.stream()
             .filter(m -> m.source() == MeasurementSource.LIMELIGHT_MEGATAG2)
             .toList();
-    List<VisionMeasurement> pool = megaTag2.isEmpty() ? measurements : megaTag2;
+    List<VisionMeasurement> pool =
+        !hubTag.isEmpty() ? hubTag : megaTag2.isEmpty() ? measurements : megaTag2;
     return pool.stream().min(Comparator.comparingDouble(VisionSubsystem::xyVariance)).orElseThrow();
+  }
+
+  private static boolean usesHubTag(VisionMeasurement measurement) {
+    for (int tagId : measurement.tagIds()) {
+      if (VisionFusion.isHubTag(tagId)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static double xyVariance(VisionMeasurement measurement) {
@@ -112,215 +158,23 @@ public class VisionSubsystem extends SubsystemBase {
     return sigmaX * sigmaX + sigmaY * sigmaY;
   }
 
-  private Optional<VisionMeasurement> processLimelight(
-      String limelightName, String logSide, double fpgaNow) {
-    drive.applyLimelightGyroForMegaTag2(limelightName);
-
-    LimelightHelpers.PoseEstimate mt2 =
-        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
-
-    logLimelightPoseEstimate(logSide, mt2);
-
-    if (mt2 == null) {
-      Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Connected", false);
-      return Optional.empty();
-    }
-
-    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Connected", true);
-
-    if (!LimelightHelpers.getTV(limelightName)) {
-      Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/SeesTarget", false);
-      Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", false);
-      return Optional.empty();
-    }
-    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/SeesTarget", true);
-
-    if (mt2.tagCount <= 0) {
-      Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", false);
-      return Optional.empty();
-    }
-
-    NetworkTableEntry snapshotEntry =
-        limelightName.equals(RobotContainer.limelightLeft) ? llLeftSnapshot : llRightSnapshot;
-    snapshotEntry.setNumber(1);
-
-    ChassisSpeeds speeds = drive.getChassisSpeeds();
-
-    double tagDistRobotM = limelightTagDistanceToRobotMeters(mt2);
-
-    if (shouldReject(
-        mt2.avgTagArea, mt2.tagCount, mt2.timestampSeconds, tagDistRobotM, fpgaNow, speeds)) {
-      Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", false);
-      return Optional.empty();
-    }
-
-    LlStdDevs std = resolveLimelightStdDevs(limelightName, mt2.avgTagArea);
-    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevsValid", true);
-    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevX", std.sigmaXMeters());
-    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevY", std.sigmaYMeters());
-    Logger.recordOutput(
-        "VisionFusion/Limelight/" + limelightName + "/StdDevYawRad", std.sigmaYawRadians());
-    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevSource", std.source());
-
-    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", true);
-    return Optional.of(
-        new VisionMeasurement(
-            mt2.pose,
-            mt2.timestampSeconds,
-            VecBuilder.fill(std.sigmaXMeters(), std.sigmaYMeters(), std.sigmaYawRadians()),
-            MeasurementSource.LIMELIGHT_MEGATAG2,
-            "Limelight" + logSide));
+  enum MeasurementSource {
+    LIMELIGHT_MEGATAG2,
+    PHOTON
   }
 
-  private Optional<VisionMeasurement> processPhoton(PhotonCameraSetup setup, double fpgaNow) {
-    String cameraName = setup.camera.getName();
-    setup.poseEstimator.addHeadingData(fpgaNow, drive.getPose().getRotation());
+  private record VisionMeasurement(
+      Pose2d pose,
+      double timestampSeconds,
+      Matrix<N3, N1> stdDevs,
+      MeasurementSource source,
+      String sourceLabel,
+      int[] tagIds) {}
 
-    List<PhotonPipelineResult> unread = setup.camera.getAllUnreadResults();
-    PhotonPipelineResult result =
-        unread.stream()
-            .filter(PhotonPipelineResult::hasTargets)
-            .max(Comparator.comparingDouble(PhotonPipelineResult::getTimestampSeconds))
-            .orElse(null);
-    if (result == null) {
-      logPhotonPoseEstimate(setup.logSide, Optional.empty(), Optional.empty());
-      Logger.recordOutput(
-          "VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/SeesTarget", false);
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-      return Optional.empty();
-    }
+  record LlStdDevs(
+      double sigmaXMeters, double sigmaYMeters, double sigmaYawRadians, String source) {}
 
-    Logger.recordOutput(
-        "VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
-    Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/SeesTarget", true);
-
-    Optional<EstimatedRobotPose> multiOpt = setup.poseEstimator.estimateCoprocMultiTagPose(result);
-    Optional<EstimatedRobotPose> pnpOpt =
-        multiOpt.isPresent()
-            ? Optional.empty()
-            : setup.poseEstimator.estimatePnpDistanceTrigSolvePose(result);
-    logPhotonPoseEstimate(setup.logSide, multiOpt, pnpOpt);
-
-    if (multiOpt.isPresent()) {
-      EstimatedRobotPose est = multiOpt.get();
-      Pose2d pose = est.estimatedPose.toPose2d();
-      List<PhotonTrackedTarget> targets = est.targetsUsed;
-      int tagCount = Math.max(1, targets.size());
-      double taMean = photonAvgAreaFraction(targets);
-      double tagDistM = photonAvgCameraToTagDistanceMeters(targets);
-
-      if (shouldReject(
-          taMean, tagCount, est.timestampSeconds, tagDistM, fpgaNow, drive.getChassisSpeeds())) {
-        Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-        return Optional.empty();
-      }
-
-      double xyStd = PoseEstimatorConstants.tAtoDev.get(taMean);
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", true);
-      return Optional.of(
-          new VisionMeasurement(
-              pose,
-              est.timestampSeconds,
-              VecBuilder.fill(xyStd, xyStd, VisionFusion.PHOTON_THETA_STDDEV_RADIANS),
-              MeasurementSource.PHOTON,
-              "Photon" + setup.logSide));
-    }
-
-    if (pnpOpt.isEmpty()) {
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-      return Optional.empty();
-    }
-
-    EstimatedRobotPose est = pnpOpt.get();
-    Pose2d pose = est.estimatedPose.toPose2d();
-    PhotonTrackedTarget best = result.getBestTarget();
-    if (best == null) {
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-      return Optional.empty();
-    }
-
-    double taFrac = best.area / 100.0;
-    double tagDistM = photonCameraToTagDistanceMeters(best);
-
-    if (shouldReject(
-        taFrac, 1, est.timestampSeconds, tagDistM, fpgaNow, drive.getChassisSpeeds())) {
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-      return Optional.empty();
-    }
-
-    double xyStd = PoseEstimatorConstants.tAtoDev.get(taFrac);
-    Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", true);
-    return Optional.of(
-        new VisionMeasurement(
-            pose,
-            est.timestampSeconds,
-            VecBuilder.fill(xyStd, xyStd, VisionFusion.PHOTON_THETA_STDDEV_RADIANS),
-            MeasurementSource.PHOTON,
-            "Photon" + setup.logSide));
-  }
-
-  /**
-   * Logs MegaTag2 {@link LimelightHelpers.PoseEstimate} data for AdvantageScope (pose + metadata).
-   */
-  private static void logLimelightPoseEstimate(String side, LimelightHelpers.PoseEstimate mt2) {
-    String base = "VisionFusion/PoseEstimates/Limelight" + side;
-    if (mt2 == null) {
-      Logger.recordOutput(base, new Pose2d());
-      Logger.recordOutput(base + "/HasData", false);
-      return;
-    }
-    Logger.recordOutput(base, mt2.pose);
-    Logger.recordOutput(base + "/HasData", mt2.tagCount > 0);
-    Logger.recordOutput(base + "/TimestampSeconds", mt2.timestampSeconds);
-    Logger.recordOutput(base + "/Latency", mt2.latency);
-    Logger.recordOutput(base + "/TagCount", mt2.tagCount);
-    Logger.recordOutput(base + "/TagSpan", mt2.tagSpan);
-    Logger.recordOutput(base + "/AvgTagDist", mt2.avgTagDist);
-    Logger.recordOutput(base + "/AvgTagArea", mt2.avgTagArea);
-    Logger.recordOutput(base + "/MegaTag2", mt2.isMegaTag2);
-  }
-
-  /**
-   * Limelight MegaTag2 σ published on NT {@code stddevs}: {@code [MT1…, MT2x, MT2y, MT2z, MT2roll,
-   * MT2pitch, MT2yaw]}.
-   *
-   * <p>Priority: MT2 indices → MT1 indices → {@link PoseEstimatorConstants#tAtoDev} from {@code
-   * avgTagArea}. Lookup fallback uses a very large θ σ so fusion weights gyro for heading.
-   */
-  private static LlStdDevs resolveLimelightStdDevs(String limelightName, double avgTagArea) {
-    double[] arr =
-        LimelightHelpers.getLimelightNTTableEntry(limelightName, "stddevs")
-            .getDoubleArray(LL_DEFAULT_STDDEVS);
-
-    Optional<LlStdDevs> mt2 =
-        parseLimelightNtStdDevs(
-            arr,
-            VisionFusion.LL_MT2_X_STDDEV_INDEX,
-            VisionFusion.LL_MT2_Y_STDDEV_INDEX,
-            VisionFusion.LL_MT2_YAW_STDDEV_INDEX,
-            "MT2");
-    if (mt2.isPresent()) {
-      return mt2.get();
-    }
-
-    Optional<LlStdDevs> mt1 =
-        parseLimelightNtStdDevs(
-            arr,
-            VisionFusion.LL_MT1_X_STDDEV_INDEX,
-            VisionFusion.LL_MT1_Y_STDDEV_INDEX,
-            VisionFusion.LL_MT1_YAW_STDDEV_INDEX,
-            "MT1");
-    if (mt1.isPresent()) {
-      return mt1.get();
-    }
-
-    double taFrac = avgTagArea / 100.0;
-    double xyStd = PoseEstimatorConstants.tAtoDev.get(taFrac);
-    return new LlStdDevs(xyStd, xyStd, VisionFusion.PHOTON_THETA_STDDEV_RADIANS, "TA_LOOKUP");
-  }
-
-  private static Optional<LlStdDevs> parseLimelightNtStdDevs(
+  static Optional<LlStdDevs> parseLimelightNtStdDevs(
       double[] arr, int xIndex, int yIndex, int yawIndex, String source) {
     if (arr.length <= yawIndex) {
       return Optional.empty();
@@ -337,82 +191,9 @@ public class VisionSubsystem extends SubsystemBase {
     return Optional.of(new LlStdDevs(sigmaX, sigmaY, Units.degreesToRadians(sigmaYawDeg), source));
   }
 
-  private enum MeasurementSource {
-    LIMELIGHT_MEGATAG2,
-    PHOTON
-  }
-
-  private record VisionMeasurement(
-      Pose2d pose,
-      double timestampSeconds,
-      Matrix<N3, N1> stdDevs,
-      MeasurementSource source,
-      String sourceLabel) {}
-
-  private record LlStdDevs(
-      double sigmaXMeters, double sigmaYMeters, double sigmaYawRadians, String source) {}
-
-  private static final class PhotonCameraSetup {
-    final PhotonCamera camera;
-    final PhotonPoseEstimator poseEstimator;
-    final String logSide;
-
-    PhotonCameraSetup(String cameraName, String logSide, Transform3d robotToCamera) {
-      this.camera = new PhotonCamera(cameraName);
-      this.poseEstimator =
-          new PhotonPoseEstimator(Constants.FieldConstants.getAprilTagFieldLayout(), robotToCamera);
-      this.logSide = logSide;
-    }
-  }
-
-  /**
-   * Logs Photon estimated pose (multi-tag preferred, else PNP distance trig) for AdvantageScope.
-   */
-  private static void logPhotonPoseEstimate(
-      String side, Optional<EstimatedRobotPose> multiOpt, Optional<EstimatedRobotPose> pnpOpt) {
-    String base = "VisionFusion/PoseEstimates/Photon" + side;
-    if (multiOpt.isPresent()) {
-      EstimatedRobotPose est = multiOpt.get();
-      Logger.recordOutput(base, est.estimatedPose.toPose2d());
-      Logger.recordOutput(base + "/HasData", true);
-      Logger.recordOutput(base + "/TimestampSeconds", est.timestampSeconds);
-      Logger.recordOutput(base + "/Strategy", "MULTI_TAG_PNP");
-      Logger.recordOutput(base + "/TagCount", est.targetsUsed.size());
-      return;
-    }
-    if (pnpOpt.isPresent()) {
-      EstimatedRobotPose est = pnpOpt.get();
-      Logger.recordOutput(base, est.estimatedPose.toPose2d());
-      Logger.recordOutput(base + "/HasData", true);
-      Logger.recordOutput(base + "/TimestampSeconds", est.timestampSeconds);
-      Logger.recordOutput(base + "/Strategy", "SINGLE_TAG_PNP_DISTANCE_TRIG");
-      Logger.recordOutput(base + "/TagCount", est.targetsUsed.size());
-      return;
-    }
-    Logger.recordOutput(base, new Pose2d());
-    Logger.recordOutput(base + "/HasData", false);
-    Logger.recordOutput(base + "/Strategy", "none");
-  }
-
-  private static double photonAvgAreaFraction(List<PhotonTrackedTarget> targets) {
-    if (targets.isEmpty()) {
-      return 0.0;
-    }
-    double sum = 0.0;
-    for (PhotonTrackedTarget t : targets) {
-      sum += t.area / 100.0;
-    }
-    return sum / targets.size();
-  }
-
   /**
    * Shared rejection gates for all vision sources. {@code ta} is Limelight-style fractional area
    * (0–1) or Photon fractional area ({@code area}/100).
-   *
-   * <p>{@code tagDistanceMeters}: Limelight uses mean {@link
-   * LimelightHelpers.RawFiducial#distToRobot} when fiducials exist; otherwise {@link
-   * LimelightHelpers.PoseEstimate#avgTagDist}. Photon uses mean camera–tag range from {@code
-   * getBestCameraToTarget()} (meters).
    */
   static boolean shouldReject(
       double ta,
@@ -442,12 +223,7 @@ public class VisionSubsystem extends SubsystemBase {
     return false;
   }
 
-  /**
-   * Tag–robot distance from Limelight: arithmetic mean {@link
-   * LimelightHelpers.RawFiducial#distToRobot}; if fiducials are missing uses {@link
-   * LimelightHelpers.PoseEstimate#avgTagDist} (meters).
-   */
-  private static double limelightTagDistanceToRobotMeters(LimelightHelpers.PoseEstimate mt2) {
+  static double limelightTagDistanceToRobotMeters(LimelightHelpers.PoseEstimate mt2) {
     if (mt2.rawFiducials != null && mt2.rawFiducials.length > 0) {
       double sum = 0.0;
       for (LimelightHelpers.RawFiducial f : mt2.rawFiducials) {
@@ -458,8 +234,33 @@ public class VisionSubsystem extends SubsystemBase {
     return mt2.avgTagDist;
   }
 
-  /** Mean camera–tag range (solve translation norm, meters) over visible targets. */
-  private static double photonAvgCameraToTagDistanceMeters(List<PhotonTrackedTarget> targets) {
+  static int[] limelightTagIds(LimelightHelpers.PoseEstimate mt2) {
+    if (mt2.rawFiducials == null || mt2.rawFiducials.length == 0) {
+      return new int[0];
+    }
+    int[] ids = new int[mt2.rawFiducials.length];
+    for (int i = 0; i < mt2.rawFiducials.length; i++) {
+      ids[i] = mt2.rawFiducials[i].id;
+    }
+    return ids;
+  }
+
+  static int[] photonTagIds(List<PhotonTrackedTarget> targets) {
+    return targets.stream().mapToInt(PhotonTrackedTarget::getFiducialId).toArray();
+  }
+
+  static double photonAvgAreaFraction(List<PhotonTrackedTarget> targets) {
+    if (targets.isEmpty()) {
+      return 0.0;
+    }
+    double sum = 0.0;
+    for (PhotonTrackedTarget t : targets) {
+      sum += t.area / 100.0;
+    }
+    return sum / targets.size();
+  }
+
+  static double photonAvgCameraToTagDistanceMeters(List<PhotonTrackedTarget> targets) {
     if (targets.isEmpty()) {
       return 0.0;
     }
@@ -470,15 +271,7 @@ public class VisionSubsystem extends SubsystemBase {
     return sum / targets.size();
   }
 
-  private static double photonCameraToTagDistanceMeters(PhotonTrackedTarget t) {
+  static double photonCameraToTagDistanceMeters(PhotonTrackedTarget t) {
     return t.getBestCameraToTarget().getTranslation().getNorm();
-  }
-
-  private static double maxAbsPhotonYawRad(List<PhotonTrackedTarget> targets) {
-    double maxDeg = 0.0;
-    for (PhotonTrackedTarget t : targets) {
-      maxDeg = Math.max(maxDeg, Math.abs(t.yaw));
-    }
-    return Units.degreesToRadians(maxDeg);
   }
 }

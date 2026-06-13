@@ -107,6 +107,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
 
+  private final SwerveDriveIOInputsAutoLogged swerveInputs =
+      new SwerveDriveIOInputsAutoLogged();
+
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
   /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
@@ -241,7 +244,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         new PIDController(DriveConstants.TRENCH_ANGLE_KP, 0.0, DriveConstants.TRENCH_ANGLE_KD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
-    if (Utils.isSimulation()) {
+    if (Utils.isSimulation() && Constants.currentMode != Constants.Mode.REPLAY) {
       startSimThread();
     }
     configureAutoBuilder();
@@ -287,7 +290,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         new PIDController(DriveConstants.TRENCH_ANGLE_KP, 0.0, DriveConstants.TRENCH_ANGLE_KD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
-    if (Utils.isSimulation()) {
+    if (Utils.isSimulation() && Constants.currentMode != Constants.Mode.REPLAY) {
       startSimThread();
     }
     configureAutoBuilder();
@@ -344,7 +347,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         new PIDController(DriveConstants.TRENCH_ANGLE_KP, 0.0, DriveConstants.TRENCH_ANGLE_KD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
-    if (Utils.isSimulation()) {
+    if (Utils.isSimulation() && Constants.currentMode != Constants.Mode.REPLAY) {
       startSimThread();
     }
     configureAutoBuilder();
@@ -449,12 +452,38 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   public void processLog() {
+    if (!Logger.hasReplaySource()) {
+      updateSwerveInputs();
+    }
+    Logger.processInputs("Drive/Swerve", swerveInputs);
+
     field2d.setRobotPose(getPose());
     Logger.recordOutput("Odometry/Robot", getPose());
     Logger.recordOutput("Drive/ChassisSpeeds", getChassisSpeeds());
   }
 
+  private void updateSwerveInputs() {
+    swerveInputs.pose = getState().Pose;
+    swerveInputs.chassisSpeeds = getState().Speeds;
+    swerveInputs.pigeonYawDeg = getPigeon2().getYaw().getValueAsDouble();
+    swerveInputs.pigeonPitchDeg = getPigeon2().getPitch().getValueAsDouble();
+    swerveInputs.pigeonRollDeg = getPigeon2().getRoll().getValueAsDouble();
+    swerveInputs.pigeonYawRateDegPerSec =
+        Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond);
+  }
+
   public void applyLimelightGyroForMegaTag2(String limelightName) {
+    if (Logger.hasReplaySource()) {
+      LimelightHelpers.SetRobotOrientation(
+          limelightName,
+          swerveInputs.pose.getRotation().getDegrees(),
+          swerveInputs.pigeonYawRateDegPerSec,
+          swerveInputs.pigeonPitchDeg,
+          0,
+          swerveInputs.pigeonRollDeg,
+          0);
+      return;
+    }
     LimelightHelpers.SetRobotOrientation(
         limelightName,
         getPose().getRotation().getDegrees(),
@@ -560,6 +589,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   public ChassisSpeeds getChassisSpeeds() {
+    if (Logger.hasReplaySource()) {
+      return swerveInputs.chassisSpeeds;
+    }
     return getState().Speeds;
   }
 
@@ -587,6 +619,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   public Pose2d getPose() {
+    if (Logger.hasReplaySource()) {
+      return swerveInputs.pose;
+    }
     return getState().Pose;
   }
 

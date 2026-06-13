@@ -702,6 +702,18 @@ public final class Constants {
    * Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants.
    */
   public static final class VisionFusion {
+    /** AprilTag IDs on alliance / opponent hub faces (z ≈ 1.12 m on 2026 field). */
+    public static final int[] HUB_TAG_IDS = {4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26};
+
+    public static boolean isHubTag(int tagId) {
+      for (int hubId : HUB_TAG_IDS) {
+        if (hubId == tagId) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     /** Minimum divisor when penalizing large horizontal targeting angles via cos(yaw). */
     public static final double REJECT_MIN_TA = 0.01;
 

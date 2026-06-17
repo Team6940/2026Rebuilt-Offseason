@@ -214,6 +214,7 @@ public class HybridShootCommand extends Command {
     }
     hood.setIdle();
     shooter.stop();
+    drive.releaseAutoAimCurrentLimits();
     superStructure.setShootPhase(ShootPhase.OFF);
     if (!interrupted) {
       superStructure.claimDriveMode(DriveMode.MANUAL);

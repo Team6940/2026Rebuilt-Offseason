@@ -153,6 +153,12 @@ public final class Constants {
     public static final double AUTO_AIM_ANGLE_KI = 0.0;
     public static final double AUTO_AIM_ANGLE_KD = 0.35;
 
+    /** Drive motor supply limit (A) while {@code driveAutoAim} is active; frees battery for shooter. */
+    public static final double AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS = 40.0;
+
+    /** Steer motor stator limit (A) while {@code driveAutoAim} is active. */
+    public static final double AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS = 45.0;
+
     public static final double MOVE_TO_X_KP = 5.;
     public static final double MOVE_TO_Y_KP = 5.;
     public static final double MOVE_TO_THETA_KP = 5.;
@@ -637,7 +643,7 @@ public final class Constants {
   }
 
   public static final class IndexerConstants {
-    public static final double FeederRatio = 31.2 * 5. / 9.;
+    public static final double FeederRatio = 1.0;
     public static final double IndexerRatio = 1.0;
     public static final InvertedValue FeederInverted = InvertedValue.CounterClockwise_Positive;
     public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
@@ -654,8 +660,8 @@ public final class Constants {
     public static final double IndexerkV = 2.15;
     public static final double IndexerkS = 0.35;
     public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
-    public static final double FeedRps = 100.0;
-    public static final double IndexerRps = 6.2;
+    public static final double FeedRps = 60.0;
+    public static final double IndexerRps = 60.0;
   }
 
   /** Maple-sim field sim tuning for OverTheBumper intake, hopper, and full-width dumper shooter. */

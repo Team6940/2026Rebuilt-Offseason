@@ -2,11 +2,13 @@
 
 package frc.robot.subsystems.Chassis;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -140,6 +142,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private Rotation2d snappedSquareEdge = new Rotation2d();
   private double trenchTraversalSign = 1.0;
   private boolean hybridTrenchControlWarmedUp = false;
+
+  private static final double DEFAULT_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS = 70.0;
+  private static final double DEFAULT_STEER_STATOR_CURRENT_LIMIT_AMPS = 60.0;
+
+  private boolean autoAimCurrentLimitsActive = false;
 
   /* Swerve requests to apply during SysId characterization */
   private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
@@ -657,6 +664,23 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       DoubleSupplier ySupplier,
       Supplier<Rotation2d> baseTargetRotation,
       double headingCompDegs) {
+    driveAutoAim(
+        xSupplier,
+        ySupplier,
+        baseTargetRotation,
+        headingCompDegs,
+        DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
+        DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
+  }
+
+  public void driveAutoAim(
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      Supplier<Rotation2d> baseTargetRotation,
+      double headingCompDegs,
+      double driveSupplyCurrentLimitAmps,
+      double steerStatorCurrentLimitAmps) {
+    ensureAutoAimCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
     Translation2d linearVelocityMagnitude =
         getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
     Rotation2d desired = baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs));
@@ -681,6 +705,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       Supplier<Rotation2d> baseTargetRotation,
       double headingCompDegs,
       double maxLinearSpeedMetersPerSec) {
+    driveAutoAim(
+        xSupplier,
+        ySupplier,
+        baseTargetRotation,
+        headingCompDegs,
+        maxLinearSpeedMetersPerSec,
+        DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
+        DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
+  }
+
+  public void driveAutoAim(
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      Supplier<Rotation2d> baseTargetRotation,
+      double headingCompDegs,
+      double maxLinearSpeedMetersPerSec,
+      double driveSupplyCurrentLimitAmps,
+      double steerStatorCurrentLimitAmps) {
+    ensureAutoAimCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
     Translation2d linearVelocityMagnitude =
         getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
     Rotation2d desired = baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs));
@@ -711,15 +754,77 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       double headingCompDegs,
       boolean operatorTrimmingHeading,
       boolean driverTrimmingTranslation) {
+    driveAutoAimWithSpeedLimitorLocked(
+        xSupplier,
+        ySupplier,
+        baseTargetRotation,
+        headingCompDegs,
+        operatorTrimmingHeading,
+        driverTrimmingTranslation,
+        DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
+        DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
+  }
+
+  public void driveAutoAimWithSpeedLimitorLocked(
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      Rotation2d baseTargetRotation,
+      double headingCompDegs,
+      boolean operatorTrimmingHeading,
+      boolean driverTrimmingTranslation,
+      double driveSupplyCurrentLimitAmps,
+      double steerStatorCurrentLimitAmps) {
+    ensureAutoAimCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
     if (operatorTrimmingHeading || driverTrimmingTranslation) {
       driveAutoAim(
           xSupplier,
           ySupplier,
           () -> baseTargetRotation,
           headingCompDegs,
-          getMaxLinearSpeedMetersPerSec() * 0.5);
+          getMaxLinearSpeedMetersPerSec() * 0.2,
+          driveSupplyCurrentLimitAmps,
+          steerStatorCurrentLimitAmps);
     } else {
       stopWithX();
+    }
+  }
+
+  /** Restores default module current limits after {@link #driveAutoAim} ends. */
+  public void releaseAutoAimCurrentLimits() {
+    if (!autoAimCurrentLimitsActive) {
+      return;
+    }
+    applyModuleCurrentLimits(
+        DEFAULT_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS, DEFAULT_STEER_STATOR_CURRENT_LIMIT_AMPS);
+    autoAimCurrentLimitsActive = false;
+    Logger.recordOutput("Drive/AutoAimCurrentLimitActive", false);
+  }
+
+  private void ensureAutoAimCurrentLimits(
+      double driveSupplyCurrentLimitAmps, double steerStatorCurrentLimitAmps) {
+    if (autoAimCurrentLimitsActive) {
+      return;
+    }
+    applyModuleCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
+    autoAimCurrentLimitsActive = true;
+    Logger.recordOutput("Drive/AutoAimCurrentLimitActive", true);
+    Logger.recordOutput("Drive/AutoAimDriveSupplyCurrentLimitAmps", driveSupplyCurrentLimitAmps);
+    Logger.recordOutput("Drive/AutoAimSteerStatorCurrentLimitAmps", steerStatorCurrentLimitAmps);
+  }
+
+  private void applyModuleCurrentLimits(
+      double driveSupplyCurrentLimitAmps, double steerStatorCurrentLimitAmps) {
+    CurrentLimitsConfigs driveLimits =
+        new CurrentLimitsConfigs()
+            .withSupplyCurrentLimit(Amps.of(driveSupplyCurrentLimitAmps))
+            .withSupplyCurrentLimitEnable(true);
+    CurrentLimitsConfigs steerLimits =
+        new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(Amps.of(steerStatorCurrentLimitAmps))
+            .withStatorCurrentLimitEnable(true);
+    for (var module : getModules()) {
+      module.getDriveMotor().getConfigurator().apply(driveLimits);
+      module.getSteerMotor().getConfigurator().apply(steerLimits);
     }
   }
 

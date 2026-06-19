@@ -37,7 +37,9 @@ import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.VisionSubsystem;
+import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -65,6 +67,8 @@ public class RobotContainer {
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+  public static final LoggedNetworkNumber autoDelaySeconds =
+      new LoggedNetworkNumber("SmartDashboard/Auto Delay", 0.0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -83,6 +87,7 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
     autoChooser.addOption("LeftDoubleSwipe", new LeftDoubleSwipe());
     autoChooser.addOption("RightDoubleSwipe", new RightDoubleSwipe());
+
     // Set up SysId routines
     // autoChooser.addOption(
     //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));

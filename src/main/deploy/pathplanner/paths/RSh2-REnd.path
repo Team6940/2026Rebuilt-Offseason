@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.2325545428240745,
+        "y": 2.487313151041667
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.073645833333334,
+        "y": 0.7292789351851854
+      },
+      "isLocked": false,
+      "linkedName": "R-AftSh2"
+    },
+    {
+      "anchor": {
+        "x": 4.4052771990740744,
+        "y": 0.6409015480324081
+      },
+      "prevControl": {
+        "x": 3.591181712962963,
+        "y": 0.669507740162037
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.0,
+    "maxAcceleration": 7.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Right",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -132.657
+  },
+  "useDefaultConstraints": true
+}

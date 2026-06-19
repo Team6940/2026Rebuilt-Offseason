@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.commands.Autos.LeftDoubleSwipe;
+import frc.robot.commands.Autos.RightDoubleSwipe;
 import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.HeatupCommand;
 import frc.robot.commands.HybridShootCommand;
@@ -81,6 +82,7 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
     autoChooser.addOption("LeftDoubleSwipe", new LeftDoubleSwipe());
+    autoChooser.addOption("RightDoubleSwipe", new RightDoubleSwipe());
     // Set up SysId routines
     // autoChooser.addOption(
     //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));

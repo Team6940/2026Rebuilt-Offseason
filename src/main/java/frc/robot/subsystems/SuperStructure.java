@@ -1,8 +1,31 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.commands.DriveHybridTrenchCommand;
+import frc.robot.commands.HeatupCommand;
+import frc.robot.commands.HybridPassCommand;
+import frc.robot.commands.HybridScoreCommand;
+import frc.robot.commands.IntakeDefaultCommand;
+import frc.robot.commands.IntakeHybridCommand;
+import frc.robot.commands.ManualShootCommand;
+import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ImprovedCommandXboxController;
+import frc.robot.subsystems.ImprovedCommandXboxController.Button;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
+/**
+ * Central coordinator for robot modes, subsystem access, and command getters.
+ *
+ * <p>Commands read and write {@link DriveMode}, {@link ControlMode}, {@link ShootPhase}, and {@link
+ * IntakeMode} here. Button bindings live in {@link frc.robot.RobotContainer}.
+ */
 public class SuperStructure extends SubsystemBase {
   private static SuperStructure instance;
 
@@ -13,10 +36,6 @@ public class SuperStructure extends SubsystemBase {
     return instance;
   }
 
-  private SuperStructure() {
-    // Private constructor for singleton pattern
-  }
-
   public enum DriveMode {
     AUTO_AIM,
     HYBRID_TRENCH,
@@ -24,10 +43,11 @@ public class SuperStructure extends SubsystemBase {
     MANUAL
   }
 
-  /** Hub score vs pass lane selection. */
+  /** Hub score, pass lane, or SmartDashboard lookup-table tuning. */
   public enum ControlMode {
     SCORE,
-    PASS
+    PASS,
+    MANUAL
   }
 
   /** Hybrid shooting sequence state. */
@@ -47,14 +67,36 @@ public class SuperStructure extends SubsystemBase {
     REVERSE
   }
 
-  private DriveMode driveModeMode = DriveMode.MANUAL;
+  private final LoggedNetworkNumber manualShootVelocityRps =
+      new LoggedNetworkNumber("SmartDashboard/ShootVelocity", 0.0);
+  private final LoggedNetworkNumber manualHoodDegs =
+      new LoggedNetworkNumber("SmartDashboard/HoodDegs", 0.0);
+
+  private DriveMode driveMode = DriveMode.MANUAL;
   private ControlMode controlMode = ControlMode.SCORE;
   private ShootPhase shootPhase = ShootPhase.OFF;
   private IntakeMode intakeMode = IntakeMode.OFF;
 
-  /** Claim the active drive mode while a hybrid command is running (or MANUAL when released). */
+  private SuperStructure() {}
+
+  public CommandSwerveDrivetrain getDrive() {
+    return CommandSwerveDrivetrain.getInstance();
+  }
+
+  public IntakeSubsystem getIntake() {
+    return IntakeSubsystem.getInstance();
+  }
+
+  public DoubleSupplier getManualShootVelocityRps() {
+    return manualShootVelocityRps::get;
+  }
+
+  public DoubleSupplier getManualHoodDegs() {
+    return manualHoodDegs::get;
+  }
+
   public void claimDriveMode(DriveMode mode) {
-    driveModeMode = mode;
+    driveMode = mode;
   }
 
   public void resetAllModes() {
@@ -76,11 +118,34 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public void toggleControlMode() {
-    controlMode = controlMode == ControlMode.SCORE ? ControlMode.PASS : ControlMode.SCORE;
+    controlMode =
+        switch (controlMode) {
+          case SCORE -> ControlMode.PASS;
+          case PASS -> ControlMode.MANUAL;
+          case MANUAL -> ControlMode.SCORE;
+        };
+  }
+
+  /** Driver LB: INTAKE/HYBRID → RETRACTED → OFF. */
+  public void cycleIntakeRetractState() {
+    switch (intakeMode) {
+      case INTAKE, HYBRID -> setIntakeMode(IntakeMode.RETRACTED);
+      case RETRACTED -> setIntakeMode(IntakeMode.OFF);
+      default -> {}
+    }
+  }
+
+  public void stopDriveWithX() {
+    getDrive().stopWithX();
+  }
+
+  public void resetRobotHeading() {
+    CommandSwerveDrivetrain drive = getDrive();
+    drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
   }
 
   public DriveMode getDriveMode() {
-    return driveModeMode;
+    return driveMode;
   }
 
   public ControlMode getControlMode() {
@@ -95,11 +160,60 @@ public class SuperStructure extends SubsystemBase {
     return intakeMode;
   }
 
+  public Command getFieldCentricDriveCommand(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+    CommandSwerveDrivetrain drive = getDrive();
+    return Commands.run(() -> drive.driveFieldCentric(xSupplier, ySupplier, omegaSupplier), drive)
+        .beforeStarting(Commands.runOnce(() -> claimDriveMode(DriveMode.MANUAL), this));
+  }
+
+  /** Sets {@link ControlMode} and claims {@link DriveMode#AUTO_AIM}, then returns the matching shoot command. */
+  public Command getShootCommand(ControlMode mode, Button shootButton) {
+    Command shoot =
+        switch (mode) {
+          case SCORE -> new HybridScoreCommand(getDrive(), shootButton);
+          case PASS -> new HybridPassCommand(getDrive(), shootButton);
+          case MANUAL -> new ManualShootCommand(getDrive(), shootButton);
+        };
+    return shoot.beforeStarting(
+        Commands.runOnce(
+            () -> {
+              setControlMode(mode);
+              claimDriveMode(DriveMode.AUTO_AIM);
+            },
+            this));
+  }
+
+  public HeatupCommand getHeatupCommand() {
+    return new HeatupCommand(getDrive());
+  }
+
+  public Command getHybridTrenchCommand() {
+    return new DriveHybridTrenchCommand(getDrive())
+        .beforeStarting(Commands.runOnce(() -> claimDriveMode(DriveMode.HYBRID_TRENCH), this));
+  }
+
+  public Command getHybridIntakeCommand(
+      ImprovedCommandXboxController controller,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      DoubleSupplier omegaSupplier) {
+    return new IntakeHybridCommand(getDrive(), controller, xSupplier, ySupplier, omegaSupplier)
+        .beforeStarting(
+            Commands.runOnce(() -> claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE), this));
+  }
+
+  public IntakeDefaultCommand getIntakeDefaultCommand() {
+    return new IntakeDefaultCommand();
+  }
+
   @Override
   public void periodic() {
-    Logger.recordOutput("SuperStructure/DriveMode", driveModeMode);
+    Logger.recordOutput("SuperStructure/DriveMode", driveMode);
     Logger.recordOutput("SuperStructure/ControlMode", controlMode);
     Logger.recordOutput("SuperStructure/ShootPhase", shootPhase);
     Logger.recordOutput("SuperStructure/IntakeMode", intakeMode);
+    Logger.recordOutput("SuperStructure/ManualShootVelocityRps", manualShootVelocityRps.get());
+    Logger.recordOutput("SuperStructure/ManualHoodDegs", manualHoodDegs.get());
   }
 }

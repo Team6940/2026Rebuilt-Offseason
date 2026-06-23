@@ -6,10 +6,12 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.ProjectileConstants;
+import java.util.function.DoubleSupplier;
 
 /**
  * Ballistic lookups and shot planning for hybrid shoot ({@link
- * frc.robot.commands.HybridShootCommand}).
+ * frc.robot.commands.HybridScoreCommand}, {@link frc.robot.commands.HybridPassCommand}, {@link
+ * frc.robot.commands.ManualShootCommand}).
  *
  * <p>SCORE and PASS both use the iterative motion solver ({@link #solve}) with profile-specific
  * distance tables.
@@ -79,6 +81,27 @@ public final class ProjectileCalculator {
         sol.hoodAngleDeg(),
         sol.shooterRps(),
         sol.virtualTarget());
+  }
+
+  /**
+   * Manual lookup-table shot: chassis aims at hub; hood and shooter RPS come from live dashboard
+   * suppliers each cycle.
+   */
+  public static ShotPlan planManual(
+      Translation2d shooterPosition,
+      Translation2d hubCenter,
+      DoubleSupplier hoodDegsSupplier,
+      DoubleSupplier shooterRpsSupplier) {
+    double distanceMeters = shooterPosition.getDistance(hubCenter);
+    Rotation2d heading = chassisHeadingForShooter(hubCenter.minus(shooterPosition).getAngle());
+    return new ShotPlan(
+        false,
+        hubCenter,
+        distanceMeters,
+        heading,
+        hoodDegsSupplier.getAsDouble(),
+        shooterRpsSupplier.getAsDouble(),
+        null);
   }
 
   /**

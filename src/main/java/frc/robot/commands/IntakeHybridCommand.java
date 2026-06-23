@@ -6,6 +6,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import java.util.function.DoubleSupplier;
 
@@ -39,7 +40,13 @@ public class IntakeHybridCommand extends Command {
   }
 
   @Override
+  public void initialize() {
+    superStructure.claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE);
+  }
+
+  @Override
   public void execute() {
+    superStructure.claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE);
     boolean ltPressed = controller.getLeftTrigger();
     double now = Timer.getFPGATimestamp();
 
@@ -63,6 +70,9 @@ public class IntakeHybridCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     superStructure.setIntakeMode(IntakeMode.INTAKE);
+    if (!interrupted) {
+      superStructure.claimDriveMode(DriveMode.MANUAL);
+    }
   }
 
   @Override

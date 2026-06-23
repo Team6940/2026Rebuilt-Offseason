@@ -616,7 +616,7 @@ public final class Constants {
     public static final double HybridRangeDegs = 3.0;
   }
 
-  /** Tuning for {@link frc.robot.commands.HybridShootCommand}. */
+  /** Tuning for hybrid shoot commands ({@link frc.robot.commands.HybridScoreCommand}). */
   public static final class HybridShootConstants {
     // --- Ready gate (AIM → READY) ---
     public static final double HeadingToleranceDegs = 3.0;

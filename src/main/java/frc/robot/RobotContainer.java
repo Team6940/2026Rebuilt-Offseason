@@ -23,11 +23,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.commands.Autos.RightDoubleSwipe;
-import frc.robot.commands.DriveHybridTrenchCommand;
-import frc.robot.commands.HeatupCommand;
-import frc.robot.commands.HybridShootCommand;
-import frc.robot.commands.IntakeDefaultCommand;
-import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FieldSimulation;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
@@ -35,6 +30,7 @@ import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.VisionSubsystem;
 import java.util.Set;
@@ -74,11 +70,8 @@ public class RobotContainer {
   public RobotContainer() {
     drive = TunerConstants.createDrivetrain();
 
-    if (Constants.currentMode == Constants.Mode.REAL) {
-      IntakeSubsystem.getInstance().setDefaultCommand(new IntakeDefaultCommand());
-    } else if (Constants.currentMode == Constants.Mode.SIM) {
+    if (Constants.currentMode == Constants.Mode.SIM) {
       FieldSimulation.initialize(drive, new Pose2d(0.7, 0.7, new Rotation2d()));
-      IntakeSubsystem.getInstance().setDefaultCommand(new IntakeDefaultCommand());
     }
 
     vision = new VisionSubsystem(drive);
@@ -104,7 +97,7 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    intake.setDefaultCommand(new IntakeDefaultCommand());
+    intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
 
     configureButtonBindings();
     // testBindings();
@@ -119,44 +112,50 @@ public class RobotContainer {
 
   /** ***** THE CONTROL LOGIC IS SUCH ****** */
   private void configureButtonBindings() {
-    // Drive priority (highest wins): AutoAim > HybridTrench > HybridIntake > Manual
-    Trigger autoAiming = driverController.rightBumper().or(driverController.y());
-    Trigger hybridTrenchDrive = driverController.a().and(autoAiming.negate());
+    // Drive priority (highest wins): AutoAim (Score/Pass/Manual) > HybridTrench > HybridIntake > Manual
+    Trigger hybridScore = driverController.rightBumper();
+    Trigger hybridPass = driverController.y().and(driverController.rightBumper().negate());
+    Trigger hybridManual = operatorController.povLeft();
+    Trigger hybridTrenchDrive =
+        driverController
+            .a()
+            .and(hybridScore.negate())
+            .and(hybridPass.negate())
+            .and(hybridManual.negate());
     Trigger hybridIntakeDrive =
-        driverController.leftTrigger().and(autoAiming.negate()).and(driverController.a().negate());
+        driverController
+            .leftTrigger()
+            .and(hybridScore.negate())
+            .and(hybridPass.negate())
+            .and(hybridManual.negate())
+            .and(driverController.a().negate());
 
     drive.setDefaultCommand(
-        Commands.run(
-            () ->
-                drive.driveFieldCentric(
-                    () -> -driverController.getLeftY(),
-                    () -> -driverController.getLeftX(),
-                    () -> -driverController.getRightX()),
-            drive));
+        superStructure.getFieldCentricDriveCommand(
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
 
-    autoAiming.whileTrue(
-        new HybridShootCommand(drive, Button.kRightBumper, Button.kRightTrigger, Button.kY));
+    hybridScore.whileTrue(superStructure.getShootCommand(ControlMode.SCORE, Button.kRightTrigger));
+    hybridPass.whileTrue(superStructure.getShootCommand(ControlMode.PASS, Button.kRightTrigger));
+    hybridManual.whileTrue(superStructure.getShootCommand(ControlMode.MANUAL, Button.kRightTrigger));
 
-    operatorController.rightTrigger().whileTrue(new HeatupCommand(drive));
+    operatorController.rightTrigger().whileTrue(superStructure.getHeatupCommand());
+    hybridTrenchDrive.whileTrue(superStructure.getHybridTrenchCommand());
 
-    hybridTrenchDrive.whileTrue(new DriveHybridTrenchCommand(drive));
+    operatorController
+        .povDown()
+        .onTrue(Commands.runOnce(superStructure::resetAllModes, superStructure));
 
-    operatorController.povDown().onTrue(Commands.runOnce(superStructure::resetAllModes));
-
-    driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    driverController
+        .x()
+        .onTrue(Commands.runOnce(superStructure::stopDriveWithX, drive));
     driverController
         .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+        .onTrue(Commands.runOnce(superStructure::resetRobotHeading, drive).ignoringDisable(true));
 
     hybridIntakeDrive.whileTrue(
-        new IntakeHybridCommand(
-            drive,
+        superStructure.getHybridIntakeCommand(
             driverController,
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
@@ -164,16 +163,7 @@ public class RobotContainer {
 
     driverController
         .leftBumper()
-        .onTrue(
-            Commands.runOnce(
-                () -> {
-                  switch (superStructure.getIntakeMode()) {
-                    case INTAKE, HYBRID -> superStructure.setIntakeMode(IntakeMode.RETRACTED);
-                    case RETRACTED -> superStructure.setIntakeMode(IntakeMode.OFF);
-                    default -> {}
-                  }
-                },
-                superStructure));
+        .onTrue(Commands.runOnce(superStructure::cycleIntakeRetractState, superStructure));
 
     driverController
         .povUp()

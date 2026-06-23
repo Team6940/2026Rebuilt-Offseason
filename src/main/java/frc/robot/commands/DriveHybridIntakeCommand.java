@@ -57,6 +57,7 @@ public class DriveHybridIntakeCommand extends Command {
 
   @Override
   public void execute() {
+    superStructure.claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE);
     drive.driveHybridIntake(
         xSupplier,
         ySupplier,

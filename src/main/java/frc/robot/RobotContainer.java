@@ -21,18 +21,24 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.Constants.Ports.LED;
 import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.commands.Autos.RightDoubleSwipe;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FieldSimulation;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
+import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.VisionSubsystem;
+import frc.robot.subsystems.leds.LEDController;
+
 import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -50,9 +56,14 @@ public class RobotContainer {
   public static final String photonCameraLeft = "PhotonL";
   public static final String photonCameraRight = "PhotonR";
 
+  // Create all Subsystems
   private final CommandSwerveDrivetrain drive;
   private final VisionSubsystem vision;
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+  private final LEDController leds = LEDController.getInstance();
+  private final HoodSubsystem hood = HoodSubsystem.getInstance();
+  private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
+  private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
 
   // Controller
@@ -98,6 +109,7 @@ public class RobotContainer {
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
+    leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
 
     configureButtonBindings();
     // testBindings();

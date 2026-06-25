@@ -193,7 +193,7 @@ public class VisionSubsystem extends SubsystemBase {
 
   /**
    * Shared rejection gates for all vision sources. {@code ta} is Limelight-style fractional area
-   * (0–1) or Photon fractional area ({@code area}/100).
+   * (0-1) or Photon fractional area ({@code area}/100).
    */
   static boolean shouldReject(
       double ta,

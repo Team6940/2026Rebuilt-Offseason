@@ -621,7 +621,7 @@ public final class Constants {
 
   /** Tuning for hybrid shoot commands ({@link frc.robot.commands.HybridScoreCommand}). */
   public static final class HybridShootConstants {
-    // --- Ready gate (AIM → READY) ---
+    // --- Ready gate (AIM to READY) ---
     public static final double HeadingToleranceDegs = 3.0;
     public static final double HoodToleranceDegs = HoodConstants.PositionToleranceDegs;
     public static final double ShooterToleranceRps = ShooterConstants.VelocityToleranceRps;
@@ -711,7 +711,7 @@ public final class Constants {
    * Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants.
    */
   public static final class VisionFusion {
-    /** AprilTag IDs on alliance / opponent hub faces (z ≈ 1.12 m on 2026 field). */
+    /** AprilTag IDs on alliance / opponent hub faces (z =  1.12+-0.2 m on 2026 field). */
     public static final int[] HUB_TAG_IDS = {4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26};
 
     public static boolean isHubTag(int tagId) {
@@ -744,7 +744,7 @@ public final class Constants {
     /** Outward yaw (rad) for corner-mounted cameras in a V pattern. */
     private static final double PHOTON_CAMERA_YAW_RADIANS = Units.degreesToRadians(45.0);
 
-    /** Robot origin → PhotonL at front-left frame corner (WPILib: +X forward, +Y left). */
+    /** Robot origin to PhotonL at front-left frame corner (WPILib: +X forward, +Y left). */
     public static final Transform3d kRobotToPhotonL =
         new Transform3d(
             new Translation3d(
@@ -753,7 +753,7 @@ public final class Constants {
                 PHOTON_CAMERA_HEIGHT_METERS),
             new Rotation3d(0.0, 0.0, PHOTON_CAMERA_YAW_RADIANS));
 
-    /** Robot origin → PhotonR at front-right frame corner. */
+    /** Robot origin to PhotonR at front-right frame corner. */
     public static final Transform3d kRobotToPhotonR =
         new Transform3d(
             new Translation3d(
@@ -764,7 +764,7 @@ public final class Constants {
 
     /**
      * Pose θ standard deviation (rad) for Photon when xy σ comes from {@link
-     * PoseEstimatorConstants#tAtoDev} — very large so fusion weights gyro for heading.
+     * PoseEstimatorConstants#tAtoDev} - very large so fusion weights gyro for heading.
      */
     public static final double PHOTON_THETA_STDDEV_RADIANS = 100000000.0;
 
@@ -783,7 +783,7 @@ public final class Constants {
   }
 
   /**
-   * Interpolates vision translation σ (m) from target area fraction (0–1). Used by Photon;
+   * Interpolates vision translation sigma (m) from target area fraction (0–1). Used by Photon;
    * Limelight MegaTag2 uses hardware {@code stddevs} instead.
    */
   public static final class PoseEstimatorConstants {

@@ -44,7 +44,7 @@ public class DriveHybridTrenchCommand extends Command {
         drive.getMaxAngularSpeedRadPerSec() / 2.);
   }
 
-  /** RT → HYBRID intake; otherwise preserve intake mode captured at init. */
+  /** RT to HYBRID intake; otherwise preserve intake mode captured at init. */
   private void applyTrenchDriveState() {
     superStructure.claimDriveMode(DriveMode.HYBRID_TRENCH);
     if (driverController.getRightTrigger()) {

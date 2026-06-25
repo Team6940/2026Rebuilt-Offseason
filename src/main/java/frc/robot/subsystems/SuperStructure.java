@@ -12,10 +12,12 @@ import frc.robot.commands.HybridScoreCommand;
 import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.commands.ManualShootCommand;
+import frc.robot.commands.leds.LEDDefaultCommand;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.leds.LEDController;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -77,6 +79,10 @@ public class SuperStructure extends SubsystemBase {
   private ShootPhase shootPhase = ShootPhase.OFF;
   private IntakeMode intakeMode = IntakeMode.OFF;
 
+  public LEDController getLEDs() {
+    return LEDController.getInstance();
+  }
+
   private SuperStructure() {}
 
   public CommandSwerveDrivetrain getDrive() {
@@ -126,7 +132,7 @@ public class SuperStructure extends SubsystemBase {
         };
   }
 
-  /** Driver LB: INTAKE/HYBRID → RETRACTED → OFF. */
+  /** Driver LB: INTAKE/HYBRID to RETRACTED to OFF. */
   public void cycleIntakeRetractState() {
     switch (intakeMode) {
       case INTAKE, HYBRID -> setIntakeMode(IntakeMode.RETRACTED);
@@ -205,6 +211,10 @@ public class SuperStructure extends SubsystemBase {
 
   public IntakeDefaultCommand getIntakeDefaultCommand() {
     return new IntakeDefaultCommand();
+  }
+
+  public LEDDefaultCommand getLEDDefaultCommand() {
+    return new LEDDefaultCommand(getLEDs());
   }
 
   @Override

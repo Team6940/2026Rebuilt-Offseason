@@ -27,7 +27,10 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.util.Color;
+
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -794,5 +797,71 @@ public final class Constants {
       tAtoDev.put(0.03, 0.7);
       tAtoDev.put(0.01, 1.0);
     }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  public static class Ports {
+    public static class LED {
+      public static final int LED_PWM_PORT = 8;
+    }
+  }
+
+  public static class Settings {
+    public static class LED {
+      public static final int LED_LENGTH = 20;
+      public static final int[] GYRO_BUFFER = {0, 1};
+      public static final int[] SHOOTER_BUFFER = {2, 19};
+
+    }
+      
+    public interface LEDs {
+
+        // TODO: Get actual length of led, along with length of individual sections
+        int LED_LENGTH  = Settings.LED.LED_LENGTH;
+        // LED Pattern
+        
+        LEDPattern DISABLED = LEDPattern.solid(Color.kPurple);
+
+        LEDPattern HYBRID_TRENCH = LEDPattern.solid(Color.kGreen);
+        LEDPattern HYBRID_INTAKE_DRIVE = LEDPattern.solid(Color.kBlue);
+        LEDPattern MANUAL = LEDPattern.solid(Color.kPurple);
+        LEDPattern SHOOT = LEDPattern.solid(Color.kRed);
+        LEDPattern READY = LEDPattern.solid(Color.kGreen);
+        LEDPattern AUTO_AIM = LEDPattern.solid(Color.kYellow);
+        LEDPattern AIM = LEDPattern.solid(Color.kYellow);
+
+
+
+    }
+
   }
 }

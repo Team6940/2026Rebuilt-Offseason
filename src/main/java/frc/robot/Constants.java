@@ -616,7 +616,6 @@ public final class Constants {
     public static final double MinDegs = 17.842;
     public static final double MaxDegs = 43.5;
     public static final double IdlePositionDegs = 17.842;
-    public static final double HybridRangeDegs = 3.0;
   }
 
   /** Tuning for hybrid shoot commands ({@link frc.robot.commands.HybridScoreCommand}). */

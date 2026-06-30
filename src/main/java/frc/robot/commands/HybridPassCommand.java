@@ -71,7 +71,6 @@ public class HybridPassCommand extends Command {
     headingCompDegs = 0.0;
     shootHeadingFineTuneDegs = 0.0;
     lastSimVolleySec = 0.0;
-    hood.setOperatorInputScalar(0.0);
     transitionTo(ShootPhase.AIM);
   }
 
@@ -80,20 +79,35 @@ public class HybridPassCommand extends Command {
     applyOperatorAdjustments();
 
     ShotPlan plan = computeShotPlan();
-    boolean ready = isReady(plan);
+
+    double finalHoodDegs = plan.hoodDegs + hoodCompDegs;
+    double finalShooterRps = plan.shooterRps + rpsOffset;
+    Rotation2d finalHeading = plan.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
+
+    if (superStructure.getShootPhase() == ShootPhase.SHOOT) {
+      shootHeadingFineTuneDegs =
+          ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
+      if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
+        finalHeading =
+            finalHeading.plus(
+                Rotation2d.fromDegrees(shootHeadingFineTuneDegs * AimHeadingCompRangeDegs));
+      }
+    }
+
+    boolean ready = isReady(finalHoodDegs, finalShooterRps, finalHeading);
     boolean fire = driverController.getButton(shootButton);
 
-    hood.setAutoSetpoint(plan.hoodDegs);
-    hood.setOperatorInputScalar(hoodCompDegs / HoodCompRangeDegs);
-    shooter.setVelocityRps(plan.shooterRps + rpsOffset);
+    hood.setAutoSetpoint(finalHoodDegs);
+    shooter.setVelocityRps(finalShooterRps);
+
+    Rotation2d aimHeading = finalHeading;
 
     switch (superStructure.getShootPhase()) {
       case AIM -> {
         drive.driveAutoAim(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> plan.heading,
-            headingCompDegs);
+            () -> aimHeading);
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
@@ -102,8 +116,7 @@ public class HybridPassCommand extends Command {
         drive.driveAutoAim(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> plan.heading,
-            headingCompDegs);
+            () -> aimHeading);
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {
@@ -111,20 +124,12 @@ public class HybridPassCommand extends Command {
         }
       }
       case SHOOT -> {
-        shootHeadingFineTuneDegs =
-            ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
-        double shootHeadingCompDegs = headingCompDegs;
-        if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
-          shootHeadingCompDegs += shootHeadingFineTuneDegs * AimHeadingCompRangeDegs;
-        }
-
         drive.driveAutoAim(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> plan.heading,
-            shootHeadingCompDegs);
+            () -> aimHeading);
 
-        runShootSequence(plan, ready, fire);
+        runShootSequence(finalHoodDegs, ready, fire);
         if (!fire) {
           transitionTo(ready ? ShootPhase.READY : ShootPhase.AIM);
         }
@@ -132,7 +137,7 @@ public class HybridPassCommand extends Command {
       default -> transitionTo(ShootPhase.AIM);
     }
 
-    log(plan, ready, fire);
+    log(plan, finalHoodDegs, finalShooterRps, finalHeading, ready, fire);
   }
 
   @Override
@@ -181,7 +186,7 @@ public class HybridPassCommand extends Command {
             * AimHeadingCompRangeDegs;
   }
 
-  private void runShootSequence(ShotPlan plan, boolean ready, boolean fire) {
+  private void runShootSequence(double finalHoodDegs, boolean ready, boolean fire) {
     double now = Timer.getFPGATimestamp();
     switch (shootSequence) {
       case FEEDING -> {
@@ -189,7 +194,7 @@ public class HybridPassCommand extends Command {
             && fire
             && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec
             && ready) {
-          shooter.simulateLaunch(90. - (plan.hoodDegs + hoodCompDegs));
+          shooter.simulateLaunch(90. - finalHoodDegs);
           lastSimVolleySec = now;
         }
         if (now - shootSequenceStartSec >= FeedDurationSec) {
@@ -208,23 +213,23 @@ public class HybridPassCommand extends Command {
     }
   }
 
-  private boolean isReady(ShotPlan plan) {
-    return isAtTargetAngle(plan) && isAtTargetHood(plan) && isAtTargetShooter(plan);
+  private boolean isReady(double hoodDegs, double shooterRps, Rotation2d heading) {
+    return isAtTargetAngle(heading)
+        && isAtTargetHood(hoodDegs)
+        && isAtTargetShooter(shooterRps);
   }
 
-  private boolean isAtTargetAngle(ShotPlan plan) {
-    Rotation2d desired = plan.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
+  private boolean isAtTargetAngle(Rotation2d desired) {
     return MathUtil.isNear(
         desired.getDegrees(), drive.getRotation().getDegrees(), HeadingToleranceDegs);
   }
 
-  private boolean isAtTargetHood(ShotPlan plan) {
-    return MathUtil.isNear(plan.hoodDegs + hoodCompDegs, hood.getPositionDegs(), HoodToleranceDegs);
+  private boolean isAtTargetHood(double hoodDegs) {
+    return MathUtil.isNear(hoodDegs, hood.getPositionDegs(), HoodToleranceDegs);
   }
 
-  private boolean isAtTargetShooter(ShotPlan plan) {
-    return MathUtil.isNear(
-        plan.shooterRps + rpsOffset, shooter.getVelocityRps(), ShooterToleranceRps);
+  private boolean isAtTargetShooter(double shooterRps) {
+    return MathUtil.isNear(shooterRps, shooter.getVelocityRps(), ShooterToleranceRps);
   }
 
   private void transitionTo(ShootPhase next) {
@@ -248,7 +253,13 @@ public class HybridPassCommand extends Command {
     Logger.recordOutput("Cmds/HybridPass/StateTransition", current + "->" + next);
   }
 
-  private void log(ShotPlan plan, boolean ready, boolean fire) {
+  private void log(
+      ShotPlan plan,
+      double finalHoodDegs,
+      double finalShooterRps,
+      Rotation2d finalHeading,
+      boolean ready,
+      boolean fire) {
     Logger.recordOutput("Cmds/HybridPass/ControlMode", superStructure.getControlMode().toString());
     Logger.recordOutput("Cmds/HybridPass/ShootPhase", superStructure.getShootPhase().toString());
     Logger.recordOutput("Cmds/HybridPass/ShootSequence", shootSequence.toString());
@@ -256,13 +267,13 @@ public class HybridPassCommand extends Command {
     Logger.recordOutput("Cmds/HybridPass/Ready", ready);
     Logger.recordOutput("Cmds/HybridPass/UsesMotionSolver", plan.usesMotionSolver);
     Logger.recordOutput("Cmds/HybridPass/DistanceMeters", plan.distanceMeters);
-    Logger.recordOutput("Cmds/HybridPass/TargetHeadingDegs", plan.heading.getDegrees());
-    Logger.recordOutput("Cmds/HybridPass/HoodDegs", plan.hoodDegs);
-    Logger.recordOutput("Cmds/HybridPass/TargetRps", plan.shooterRps);
+    Logger.recordOutput("Cmds/HybridPass/TargetHeadingDegs", finalHeading.getDegrees());
+    Logger.recordOutput("Cmds/HybridPass/HoodDegs", finalHoodDegs);
+    Logger.recordOutput("Cmds/HybridPass/TargetRps", finalShooterRps);
     Logger.recordOutput("Cmds/HybridPass/RpsOffset", rpsOffset);
-    Logger.recordOutput("Cmds/HybridPass/AtAngle", isAtTargetAngle(plan));
-    Logger.recordOutput("Cmds/HybridPass/AtHood", isAtTargetHood(plan));
-    Logger.recordOutput("Cmds/HybridPass/AtShooter", isAtTargetShooter(plan));
+    Logger.recordOutput("Cmds/HybridPass/AtAngle", isAtTargetAngle(finalHeading));
+    Logger.recordOutput("Cmds/HybridPass/AtHood", isAtTargetHood(finalHoodDegs));
+    Logger.recordOutput("Cmds/HybridPass/AtShooter", isAtTargetShooter(finalShooterRps));
     if (plan.virtualTarget != null) {
       Logger.recordOutput(
           "Cmds/HybridPass/VirtualTarget", new Pose2d(plan.virtualTarget, Rotation2d.kZero));

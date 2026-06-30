@@ -25,8 +25,8 @@ import frc.robot.util.ProjectileCalculator.ShotPlan;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Operator POV left: auto-aim heading at hub; hood and shooter from SmartDashboard for lookup
- * table tuning ({@link SuperStructure#getManualHoodDegs()} / {@link
+ * Operator POV left: auto-aim heading at hub; hood and shooter from SmartDashboard for lookup table
+ * tuning ({@link SuperStructure#getManualHoodDegs()} / {@link
  * SuperStructure#getManualShootVelocityRps()}).
  */
 public class ManualShootCommand extends Command {
@@ -75,7 +75,6 @@ public class ManualShootCommand extends Command {
     headingCompDegs = 0.0;
     shootHeadingFineTuneDegs = 0.0;
     lastSimVolleySec = 0.0;
-    hood.setOperatorInputScalar(0.0);
     transitionTo(ShootPhase.AIM);
   }
 
@@ -84,20 +83,35 @@ public class ManualShootCommand extends Command {
     applyOperatorAdjustments();
 
     ShotPlan plan = computeShotPlan();
-    boolean ready = isReady(plan);
+
+    double finalHoodDegs = plan.hoodDegs + hoodCompDegs;
+    double finalShooterRps = plan.shooterRps + rpsOffset;
+    Rotation2d finalHeading = plan.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
+
+    if (superStructure.getShootPhase() == ShootPhase.SHOOT) {
+      shootHeadingFineTuneDegs =
+          ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
+      if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
+        finalHeading =
+            finalHeading.plus(
+                Rotation2d.fromDegrees(shootHeadingFineTuneDegs * AimHeadingCompRangeDegs));
+      }
+    }
+
+    boolean ready = isReady(finalHoodDegs, finalShooterRps, finalHeading);
     boolean fire = driverController.getButton(shootButton);
 
-    hood.setAutoSetpoint(plan.hoodDegs);
-    hood.setOperatorInputScalar(hoodCompDegs / HoodCompRangeDegs);
-    shooter.setVelocityRps(plan.shooterRps + rpsOffset);
+    hood.setAutoSetpoint(finalHoodDegs);
+    shooter.setVelocityRps(finalShooterRps);
+
+    Rotation2d aimHeading = finalHeading;
 
     switch (superStructure.getShootPhase()) {
       case AIM -> {
         drive.driveAutoAim(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> plan.heading,
-            headingCompDegs);
+            () -> aimHeading);
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
@@ -106,8 +120,7 @@ public class ManualShootCommand extends Command {
         drive.driveAutoAim(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> plan.heading,
-            headingCompDegs);
+            () -> aimHeading);
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {
@@ -115,20 +128,12 @@ public class ManualShootCommand extends Command {
         }
       }
       case SHOOT -> {
-        shootHeadingFineTuneDegs =
-            ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
-        double shootHeadingCompDegs = headingCompDegs;
-        if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
-          shootHeadingCompDegs += shootHeadingFineTuneDegs * AimHeadingCompRangeDegs;
-        }
-
         drive.driveAutoAim(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> plan.heading,
-            shootHeadingCompDegs);
+            () -> aimHeading);
 
-        runShootSequence(plan, ready, fire);
+        runShootSequence(finalHoodDegs, ready, fire);
         if (!fire) {
           transitionTo(ready ? ShootPhase.READY : ShootPhase.AIM);
         }
@@ -136,7 +141,7 @@ public class ManualShootCommand extends Command {
       default -> transitionTo(ShootPhase.AIM);
     }
 
-    log(plan, ready, fire);
+    log(plan, finalHoodDegs, finalShooterRps, finalHeading, ready, fire);
   }
 
   @Override
@@ -189,7 +194,7 @@ public class ManualShootCommand extends Command {
             * AimHeadingCompRangeDegs;
   }
 
-  private void runShootSequence(ShotPlan plan, boolean ready, boolean fire) {
+  private void runShootSequence(double finalHoodDegs, boolean ready, boolean fire) {
     double now = Timer.getFPGATimestamp();
     switch (shootSequence) {
       case FEEDING -> {
@@ -197,7 +202,7 @@ public class ManualShootCommand extends Command {
             && fire
             && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec
             && ready) {
-          shooter.simulateLaunch(90. - (plan.hoodDegs + hoodCompDegs));
+          shooter.simulateLaunch(90. - finalHoodDegs);
           lastSimVolleySec = now;
         }
         if (now - shootSequenceStartSec >= FeedDurationSec) {
@@ -216,23 +221,21 @@ public class ManualShootCommand extends Command {
     }
   }
 
-  private boolean isReady(ShotPlan plan) {
-    return isAtTargetAngle(plan) && isAtTargetHood(plan) && isAtTargetShooter(plan);
+  private boolean isReady(double hoodDegs, double shooterRps, Rotation2d heading) {
+    return isAtTargetAngle(heading) && isAtTargetHood(hoodDegs) && isAtTargetShooter(shooterRps);
   }
 
-  private boolean isAtTargetAngle(ShotPlan plan) {
-    Rotation2d desired = plan.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
+  private boolean isAtTargetAngle(Rotation2d desired) {
     return MathUtil.isNear(
         desired.getDegrees(), drive.getRotation().getDegrees(), HeadingToleranceDegs);
   }
 
-  private boolean isAtTargetHood(ShotPlan plan) {
-    return MathUtil.isNear(plan.hoodDegs + hoodCompDegs, hood.getPositionDegs(), HoodToleranceDegs);
+  private boolean isAtTargetHood(double hoodDegs) {
+    return MathUtil.isNear(hoodDegs, hood.getPositionDegs(), HoodToleranceDegs);
   }
 
-  private boolean isAtTargetShooter(ShotPlan plan) {
-    return MathUtil.isNear(
-        plan.shooterRps + rpsOffset, shooter.getVelocityRps(), ShooterToleranceRps);
+  private boolean isAtTargetShooter(double shooterRps) {
+    return MathUtil.isNear(shooterRps, shooter.getVelocityRps(), ShooterToleranceRps);
   }
 
   private void transitionTo(ShootPhase next) {
@@ -253,27 +256,33 @@ public class ManualShootCommand extends Command {
       indexer.feed();
     }
     superStructure.setShootPhase(next);
-    Logger.recordOutput("Cmds/HybridManual/StateTransition", current + "->" + next);
+    Logger.recordOutput("Cmds/MaunalShoot/StateTransition", current + "->" + next);
   }
 
-  private void log(ShotPlan plan, boolean ready, boolean fire) {
-    Logger.recordOutput("Cmds/HybridManual/ControlMode", superStructure.getControlMode().toString());
-    Logger.recordOutput("Cmds/HybridManual/ShootPhase", superStructure.getShootPhase().toString());
-    Logger.recordOutput("Cmds/HybridManual/ShootSequence", shootSequence.toString());
-    Logger.recordOutput("Cmds/HybridManual/Fire", fire);
-    Logger.recordOutput("Cmds/HybridManual/Ready", ready);
-    Logger.recordOutput("Cmds/HybridManual/UsesMotionSolver", plan.usesMotionSolver);
-    Logger.recordOutput("Cmds/HybridManual/DistanceMeters", plan.distanceMeters);
-    Logger.recordOutput("Cmds/HybridManual/TargetHeadingDegs", plan.heading.getDegrees());
-    Logger.recordOutput("Cmds/HybridManual/HoodDegs", plan.hoodDegs);
-    Logger.recordOutput("Cmds/HybridManual/TargetRps", plan.shooterRps);
-    Logger.recordOutput("Cmds/HybridManual/RpsOffset", rpsOffset);
-    Logger.recordOutput("Cmds/HybridManual/AtAngle", isAtTargetAngle(plan));
-    Logger.recordOutput("Cmds/HybridManual/AtHood", isAtTargetHood(plan));
-    Logger.recordOutput("Cmds/HybridManual/AtShooter", isAtTargetShooter(plan));
+  private void log(
+      ShotPlan plan,
+      double finalHoodDegs,
+      double finalShooterRps,
+      Rotation2d finalHeading,
+      boolean ready,
+      boolean fire) {
+    Logger.recordOutput("Cmds/MaunalShoot/ControlMode", superStructure.getControlMode().toString());
+    Logger.recordOutput("Cmds/MaunalShoot/ShootPhase", superStructure.getShootPhase().toString());
+    Logger.recordOutput("Cmds/MaunalShoot/ShootSequence", shootSequence.toString());
+    Logger.recordOutput("Cmds/MaunalShoot/Fire", fire);
+    Logger.recordOutput("Cmds/MaunalShoot/Ready", ready);
+    Logger.recordOutput("Cmds/MaunalShoot/UsesMotionSolver", plan.usesMotionSolver);
+    Logger.recordOutput("Cmds/MaunalShoot/DistanceMeters", plan.distanceMeters);
+    Logger.recordOutput("Cmds/MaunalShoot/TargetHeadingDegs", finalHeading.getDegrees());
+    Logger.recordOutput("Cmds/MaunalShoot/HoodDegs", finalHoodDegs);
+    Logger.recordOutput("Cmds/MaunalShoot/TargetRps", finalShooterRps);
+    Logger.recordOutput("Cmds/MaunalShoot/RpsOffset", rpsOffset);
+    Logger.recordOutput("Cmds/MaunalShoot/AtAngle", isAtTargetAngle(finalHeading));
+    Logger.recordOutput("Cmds/MaunalShoot/AtHood", isAtTargetHood(finalHoodDegs));
+    Logger.recordOutput("Cmds/MaunalShoot/AtShooter", isAtTargetShooter(finalShooterRps));
     if (plan.virtualTarget != null) {
       Logger.recordOutput(
-          "Cmds/HybridManual/VirtualTarget", new Pose2d(plan.virtualTarget, Rotation2d.kZero));
+          "Cmds/MaunalShoot/VirtualTarget", new Pose2d(plan.virtualTarget, Rotation2d.kZero));
     }
   }
 }

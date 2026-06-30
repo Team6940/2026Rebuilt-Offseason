@@ -6,7 +6,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.HoodConstants;
 import org.littletonrobotics.junction.Logger;
 
-/** Hood angle in degrees with auto setpoint plus operator scalar trim. */
+/** Hood angle in degrees. */
 public class HoodSubsystem extends SubsystemBase {
   private static HoodSubsystem instance;
 
@@ -21,7 +21,6 @@ public class HoodSubsystem extends SubsystemBase {
   private final HoodIOInputsAutoLogged inputs = new HoodIOInputsAutoLogged();
 
   private double autoSetpointDegs = HoodConstants.IdlePositionDegs;
-  private double operatorInputScalar = 0.0;
   private double targetPositionDegs = HoodConstants.IdlePositionDegs;
 
   private HoodSubsystem() {
@@ -38,13 +37,8 @@ public class HoodSubsystem extends SubsystemBase {
     autoSetpointDegs = clamp(positionDegrees);
   }
 
-  public void setOperatorInputScalar(double scalar) {
-    operatorInputScalar = MathUtil.clamp(scalar, -1.0, 1.0);
-  }
-
   public void setIdle() {
     autoSetpointDegs = HoodConstants.IdlePositionDegs;
-    operatorInputScalar = 0.0;
   }
 
   public double getTargetPositionDegs() {
@@ -56,8 +50,7 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   private void applyTarget() {
-    targetPositionDegs =
-        clamp(autoSetpointDegs + operatorInputScalar * HoodConstants.HybridRangeDegs);
+    targetPositionDegs = autoSetpointDegs;
     io.setPosition(targetPositionDegs);
   }
 
@@ -73,6 +66,5 @@ public class HoodSubsystem extends SubsystemBase {
     Logger.recordOutput("Hood/TargetPositionDegs", targetPositionDegs);
     Logger.recordOutput("Hood/PositionDegs", inputs.hoodPositionDegs);
     Logger.recordOutput("Hood/AutoSetpointDegs", autoSetpointDegs);
-    Logger.recordOutput("Hood/OperatorInputScalar", operatorInputScalar);
   }
 }

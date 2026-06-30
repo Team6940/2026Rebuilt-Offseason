@@ -660,15 +660,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   // without speed limit, used for passing which need quick response and no need
   // for accuracy
   public void driveAutoAim(
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      Supplier<Rotation2d> baseTargetRotation,
-      double headingCompDegs) {
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Rotation2d> targetRotation) {
     driveAutoAim(
         xSupplier,
         ySupplier,
-        baseTargetRotation,
-        headingCompDegs,
+        targetRotation,
         DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
         DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
   }
@@ -676,14 +672,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public void driveAutoAim(
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      Supplier<Rotation2d> baseTargetRotation,
-      double headingCompDegs,
+      Supplier<Rotation2d> targetRotation,
       double driveSupplyCurrentLimitAmps,
       double steerStatorCurrentLimitAmps) {
     ensureAutoAimCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
     Translation2d linearVelocityMagnitude =
         getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-    Rotation2d desired = baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs));
+    Rotation2d desired = targetRotation.get();
     double omega = calculateAutoAimOmega(desired);
     ChassisSpeeds speeds =
         new ChassisSpeeds(
@@ -702,14 +697,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public void driveAutoAim(
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      Supplier<Rotation2d> baseTargetRotation,
-      double headingCompDegs,
+      Supplier<Rotation2d> targetRotation,
       double maxLinearSpeedMetersPerSec) {
     driveAutoAim(
         xSupplier,
         ySupplier,
-        baseTargetRotation,
-        headingCompDegs,
+        targetRotation,
         maxLinearSpeedMetersPerSec,
         DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
         DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
@@ -718,15 +711,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public void driveAutoAim(
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      Supplier<Rotation2d> baseTargetRotation,
-      double headingCompDegs,
+      Supplier<Rotation2d> targetRotation,
       double maxLinearSpeedMetersPerSec,
       double driveSupplyCurrentLimitAmps,
       double steerStatorCurrentLimitAmps) {
     ensureAutoAimCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
     Translation2d linearVelocityMagnitude =
         getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-    Rotation2d desired = baseTargetRotation.get().plus(Rotation2d.fromDegrees(headingCompDegs));
+    Rotation2d desired = targetRotation.get();
     double omega = calculateAutoAimOmega(desired);
     ChassisSpeeds speeds =
         new ChassisSpeeds(
@@ -750,15 +742,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public void driveAutoAimWithSpeedLimitorLocked(
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      Rotation2d baseTargetRotation,
-      double headingCompDegs,
+      Rotation2d targetRotation,
       boolean operatorTrimmingHeading,
       boolean driverTrimmingTranslation) {
     driveAutoAimWithSpeedLimitorLocked(
         xSupplier,
         ySupplier,
-        baseTargetRotation,
-        headingCompDegs,
+        targetRotation,
         operatorTrimmingHeading,
         driverTrimmingTranslation,
         DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
@@ -768,8 +758,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public void driveAutoAimWithSpeedLimitorLocked(
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      Rotation2d baseTargetRotation,
-      double headingCompDegs,
+      Rotation2d targetRotation,
       boolean operatorTrimmingHeading,
       boolean driverTrimmingTranslation,
       double driveSupplyCurrentLimitAmps,
@@ -779,8 +768,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       driveAutoAim(
           xSupplier,
           ySupplier,
-          () -> baseTargetRotation,
-          headingCompDegs,
+          () -> targetRotation,
           getMaxLinearSpeedMetersPerSec() * 0.2,
           driveSupplyCurrentLimitAmps,
           steerStatorCurrentLimitAmps);

@@ -26,8 +26,8 @@ public class VisionIOLive implements VisionIO {
   private static final double[] LL_DEFAULT_STDDEVS =
       new double[VisionFusion.LL_STDDEV_ARRAY_LENGTH];
 
-  private final PhotonCameraSetup photonLeft;
-  private final PhotonCameraSetup photonRight;
+  private final PhotonCameraSetup photonBack;
+  private final PhotonCamera photonFront;
 
   private final NetworkTableEntry llLeftSnapshot =
       NetworkTableInstance.getDefault().getTable(RobotContainer.limelightLeft).getEntry("snapshot");
@@ -37,20 +37,38 @@ public class VisionIOLive implements VisionIO {
           .getEntry("snapshot");
 
   public VisionIOLive() {
-    photonLeft =
+    photonBack =
         new PhotonCameraSetup(
-            RobotContainer.photonCameraLeft, "Left", VisionFusion.kRobotToPhotonL);
-    photonRight =
-        new PhotonCameraSetup(
-            RobotContainer.photonCameraRight, "Right", VisionFusion.kRobotToPhotonR);
+            RobotContainer.photonCameraBack, "Back", VisionFusion.kRobotToPhotonBack);
+    photonFront = new PhotonCamera(RobotContainer.photonCameraFront);
+    configurePhotonNetworkTables(photonBack.camera, photonFront);
+    if (Constants.currentMode == Constants.Mode.REAL) {
+      PhotonDriverCamStream.start();
+    }
+  }
+
+  /** PhotonVision subtable keys under {@code photonvision/<cameraName>/}. */
+  private static void configurePhotonNetworkTables(PhotonCamera aprilTagCamera, PhotonCamera driverCamera) {
+    aprilTagCamera.setDriverMode(false);
+    driverCamera.setDriverMode(true);
+
+    NetworkTableInstance nt = NetworkTableInstance.getDefault();
+    nt.getTable("photonvision")
+        .getSubTable(RobotContainer.photonCameraBack)
+        .getEntry("driverMode")
+        .setBoolean(false);
+    nt.getTable("photonvision")
+        .getSubTable(RobotContainer.photonCameraFront)
+        .getEntry("driverMode")
+        .setBoolean(true);
   }
 
   @Override
   public void updateInputs(
       VisionCameraInputs limelightLeft,
       VisionCameraInputs limelightRight,
-      VisionCameraInputs photonLeftInputs,
-      VisionCameraInputs photonRightInputs,
+      VisionCameraInputs photonBackInputs,
+      VisionCameraInputs photonFrontInputs,
       CommandSwerveDrivetrain drive,
       double fpgaNow) {
     llLeftSnapshot.setNumber(0);
@@ -70,8 +88,8 @@ public class VisionIOLive implements VisionIO {
         llRightSnapshot,
         drive,
         fpgaNow);
-    updatePhoton(photonLeftInputs, photonLeft, fpgaNow, drive);
-    updatePhoton(photonRightInputs, photonRight, fpgaNow, drive);
+    updatePhoton(photonBackInputs, photonBack, fpgaNow, drive);
+    updatePhotonDriver(photonFrontInputs, photonFront);
   }
 
   private static void clearInputs(VisionCameraInputs inputs) {
@@ -161,6 +179,15 @@ public class VisionIOLive implements VisionIO {
         std.source(),
         mt2.tagCount,
         VisionSubsystem.limelightTagIds(mt2));
+  }
+
+  private static void updatePhotonDriver(
+      VisionCameraInputs inputs, PhotonCamera driverCamera) {
+    clearInputs(inputs);
+    String cameraName = driverCamera.getName();
+    inputs.connected = driverCamera.isConnected();
+    Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Connected", inputs.connected);
+    Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/DriverMode", true);
   }
 
   private void updatePhoton(

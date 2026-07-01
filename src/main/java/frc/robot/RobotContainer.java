@@ -38,7 +38,6 @@ import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.VisionSubsystem;
 import frc.robot.subsystems.leds.LEDController;
-
 import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -53,17 +52,17 @@ public class RobotContainer {
   // Subsystems
   public static final String limelightLeft = "limelight-l";
   public static final String limelightRight = "limelight";
-  public static final String photonCameraLeft = "PhotonL";
-  public static final String photonCameraRight = "PhotonR";
+  public static final String photonCameraBack = "PhotonBack";
+  public static final String photonCameraFront = "PhotonFront";
 
   // Create all Subsystems
   private final CommandSwerveDrivetrain drive;
-  private final VisionSubsystem vision;
-  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
-  private final LEDController leds = LEDController.getInstance();
-  private final HoodSubsystem hood = HoodSubsystem.getInstance();
-  private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
-  private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
+  // private final VisionSubsystem vision;
+  // private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+  // private final LEDController leds = LEDController.getInstance();
+  // private final HoodSubsystem hood = HoodSubsystem.getInstance();
+  // private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
+  // private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
 
   // Controller
@@ -85,7 +84,7 @@ public class RobotContainer {
       FieldSimulation.initialize(drive, new Pose2d(0.7, 0.7, new Rotation2d()));
     }
 
-    vision = new VisionSubsystem(drive);
+    // vision = new VisionSubsystem(drive);
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
@@ -108,23 +107,24 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
-    leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
+    // intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
+    // leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
 
-    configureButtonBindings();
+    // configureButtonBindings();
     // testBindings();
 
-    CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
-    CommandScheduler.getInstance()
-        .schedule(
-            Commands.runOnce(drive::warmupHybridTrenchControlLoop, drive).ignoringDisable(true));
+    // CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
+    // CommandScheduler.getInstance()
+    //     .schedule(
+    //         Commands.runOnce(drive::warmupHybridTrenchControlLoop, drive).ignoringDisable(true));
   }
 
   private void testBindings() {}
 
   /** ***** THE CONTROL LOGIC IS SUCH ****** */
   private void configureButtonBindings() {
-    // Drive priority (highest wins): AutoAim (Score/Pass/Manual) > HybridTrench > HybridIntake > Manual
+    // Drive priority (highest wins): AutoAim (Score/Pass/Manual) > HybridTrench > HybridIntake >
+    // Manual
     Trigger hybridScore = driverController.rightBumper();
     Trigger hybridPass = driverController.y().and(driverController.rightBumper().negate());
     Trigger hybridManual = operatorController.povLeft();
@@ -150,7 +150,8 @@ public class RobotContainer {
 
     hybridScore.whileTrue(superStructure.getShootCommand(ControlMode.SCORE, Button.kRightTrigger));
     hybridPass.whileTrue(superStructure.getShootCommand(ControlMode.PASS, Button.kRightTrigger));
-    hybridManual.whileTrue(superStructure.getShootCommand(ControlMode.MANUAL, Button.kRightTrigger));
+    hybridManual.whileTrue(
+        superStructure.getShootCommand(ControlMode.MANUAL, Button.kRightTrigger));
 
     operatorController.rightTrigger().whileTrue(superStructure.getHeatupCommand());
     hybridTrenchDrive.whileTrue(superStructure.getHybridTrenchCommand());
@@ -159,9 +160,7 @@ public class RobotContainer {
         .povDown()
         .onTrue(Commands.runOnce(superStructure::resetAllModes, superStructure));
 
-    driverController
-        .x()
-        .onTrue(Commands.runOnce(superStructure::stopDriveWithX, drive));
+    driverController.x().onTrue(Commands.runOnce(superStructure::stopDriveWithX, drive));
     driverController
         .b()
         .onTrue(Commands.runOnce(superStructure::resetRobotHeading, drive).ignoringDisable(true));

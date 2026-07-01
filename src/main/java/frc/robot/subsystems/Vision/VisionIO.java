@@ -31,8 +31,8 @@ public interface VisionIO {
   default void updateInputs(
       VisionCameraInputs limelightLeft,
       VisionCameraInputs limelightRight,
-      VisionCameraInputs photonLeft,
-      VisionCameraInputs photonRight,
+      VisionCameraInputs photonBack,
+      VisionCameraInputs photonFront,
       CommandSwerveDrivetrain drive,
       double fpgaNow) {}
 }

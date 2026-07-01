@@ -21,15 +21,15 @@ public class ShooterIOPhoenix6 implements ShooterIO {
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
 
   public ShooterIOPhoenix6() {
-    configureLeader(leaderA);
-    configureLeader(leaderB);
-    configureFollower(followerA);
-    configureFollower(followerB);
+    configureLeaderA(leaderA);
+    configureLeaderB(leaderB);
+    configureFollowerA(followerA);
+    configureFollowerB(followerB);
     followerA.setControl(new Follower(leaderA.getDeviceID(), ShooterConstants.FollowerAlignment));
     followerB.setControl(new Follower(leaderB.getDeviceID(), ShooterConstants.FollowerAlignment));
   }
 
-  private void configureLeader(TalonFX motor) {
+  private void configureLeaderA(TalonFX motor) {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.Feedback.SensorToMechanismRatio = ShooterConstants.ShooterRatio;
@@ -41,14 +41,37 @@ public class ShooterIOPhoenix6 implements ShooterIO {
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.SupplyCurrentLimit;
     config.CurrentLimits.StatorCurrentLimit = ShooterConstants.StatorCurrentLimit;
-    config.MotorOutput.Inverted = ShooterConstants.Inverted;
+    config.MotorOutput.Inverted = ShooterConstants.AInverted;
     motor.getConfigurator().apply(config);
   }
 
-  private void configureFollower(TalonFX motor) {
+  private void configureLeaderB(TalonFX motor) {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.MotorOutput.Inverted = ShooterConstants.Inverted;
+    config.Feedback.SensorToMechanismRatio = ShooterConstants.ShooterRatio;
+    config.Slot0.kP = ShooterConstants.kP;
+    config.Slot0.kI = ShooterConstants.kI;
+    config.Slot0.kD = ShooterConstants.kD;
+    config.Slot0.kV = ShooterConstants.kV;
+    config.Slot0.kS = ShooterConstants.kS;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.SupplyCurrentLimit;
+    config.CurrentLimits.StatorCurrentLimit = ShooterConstants.StatorCurrentLimit;
+    config.MotorOutput.Inverted = ShooterConstants.BInverted;
+    motor.getConfigurator().apply(config);
+  }
+
+  private void configureFollowerA(TalonFX motor) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = ShooterConstants.AInverted;
+    motor.getConfigurator().apply(config);
+  }
+
+  private void configureFollowerB(TalonFX motor) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = ShooterConstants.BInverted;
     motor.getConfigurator().apply(config);
   }
 

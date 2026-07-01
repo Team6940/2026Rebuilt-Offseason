@@ -30,7 +30,6 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.util.Color;
-
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -84,42 +83,42 @@ public final class Constants {
     public static final int kBackRightEncoderId = 12;
 
     /* Intake */
-    public static final int kIntakeLeaderMotorId = 22;
-    public static final int kIntakeFollowerMotorId = 24;
-    public static final int kIntakeRackMotorId = 23;
+    public static final int kIntakeLeaderMotorId = 14;
+    public static final int kIntakeFollowerMotorId = 15;
+    public static final int kIntakeRackMotorId = 13;
 
     /* Shooter (two leader/follower pairs) */
-    public static final int kShooterLeaderMotorIdA = 30;
-    public static final int kShooterFollowerMotorIdA = 31;
-    public static final int kShooterLeaderMotorIdB = 33;
-    public static final int kShooterFollowerMotorIdB = 34;
+    public static final int kShooterLeaderMotorIdA = 21;
+    public static final int kShooterFollowerMotorIdA = 22;
+    public static final int kShooterLeaderMotorIdB = 23;
+    public static final int kShooterFollowerMotorIdB = 24;
 
     /* Hood */
-    public static final int kHoodMotorId = 32;
+    public static final int kHoodMotorId = 20;
 
     /* Indexer (two feeder + two indexer rollers) */
-    public static final int kIndexerFeederLeaderMotorId = 21;
-    public static final int kIndexerFeederFollowerMotorId = 25;
-    public static final int kIndexerLeaderMotorId = 26;
-    public static final int kIndexerFollowerMotorId = 27;
+    public static final int kIndexerFeederLeaderMotorId = 18;
+    public static final int kIndexerFeederFollowerMotorId = 19;
+    public static final int kIndexerLeaderMotorId = 16;
+    public static final int kIndexerFollowerMotorId = 17;
   }
 
   public static final class IntakeConstants {
     /* Rollers */
-    public static final double RollerRatio = 26. / 12.;
+    public static final double RollerRatio = 35. / 20.;
     public static final InvertedValue RollerInverted = InvertedValue.Clockwise_Positive;
     public static final double RollerSupplyCurrentLimit = 40.0;
     public static final double RollerkP = 0.1;
     public static final double RollerkI = 0.0;
     public static final double RollerkD = 0.0;
-    public static final double RollerkV = 0.18;
-    public static final double RollerkS = 0.45;
+    public static final double RollerkV = 0.213;
+    public static final double RollerkS = 0.353;
     public static final double RollerVelocityToleranceRps = 0.5;
     public static final double IntakingRps = 45.0;
-    public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Aligned;
+    public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Opposed;
 
-    /* Rack (stretcher) */
-    public static final double RackRatio = 27. * 26. / 46.;
+    /* Rack */
+    public static final double RackRatio = 48. / 14.;
     public static final InvertedValue RackInverted = InvertedValue.CounterClockwise_Positive;
     public static final double RackSupplyCurrentLimit = 40.0;
     public static final double RackStatorCurrentLimit = 120.0;
@@ -133,7 +132,7 @@ public final class Constants {
     public static final double RackPositionToleranceRotations = 0.01;
     public static final double RackMinRotations = 0.;
     public static final double RackMaxRotations = 3.11;
-    public static final double RackIdleRotations = 0.0;
+    public static final double RackIdleRotations = 0.;
     public static final double RackRetractedRotations = 2.0;
     public static final double RackExtendedRotations = 2.65;
 
@@ -156,7 +155,9 @@ public final class Constants {
     public static final double AUTO_AIM_ANGLE_KI = 0.0;
     public static final double AUTO_AIM_ANGLE_KD = 0.35;
 
-    /** Drive motor supply limit (A) while {@code driveAutoAim} is active; frees battery for shooter. */
+    /**
+     * Drive motor supply limit (A) while {@code driveAutoAim} is active; frees battery for shooter.
+     */
     public static final double AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS = 40.0;
 
     /** Steer motor stator limit (A) while {@code driveAutoAim} is active. */
@@ -583,7 +584,8 @@ public final class Constants {
 
   public static final class ShooterConstants {
     public static final double ShooterRatio = 1.0;
-    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final InvertedValue AInverted = InvertedValue.Clockwise_Positive;
+    public static final InvertedValue BInverted = InvertedValue.CounterClockwise_Positive;
     public static final double VelocityToleranceRps = 2.5;
     public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
     public static final double kP = 11.5;
@@ -647,7 +649,7 @@ public final class Constants {
   public static final class IndexerConstants {
     public static final double FeederRatio = 1.0;
     public static final double IndexerRatio = 1.0;
-    public static final InvertedValue FeederInverted = InvertedValue.CounterClockwise_Positive;
+    public static final InvertedValue FeederInverted = InvertedValue.Clockwise_Positive;
     public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
     public static final double FeederSupplyCurrentLimit = 60.0;
     public static final double IndexerSupplyCurrentLimit = 60.0;
@@ -656,12 +658,12 @@ public final class Constants {
     public static final double FeederkD = 0.0;
     public static final double FeederkV = 2.15;
     public static final double FeederkS = 0.35;
-    public static final double IndexerkP = 0.5;
+    public static final double IndexerkP = 0.1;
     public static final double IndexerkI = 0.0;
     public static final double IndexerkD = 0.0;
-    public static final double IndexerkV = 2.15;
-    public static final double IndexerkS = 0.35;
-    public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
+    public static final double IndexerkV = 0.12;
+    public static final double IndexerkS = 0.325;
+    public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Opposed;
     public static final double FeedRps = 60.0;
     public static final double IndexerRps = 60.0;
   }
@@ -710,7 +712,7 @@ public final class Constants {
    * Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants.
    */
   public static final class VisionFusion {
-    /** AprilTag IDs on alliance / opponent hub faces (z =  1.12+-0.2 m on 2026 field). */
+    /** AprilTag IDs on alliance / opponent hub faces (z = 1.12+-0.2 m on 2026 field). */
     public static final int[] HUB_TAG_IDS = {4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26};
 
     public static boolean isHubTag(int tagId) {
@@ -734,32 +736,13 @@ public final class Constants {
     public static final double REJECT_MAX_OMEGA_RAD_PER_SEC = 4.0 * Math.PI;
     public static final boolean REJECT_ON_HIGH_OMEGA = true;
 
-    /** PathPlanner robot frame (m); cameras mount at front-left / front-right corners. */
-    private static final double ROBOT_FRAME_HALF_EXTENT_METERS = 0.45;
-
-    /** Camera height above robot origin (m). */
-    public static final double PHOTON_CAMERA_HEIGHT_METERS = 0.285;
-
-    /** Outward yaw (rad) for corner-mounted cameras in a V pattern. */
-    private static final double PHOTON_CAMERA_YAW_RADIANS = Units.degreesToRadians(45.0);
-
-    /** Robot origin to PhotonL at front-left frame corner (WPILib: +X forward, +Y left). */
-    public static final Transform3d kRobotToPhotonL =
+    /**
+     * Robot origin to PhotonBack AprilTag camera (WPILib: +X forward, +Y left, +Z up). Mount at
+     * (6.46 mm, -342 mm, 501 mm) relative to robot geometric center, facing backward (-X).
+     */
+    public static final Transform3d kRobotToPhotonBack =
         new Transform3d(
-            new Translation3d(
-                ROBOT_FRAME_HALF_EXTENT_METERS,
-                ROBOT_FRAME_HALF_EXTENT_METERS,
-                PHOTON_CAMERA_HEIGHT_METERS),
-            new Rotation3d(0.0, 0.0, PHOTON_CAMERA_YAW_RADIANS));
-
-    /** Robot origin to PhotonR at front-right frame corner. */
-    public static final Transform3d kRobotToPhotonR =
-        new Transform3d(
-            new Translation3d(
-                ROBOT_FRAME_HALF_EXTENT_METERS,
-                -ROBOT_FRAME_HALF_EXTENT_METERS,
-                PHOTON_CAMERA_HEIGHT_METERS),
-            new Rotation3d(0.0, 0.0, -PHOTON_CAMERA_YAW_RADIANS));
+            new Translation3d(0.00646, -0.342, 0.501), new Rotation3d(0.0, 0.0, Math.PI));
 
     /**
      * Pose θ standard deviation (rad) for Photon when xy σ comes from {@link
@@ -781,6 +764,37 @@ public final class Constants {
     public static final int LL_MT2_YAW_STDDEV_INDEX = 11;
   }
 
+  /** PhotonFront driver camera streaming (CameraServer + optional port forwarding). */
+  public static final class DriverCam {
+    /** Dashboard / CameraServer stream name. */
+    public static final String STREAM_NAME = "DriverCam";
+
+    /**
+     * Static IP of the PhotonVision coprocessor. Leave empty to derive {@code 10.TE.AM.xx} from the
+     * team number and {@link #PHOTON_COPROCESSOR_HOST_OCTET}.
+     */
+    public static final String PHOTON_COPROCESSOR_STATIC_IP = "";
+
+    /** Last octet when using team IP (10.TE.AM.xx). */
+    public static final int PHOTON_COPROCESSOR_HOST_OCTET = 10;
+
+    /** Fallback team number when roboRIO team number is not configured yet. */
+    public static final int DEFAULT_TEAM_NUMBER = 6940;
+
+    /**
+     * PhotonFront processed output port. PhotonVision assigns 1181/1182 to camera 1 and 1183/1184
+     * to camera 2; use the even port for pipeline output (driver-mode feed).
+     */
+    public static final int PHOTON_FRONT_OUTPUT_STREAM_PORT = 1184;
+
+    public static final int PHOTON_WEB_UI_PORT = 5800;
+
+    /**
+     * Forward coprocessor ports when tethered to roboRIO USB (not needed on VH-109 DS ethernet).
+     */
+    public static final boolean ENABLE_PORT_FORWARDING = true;
+  }
+
   /**
    * Interpolates vision translation sigma (m) from target area fraction (0–1). Used by Photon;
    * Limelight MegaTag2 uses hardware {@code stddevs} instead.
@@ -798,36 +812,6 @@ public final class Constants {
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   public static class Ports {
     public static class LED {
       public static final int LED_PWM_PORT = 8;
@@ -839,28 +823,23 @@ public final class Constants {
       public static final int LED_LENGTH = 20;
       public static final int[] GYRO_BUFFER = {0, 1};
       public static final int[] SHOOTER_BUFFER = {2, 19};
-
     }
-      
+
     public interface LEDs {
 
-        // TODO: Get actual length of led, along with length of individual sections
-        int LED_LENGTH  = Settings.LED.LED_LENGTH;
-        // LED Pattern
-        
-        LEDPattern DISABLED = LEDPattern.solid(Color.kPurple);
+      // TODO: Get actual length of led, along with length of individual sections
+      int LED_LENGTH = Settings.LED.LED_LENGTH;
+      // LED Pattern
 
-        LEDPattern HYBRID_TRENCH = LEDPattern.solid(Color.kGreen);
-        LEDPattern HYBRID_INTAKE_DRIVE = LEDPattern.solid(Color.kBlue);
-        LEDPattern MANUAL = LEDPattern.solid(Color.kPurple);
-        LEDPattern SHOOT = LEDPattern.solid(Color.kRed);
-        LEDPattern READY = LEDPattern.solid(Color.kGreen);
-        LEDPattern AUTO_AIM = LEDPattern.solid(Color.kYellow);
-        LEDPattern AIM = LEDPattern.solid(Color.kYellow);
+      LEDPattern DISABLED = LEDPattern.solid(Color.kPurple);
 
-
-
+      LEDPattern HYBRID_TRENCH = LEDPattern.solid(Color.kGreen);
+      LEDPattern HYBRID_INTAKE_DRIVE = LEDPattern.solid(Color.kBlue);
+      LEDPattern MANUAL = LEDPattern.solid(Color.kPurple);
+      LEDPattern SHOOT = LEDPattern.solid(Color.kRed);
+      LEDPattern READY = LEDPattern.solid(Color.kGreen);
+      LEDPattern AUTO_AIM = LEDPattern.solid(Color.kYellow);
+      LEDPattern AIM = LEDPattern.solid(Color.kYellow);
     }
-
   }
 }

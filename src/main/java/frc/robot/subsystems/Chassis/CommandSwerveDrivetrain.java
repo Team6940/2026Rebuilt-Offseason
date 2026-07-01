@@ -8,8 +8,8 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -22,6 +22,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import edu.wpi.first.math.MathUsageId;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
@@ -109,8 +110,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
 
-  private final SwerveDriveIOInputsAutoLogged swerveInputs =
-      new SwerveDriveIOInputsAutoLogged();
+  private final SwerveDriveIOInputsAutoLogged swerveInputs = new SwerveDriveIOInputsAutoLogged();
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -475,8 +475,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     swerveInputs.pigeonYawDeg = getPigeon2().getYaw().getValueAsDouble();
     swerveInputs.pigeonPitchDeg = getPigeon2().getPitch().getValueAsDouble();
     swerveInputs.pigeonRollDeg = getPigeon2().getRoll().getValueAsDouble();
-    swerveInputs.pigeonYawRateDegPerSec =
-        Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond);
+    swerveInputs.pigeonYawRateDegPerSec = Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond);
   }
 
   public void applyLimelightGyroForMegaTag2(String limelightName) {
@@ -956,6 +955,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Rotation2d desiredFacing = getDesiredFacingHybridIntake(driverLinear, IntakeMode.HYBRID);
     boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
     double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
+    double kLiner = MathUtil.clamp(Math.cos(trenchAngleController.getError()), 0., 1.);
+    driverLinear = driverLinear.times(kLiner);
     ChassisSpeeds speeds = new ChassisSpeeds(driverLinear.getX(), driverLinear.getY(), omega);
     boolean isFlipped =
         DriverStation.getAlliance().isPresent()

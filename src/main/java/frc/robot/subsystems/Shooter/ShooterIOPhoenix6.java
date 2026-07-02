@@ -4,7 +4,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -18,7 +18,7 @@ public class ShooterIOPhoenix6 implements ShooterIO {
   protected final TalonFX leaderB = new TalonFX(MotorIDs.kShooterLeaderMotorIdB, CANBus.roboRIO());
   protected final TalonFX followerB =
       new TalonFX(MotorIDs.kShooterFollowerMotorIdB, CANBus.roboRIO());
-  private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
+  private final VelocityTorqueCurrentFOC velocityRequest = new VelocityTorqueCurrentFOC(0.0);
 
   public ShooterIOPhoenix6() {
     configureLeaderA(leaderA);
@@ -40,6 +40,7 @@ public class ShooterIOPhoenix6 implements ShooterIO {
     config.Slot0.kS = ShooterConstants.kS;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.SupplyCurrentLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.StatorCurrentLimit = ShooterConstants.StatorCurrentLimit;
     config.MotorOutput.Inverted = ShooterConstants.AInverted;
     motor.getConfigurator().apply(config);
@@ -56,6 +57,7 @@ public class ShooterIOPhoenix6 implements ShooterIO {
     config.Slot0.kS = ShooterConstants.kS;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.SupplyCurrentLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.StatorCurrentLimit = ShooterConstants.StatorCurrentLimit;
     config.MotorOutput.Inverted = ShooterConstants.BInverted;
     motor.getConfigurator().apply(config);

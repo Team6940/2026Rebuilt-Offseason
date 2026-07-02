@@ -24,6 +24,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import edu.wpi.first.math.MathUsageId;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
@@ -957,6 +958,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Rotation2d desiredFacing = getDesiredFacingHybridIntake(driverLinear, IntakeMode.HYBRID);
     boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
     double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
+    double kLiner = MathUtil.clamp(Math.cos(trenchAngleController.getError()), 0., 1.);
+    driverLinear = driverLinear.times(kLiner);
     ChassisSpeeds speeds = new ChassisSpeeds(driverLinear.getX(), driverLinear.getY(), omega);
     boolean isFlipped =
         DriverStation.getAlliance().isPresent()

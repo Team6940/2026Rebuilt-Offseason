@@ -8,10 +8,12 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
@@ -109,8 +111,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
 
-  private final SwerveDriveIOInputsAutoLogged swerveInputs =
-      new SwerveDriveIOInputsAutoLogged();
+  private final SwerveDriveIOInputsAutoLogged swerveInputs = new SwerveDriveIOInputsAutoLogged();
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -121,7 +122,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   /** Swerve request to apply during robot-centric path following and velocity control */
   private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds =
-      new SwerveRequest.ApplyRobotSpeeds();
+      new SwerveRequest.ApplyRobotSpeeds()
+          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity);
 
   private final SwerveRequest.SwerveDriveBrake m_brakeRequest =
       new SwerveRequest.SwerveDriveBrake();
@@ -475,8 +477,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     swerveInputs.pigeonYawDeg = getPigeon2().getYaw().getValueAsDouble();
     swerveInputs.pigeonPitchDeg = getPigeon2().getPitch().getValueAsDouble();
     swerveInputs.pigeonRollDeg = getPigeon2().getRoll().getValueAsDouble();
-    swerveInputs.pigeonYawRateDegPerSec =
-        Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond);
+    swerveInputs.pigeonYawRateDegPerSec = Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond);
   }
 
   public void applyLimelightGyroForMegaTag2(String limelightName) {

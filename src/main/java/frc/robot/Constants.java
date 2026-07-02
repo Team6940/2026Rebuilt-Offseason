@@ -119,22 +119,22 @@ public final class Constants {
 
     /* Rack */
     public static final double RackRatio = 48. / 14.;
-    public static final InvertedValue RackInverted = InvertedValue.CounterClockwise_Positive;
+    public static final InvertedValue RackInverted = InvertedValue.Clockwise_Positive;
     public static final double RackSupplyCurrentLimit = 40.0;
     public static final double RackStatorCurrentLimit = 120.0;
-    public static final double RackkP = 96.;
+    public static final double RackkP = 20.;
     public static final double RackkI = 0.0;
     public static final double RackkD = 0.0;
     public static final double RackkV = 0.0;
     public static final double RackkS = 0.34;
-    public static final double RackMotionMagicMaxVelocity = 20.0;
-    public static final double RackMotionMagicAcceleration = 48.0;
+    public static final double RackMotionMagicMaxVelocity = 40.0;
+    public static final double RackMotionMagicAcceleration = 80.0;
     public static final double RackPositionToleranceRotations = 0.01;
     public static final double RackMinRotations = 0.;
-    public static final double RackMaxRotations = 3.11;
+    public static final double RackMaxRotations = 4.59;
     public static final double RackIdleRotations = 0.;
-    public static final double RackRetractedRotations = 2.0;
-    public static final double RackExtendedRotations = 2.65;
+    public static final double RackRetractedRotations = 2.41;
+    public static final double RackExtendedRotations = 4.58;
 
     /**
      * LT held longer than this sets {@link frc.robot.subsystems.SuperStructure.IntakeMode#HYBRID}.
@@ -583,16 +583,16 @@ public final class Constants {
   }
 
   public static final class ShooterConstants {
-    public static final double ShooterRatio = 1.0;
+    public static final double ShooterRatio = 1.5;
     public static final InvertedValue AInverted = InvertedValue.Clockwise_Positive;
     public static final InvertedValue BInverted = InvertedValue.CounterClockwise_Positive;
-    public static final double VelocityToleranceRps = 2.5;
+    public static final double VelocityToleranceRps = 0.;
     public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
-    public static final double kP = 11.5;
+    public static final double kP = 8.;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
-    public static final double kV = 0.115;
-    public static final double kS = 19.5;
+    public static final double kV = 0.11;
+    public static final double kS = 9;
     public static final double SupplyCurrentLimit = 120.0;
     public static final double StatorCurrentLimit = 100.0;
 
@@ -604,19 +604,20 @@ public final class Constants {
   }
 
   public static final class HoodConstants {
-    public static final double HoodRatio = 182. / 12. * 50. / 8.;
-    public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
+    public static final double HoodRatio = 31. / 20. * 40. / 14. * 14.;
+    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double SupplyCurrentLimit = 40.0;
-    public static final double kP = 360.0;
+    public static final double kP = 20.0;
     public static final double kI = 0.0;
-    public static final double kD = 0.0;
+    public static final double kD = 0.2;
     public static final double kV = 0.0;
-    public static final double kS = 0.29;
-    public static final double MotionMagicMaxVelocity = 10.0;
-    public static final double MotionMagicAcceleration = 20.0;
+    public static final double kS = 0.;
+    public static final double kG = 0.45;
+    public static final double MotionMagicMaxVelocity = 40.0;
+    public static final double MotionMagicAcceleration = 80.0;
     public static final double PositionToleranceDegs = 3.0;
     public static final double MinDegs = 17.842;
-    public static final double MaxDegs = 43.5;
+    public static final double MaxDegs = 57.6;
     public static final double IdlePositionDegs = 17.842;
   }
 
@@ -625,7 +626,7 @@ public final class Constants {
     // --- Ready gate (AIM to READY) ---
     public static final double HeadingToleranceDegs = 3.0;
     public static final double HoodToleranceDegs = HoodConstants.PositionToleranceDegs;
-    public static final double ShooterToleranceRps = ShooterConstants.VelocityToleranceRps;
+    public static final double ShooterToleranceRps = 3.;
 
     // --- Operator trims (AIM / READY) ---
     public static final double AimHeadingCompRangeDegs = 10.0;
@@ -647,24 +648,25 @@ public final class Constants {
   }
 
   public static final class IndexerConstants {
-    public static final double FeederRatio = 1.0;
+    public static final double FeederRatio = 1.7;
     public static final double IndexerRatio = 1.0;
     public static final InvertedValue FeederInverted = InvertedValue.Clockwise_Positive;
     public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
     public static final double FeederSupplyCurrentLimit = 60.0;
     public static final double IndexerSupplyCurrentLimit = 60.0;
-    public static final double FeederkP = 0.5;
+    public static final double FeederkP = 0.1;
     public static final double FeederkI = 0.0;
     public static final double FeederkD = 0.0;
-    public static final double FeederkV = 2.15;
-    public static final double FeederkS = 0.35;
+    public static final double FeederkV = 0.12;
+    public static final double FeederkS = 0.31;
     public static final double IndexerkP = 0.1;
     public static final double IndexerkI = 0.0;
     public static final double IndexerkD = 0.0;
     public static final double IndexerkV = 0.12;
     public static final double IndexerkS = 0.325;
-    public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Opposed;
-    public static final double FeedRps = 60.0;
+    public static final MotorAlignmentValue IndexerFollowerAlignment = MotorAlignmentValue.Opposed;
+    public static final MotorAlignmentValue FeederFollowerAlignment = MotorAlignmentValue.Aligned;
+    public static final double FeedRps = 75.0;
     public static final double IndexerRps = 60.0;
   }
 

@@ -13,17 +13,22 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Ports.LED;
 import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.commands.Autos.RightDoubleSwipe;
+import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FieldSimulation;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
@@ -58,13 +63,13 @@ public class RobotContainer {
   // Create all Subsystems
   private final CommandSwerveDrivetrain drive;
   // private final VisionSubsystem vision;
-  // private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   // private final LEDController leds = LEDController.getInstance();
-  // private final HoodSubsystem hood = HoodSubsystem.getInstance();
-  // private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
-  // private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
+  private final HoodSubsystem hood = HoodSubsystem.getInstance();
+  private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
+  private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
-
+  private Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
   // Controller
   public static final ImprovedCommandXboxController driverController =
       new ImprovedCommandXboxController(0);
@@ -107,19 +112,28 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
+    intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
     // leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
 
-    // configureButtonBindings();
+    configureButtonBindings();
     // testBindings();
-
-    // CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
-    // CommandScheduler.getInstance()
-    //     .schedule(
-    //         Commands.runOnce(drive::warmupHybridTrenchControlLoop, drive).ignoringDisable(true));
+    drive.registerTelemetry(logger::telemeterize);
+    CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
+    CommandScheduler.getInstance()
+        .schedule(
+            Commands.runOnce(drive::warmupHybridTrenchControlLoop, drive).ignoringDisable(true));
   }
 
-  private void testBindings() {}
+  private void testBindings() {
+    drive.setDefaultCommand(
+        superStructure.getFieldCentricDriveCommand(
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
+    driverController
+        .b()
+        .onTrue(Commands.runOnce(superStructure::resetRobotHeading, drive).ignoringDisable(true));
+  }
 
   /** ***** THE CONTROL LOGIC IS SUCH ****** */
   private void configureButtonBindings() {

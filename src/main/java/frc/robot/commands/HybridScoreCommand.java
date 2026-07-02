@@ -205,6 +205,7 @@ public class HybridScoreCommand extends Command {
           shooter.simulateLaunch(90. - finalHoodDegs);
           lastSimVolleySec = now;
         }
+        indexer.feed();
         if (now - shootSequenceStartSec >= FeedDurationSec) {
           superStructure.setIntakeMode(IntakeMode.RETRACTED);
           shootSequence = ShootSequence.RETRACT_WAIT;
@@ -212,6 +213,7 @@ public class HybridScoreCommand extends Command {
         }
       }
       case RETRACT_WAIT -> {
+        indexer.feed();
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
           superStructure.setIntakeMode(IntakeMode.OFF);
           shootSequence = ShootSequence.COMPLETE;
@@ -222,9 +224,7 @@ public class HybridScoreCommand extends Command {
   }
 
   private boolean isReady(double hoodDegs, double shooterRps, Rotation2d heading) {
-    return isAtTargetAngle(heading)
-        && isAtTargetHood(hoodDegs)
-        && isAtTargetShooter(shooterRps);
+    return isAtTargetAngle(heading) && isAtTargetHood(hoodDegs) && isAtTargetShooter(shooterRps);
   }
 
   private boolean isAtTargetAngle(Rotation2d desired) {

@@ -4,6 +4,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import frc.robot.Constants.HoodConstants;
@@ -11,8 +12,7 @@ import frc.robot.Constants.MotorIDs;
 
 public class HoodIOPhoenix6 implements HoodIO {
   protected final TalonFX motor = new TalonFX(MotorIDs.kHoodMotorId, new CANBus("canivore"));
-  private final MotionMagicVoltage positionRequest =
-      new MotionMagicVoltage(0.0).withEnableFOC(true);
+  private final PositionVoltage positionRequest = new PositionVoltage(0.0).withEnableFOC(true);
 
   public HoodIOPhoenix6() {
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -23,6 +23,7 @@ public class HoodIOPhoenix6 implements HoodIO {
     config.Slot0.kD = HoodConstants.kD;
     config.Slot0.kV = HoodConstants.kV;
     config.Slot0.kS = HoodConstants.kS;
+    config.Slot0.kG = HoodConstants.kG;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = HoodConstants.SupplyCurrentLimit;
     config.MotionMagic.MotionMagicCruiseVelocity = HoodConstants.MotionMagicMaxVelocity;

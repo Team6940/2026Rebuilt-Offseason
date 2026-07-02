@@ -46,9 +46,9 @@ public class IndexerIOPhoenix6 implements IndexerIO {
     configureFollower(feederFollower, IndexerConstants.FeederInverted);
     configureFollower(indexerFollower, IndexerConstants.IndexerInverted);
     feederFollower.setControl(
-        new Follower(feederLeader.getDeviceID(), IndexerConstants.FollowerAlignment));
+        new Follower(feederLeader.getDeviceID(), IndexerConstants.FeederFollowerAlignment));
     indexerFollower.setControl(
-        new Follower(indexerLeader.getDeviceID(), IndexerConstants.FollowerAlignment));
+        new Follower(indexerLeader.getDeviceID(), IndexerConstants.IndexerFollowerAlignment));
   }
 
   private void configureVelocityMotor(

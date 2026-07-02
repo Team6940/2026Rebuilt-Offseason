@@ -28,14 +28,12 @@ public class VisionSubsystem extends SubsystemBase {
 
   private final CommandSwerveDrivetrain drive;
   private final VisionIO visionIO;
-  private final VisionCameraInputsAutoLogged limelightLeftInputs =
-      new VisionCameraInputsAutoLogged();
-  private final VisionCameraInputsAutoLogged limelightRightInputs =
-      new VisionCameraInputsAutoLogged();
-  private final VisionCameraInputsAutoLogged photonBackInputs =
-      new VisionCameraInputsAutoLogged();
-  private final VisionCameraInputsAutoLogged photonFrontInputs =
-      new VisionCameraInputsAutoLogged();
+  // private final VisionCameraInputsAutoLogged limelightLeftInputs =
+  //     new VisionCameraInputsAutoLogged();
+  // private final VisionCameraInputsAutoLogged limelightRightInputs =
+  //     new VisionCameraInputsAutoLogged();
+  private final VisionCameraInputsAutoLogged photonBackInputs = new VisionCameraInputsAutoLogged();
+  private final VisionCameraInputsAutoLogged photonFrontInputs = new VisionCameraInputsAutoLogged();
 
   public static VisionSubsystem m_instance;
 
@@ -56,24 +54,29 @@ public class VisionSubsystem extends SubsystemBase {
   public void periodic() {
     double fpgaNow = Timer.getFPGATimestamp();
 
+    // if (!Logger.hasReplaySource()) {
+    //   visionIO.updateInputs(
+    //       limelightLeftInputs,
+    //       limelightRightInputs,
+    //       photonBackInputs,
+    //       photonFrontInputs,
+    //       drive,
+    //       fpgaNow);
+    // }
+
     if (!Logger.hasReplaySource()) {
-      visionIO.updateInputs(
-          limelightLeftInputs,
-          limelightRightInputs,
-          photonBackInputs,
-          photonFrontInputs,
-          drive,
-          fpgaNow);
+      visionIO.updateInputs(null, null, photonBackInputs, photonFrontInputs, drive, fpgaNow);
     }
 
-    Logger.processInputs("Vision/LimelightLeft", limelightLeftInputs);
-    Logger.processInputs("Vision/LimelightRight", limelightRightInputs);
+    // Logger.processInputs("Vision/LimelightLeft", limelightLeftInputs);
+    // Logger.processInputs("Vision/LimelightRight", limelightRightInputs);
     Logger.processInputs("Vision/PhotonBack", photonBackInputs);
     Logger.processInputs("Vision/PhotonFront", photonFrontInputs);
 
-    List<VisionMeasurement> accepted = new ArrayList<>(4);
-    measurementFromInputs(limelightLeftInputs).ifPresent(accepted::add);
-    measurementFromInputs(limelightRightInputs).ifPresent(accepted::add);
+    // List<VisionMeasurement> accepted = new ArrayList<>(3);
+    List<VisionMeasurement> accepted = new ArrayList<>(1);
+    // measurementFromInputs(limelightLeftInputs).ifPresent(accepted::add);
+    // measurementFromInputs(limelightRightInputs).ifPresent(accepted::add);
     measurementFromInputs(photonBackInputs).ifPresent(accepted::add);
 
     if (accepted.isEmpty()) {

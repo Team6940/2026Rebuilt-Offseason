@@ -29,12 +29,13 @@ public class VisionIOLive implements VisionIO {
   private final PhotonCameraSetup photonBack;
   private final PhotonCamera photonFront;
 
-  private final NetworkTableEntry llLeftSnapshot =
-      NetworkTableInstance.getDefault().getTable(RobotContainer.limelightLeft).getEntry("snapshot");
-  private final NetworkTableEntry llRightSnapshot =
-      NetworkTableInstance.getDefault()
-          .getTable(RobotContainer.limelightRight)
-          .getEntry("snapshot");
+  // private final NetworkTableEntry llLeftSnapshot =
+  //
+  // NetworkTableInstance.getDefault().getTable(RobotContainer.limelightLeft).getEntry("snapshot");
+  // private final NetworkTableEntry llRightSnapshot =
+  //     NetworkTableInstance.getDefault()
+  //         .getTable(RobotContainer.limelightRight)
+  //         .getEntry("snapshot");
 
   public VisionIOLive() {
     photonBack =
@@ -48,7 +49,8 @@ public class VisionIOLive implements VisionIO {
   }
 
   /** PhotonVision subtable keys under {@code photonvision/<cameraName>/}. */
-  private static void configurePhotonNetworkTables(PhotonCamera aprilTagCamera, PhotonCamera driverCamera) {
+  private static void configurePhotonNetworkTables(
+      PhotonCamera aprilTagCamera, PhotonCamera driverCamera) {
     aprilTagCamera.setDriverMode(false);
     driverCamera.setDriverMode(true);
 
@@ -71,23 +73,23 @@ public class VisionIOLive implements VisionIO {
       VisionCameraInputs photonFrontInputs,
       CommandSwerveDrivetrain drive,
       double fpgaNow) {
-    llLeftSnapshot.setNumber(0);
-    llRightSnapshot.setNumber(0);
+    // llLeftSnapshot.setNumber(0);
+    // llRightSnapshot.setNumber(0);
 
-    updateLimelight(
-        limelightLeft,
-        RobotContainer.limelightLeft,
-        "Left",
-        llLeftSnapshot,
-        drive,
-        fpgaNow);
-    updateLimelight(
-        limelightRight,
-        RobotContainer.limelightRight,
-        "Right",
-        llRightSnapshot,
-        drive,
-        fpgaNow);
+    // updateLimelight(
+    //     limelightLeft,
+    //     RobotContainer.limelightLeft,
+    //     "Left",
+    //     llLeftSnapshot,
+    //     drive,
+    //     fpgaNow);
+    // updateLimelight(
+    //     limelightRight,
+    //     RobotContainer.limelightRight,
+    //     "Right",
+    //     llRightSnapshot,
+    //     drive,
+    //     fpgaNow);
     updatePhoton(photonBackInputs, photonBack, fpgaNow, drive);
     updatePhotonDriver(photonFrontInputs, photonFront);
   }
@@ -157,8 +159,7 @@ public class VisionIOLive implements VisionIO {
       return;
     }
 
-    VisionSubsystem.LlStdDevs std =
-        resolveLimelightStdDevs(limelightName, mt2.avgTagArea);
+    VisionSubsystem.LlStdDevs std = resolveLimelightStdDevs(limelightName, mt2.avgTagArea);
     Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevsValid", true);
     Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevX", std.sigmaXMeters());
     Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevY", std.sigmaYMeters());
@@ -181,8 +182,7 @@ public class VisionIOLive implements VisionIO {
         VisionSubsystem.limelightTagIds(mt2));
   }
 
-  private static void updatePhotonDriver(
-      VisionCameraInputs inputs, PhotonCamera driverCamera) {
+  private static void updatePhotonDriver(VisionCameraInputs inputs, PhotonCamera driverCamera) {
     clearInputs(inputs);
     String cameraName = driverCamera.getName();
     inputs.connected = driverCamera.isConnected();

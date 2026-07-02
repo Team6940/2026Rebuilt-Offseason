@@ -9,32 +9,28 @@ import frc.robot.util.ProjectileCalculator;
 
 /** Operator RT: spin up shooter to hub distance table speed without hood or drive aim. */
 public class HeatupCommand extends Command {
-  private final CommandSwerveDrivetrain drive;
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
 
-  public HeatupCommand(CommandSwerveDrivetrain drive) {
-    this.drive = drive;
+  public HeatupCommand() {
     addRequirements(shooter);
   }
 
   @Override
-  public void initialize() {
-    superStructure.setShootPhase(ShootPhase.HEATUP);
-  }
+  public void initialize() {}
 
   @Override
   public void execute() {
-    double dist = drive.getDistanceToTarget(CommandSwerveDrivetrain.getAllianceHubCenter());
-    shooter.setVelocityRps(ProjectileCalculator.getShooterTargetVelocity(dist));
+    if (superStructure.getShootPhase() == ShootPhase.OFF) {
+      shooter.stop();
+    } else if (superStructure.getShootPhase() == ShootPhase.HEATUP) {
+      shooter.setVelocityRps(33.);
+    }
   }
 
   @Override
   public void end(boolean interrupted) {
     shooter.stop();
-    if (superStructure.getShootPhase() == ShootPhase.HEATUP) {
-      superStructure.setShootPhase(ShootPhase.OFF);
-    }
   }
 
   @Override

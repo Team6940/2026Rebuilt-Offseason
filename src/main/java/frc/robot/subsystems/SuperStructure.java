@@ -173,7 +173,10 @@ public class SuperStructure extends SubsystemBase {
         .beforeStarting(Commands.runOnce(() -> claimDriveMode(DriveMode.MANUAL), this));
   }
 
-  /** Sets {@link ControlMode} and claims {@link DriveMode#AUTO_AIM}, then returns the matching shoot command. */
+  /**
+   * Sets {@link ControlMode} and claims {@link DriveMode#AUTO_AIM}, then returns the matching shoot
+   * command.
+   */
   public Command getShootCommand(ControlMode mode, Button shootButton) {
     Command shoot =
         switch (mode) {
@@ -191,7 +194,7 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public HeatupCommand getHeatupCommand() {
-    return new HeatupCommand(getDrive());
+    return new HeatupCommand();
   }
 
   public Command getHybridTrenchCommand() {

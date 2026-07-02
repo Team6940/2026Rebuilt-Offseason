@@ -102,22 +102,27 @@ public class HybridScoreCommand extends Command {
     shooter.setVelocityRps(finalShooterRps);
 
     Rotation2d aimHeading = finalHeading;
-
+    Translation2d driverInput =
+        new Translation2d(-driverController.getLeftX(), -driverController.getLeftY());
     switch (superStructure.getShootPhase()) {
       case AIM -> {
-        drive.driveAutoAim(
+        drive.driveAutoAimWithSpeedLimitorLocked(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> aimHeading);
+            aimHeading,
+            Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
+            driverInput.getNorm() > DriverTranslationFineTuneDeadband);
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
       }
       case READY -> {
-        drive.driveAutoAim(
+        drive.driveAutoAimWithSpeedLimitorLocked(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> aimHeading);
+            aimHeading,
+            Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
+            driverInput.getNorm() > DriverTranslationFineTuneDeadband);
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {
@@ -125,9 +130,6 @@ public class HybridScoreCommand extends Command {
         }
       }
       case SHOOT -> {
-        Translation2d driverInput =
-            new Translation2d(-driverController.getLeftX(), -driverController.getLeftY());
-
         drive.driveAutoAimWithSpeedLimitorLocked(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),

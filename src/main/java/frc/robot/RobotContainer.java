@@ -41,6 +41,7 @@ import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
+import frc.robot.subsystems.SuperStructure.ShootPhase;
 import frc.robot.subsystems.Vision.VisionSubsystem;
 import frc.robot.subsystems.leds.LEDController;
 import java.util.Set;
@@ -113,6 +114,7 @@ public class RobotContainer {
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
+    shooter.setDefaultCommand(superStructure.getHeatupCommand());
     // leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
 
     configureButtonBindings();
@@ -167,7 +169,13 @@ public class RobotContainer {
     hybridManual.whileTrue(
         superStructure.getShootCommand(ControlMode.MANUAL, Button.kRightTrigger));
 
-    operatorController.rightTrigger().whileTrue(superStructure.getHeatupCommand());
+    operatorController
+        .rightTrigger()
+        .onTrue(Commands.runOnce(() -> superStructure.setShootPhase(ShootPhase.HEATUP)));
+    operatorController
+        .rightBumper()
+        .onTrue(Commands.runOnce(() -> superStructure.setShootPhase(ShootPhase.OFF)));
+
     hybridTrenchDrive.whileTrue(superStructure.getHybridTrenchCommand());
 
     operatorController

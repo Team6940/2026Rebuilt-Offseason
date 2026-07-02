@@ -121,7 +121,7 @@ public final class Constants {
     public static final double RackRatio = 48. / 14.;
     public static final InvertedValue RackInverted = InvertedValue.Clockwise_Positive;
     public static final double RackSupplyCurrentLimit = 40.0;
-    public static final double RackStatorCurrentLimit = 120.0;
+    public static final double RackStatorCurrentLimit = 60.0;
     public static final double RackkP = 20.;
     public static final double RackkI = 0.0;
     public static final double RackkD = 0.0;
@@ -150,7 +150,7 @@ public final class Constants {
     public static final double ANGLE_MAX_ACCELERATION = 20.0;
 
     /** Auto-aim heading hold: plain PID, higher gain for faster snap (some overshoot is OK). */
-    public static final double AUTO_AIM_ANGLE_KP = 12.0;
+    public static final double AUTO_AIM_ANGLE_KP = 8.0;
 
     public static final double AUTO_AIM_ANGLE_KI = 0.0;
     public static final double AUTO_AIM_ANGLE_KD = 0.35;
@@ -593,8 +593,8 @@ public final class Constants {
     public static final double kD = 0.0;
     public static final double kV = 0.11;
     public static final double kS = 9;
-    public static final double SupplyCurrentLimit = 120.0;
-    public static final double StatorCurrentLimit = 100.0;
+    public static final double SupplyCurrentLimit = 60.0;
+    public static final double StatorCurrentLimit = 60.0;
 
     /** Robot origin to shooter exit point (+X forward, +Y left), meters. */
     public static final Translation2d ShooterOffset = new Translation2d(-0.30, 0.0);
@@ -652,8 +652,8 @@ public final class Constants {
     public static final double IndexerRatio = 1.0;
     public static final InvertedValue FeederInverted = InvertedValue.Clockwise_Positive;
     public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
-    public static final double FeederSupplyCurrentLimit = 60.0;
-    public static final double IndexerSupplyCurrentLimit = 60.0;
+    public static final double FeederSupplyCurrentLimit = 40.0;
+    public static final double IndexerSupplyCurrentLimit = 40.0;
     public static final double FeederkP = 0.1;
     public static final double FeederkI = 0.0;
     public static final double FeederkD = 0.0;

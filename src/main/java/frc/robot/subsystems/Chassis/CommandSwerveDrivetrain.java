@@ -468,8 +468,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Logger.processInputs("Drive/Swerve", swerveInputs);
 
     field2d.setRobotPose(getPose());
-    Logger.recordOutput("Odometry/Robot", getPose());
-    Logger.recordOutput("Drive/ChassisSpeeds", getChassisSpeeds());
   }
 
   private void updateSwerveInputs() {
@@ -1238,8 +1236,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   /**
-   * One-shot HybridTrench run for A/B testing vs {@link frc.robot.NtTelemetryBootstrap}. Does not
-   * call {@link #runVelocity}; zero max speeds so auto-guidance cannot command motion.
+   * One-shot HybridTrench run for A/B testing vs {@link frc.frc.robot.util.NtTelemetryBootstrap}.
+   * Does not call {@link #runVelocity}; zero max speeds so auto-guidance cannot command motion.
    */
   public void warmupHybridTrenchControlLoop() {
     if (hybridTrenchControlWarmedUp) {

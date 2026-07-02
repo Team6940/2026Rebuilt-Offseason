@@ -44,6 +44,7 @@ import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
 import frc.robot.subsystems.Vision.VisionSubsystem;
 import frc.robot.subsystems.leds.LEDController;
+import frc.robot.util.SwerveTelemetry;
 import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -70,7 +71,8 @@ public class RobotContainer {
   private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
-  private Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+  private SwerveTelemetry logger =
+      new SwerveTelemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
   // Controller
   public static final ImprovedCommandXboxController driverController =
       new ImprovedCommandXboxController(0);

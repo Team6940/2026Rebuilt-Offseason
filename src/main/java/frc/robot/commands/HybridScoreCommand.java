@@ -106,23 +106,15 @@ public class HybridScoreCommand extends Command {
         new Translation2d(-driverController.getLeftX(), -driverController.getLeftY());
     switch (superStructure.getShootPhase()) {
       case AIM -> {
-        drive.driveAutoAimWithSpeedLimitorLocked(
-            () -> -driverController.getLeftY(),
-            () -> -driverController.getLeftX(),
-            aimHeading,
-            Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
-            driverInput.getNorm() > DriverTranslationFineTuneDeadband);
+        drive.driveAutoAimWithSpeedLimit(
+            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeading);
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
       }
       case READY -> {
-        drive.driveAutoAimWithSpeedLimitorLocked(
-            () -> -driverController.getLeftY(),
-            () -> -driverController.getLeftX(),
-            aimHeading,
-            Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
-            driverInput.getNorm() > DriverTranslationFineTuneDeadband);
+        drive.driveAutoAimWithSpeedLimit(
+            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeading);
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {
@@ -158,7 +150,8 @@ public class HybridScoreCommand extends Command {
     hood.setIdle();
     shooter.stop();
     drive.releaseAutoAimCurrentLimits();
-    superStructure.setShootPhase(ShootPhase.OFF);
+    superStructure.setShootPhase(ShootPhase.HEATUP);
+    superStructure.setIntakeMode(IntakeMode.OFF);
     if (!interrupted) {
       superStructure.claimDriveMode(DriveMode.MANUAL);
     }

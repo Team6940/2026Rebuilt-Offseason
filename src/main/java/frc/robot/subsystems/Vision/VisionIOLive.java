@@ -43,9 +43,6 @@ public class VisionIOLive implements VisionIO {
             RobotContainer.photonCameraBack, "Back", VisionFusion.kRobotToPhotonBack);
     photonFront = new PhotonCamera(RobotContainer.photonCameraFront);
     configurePhotonNetworkTables(photonBack.camera, photonFront);
-    if (Constants.currentMode == Constants.Mode.REAL) {
-      PhotonDriverCamStream.start();
-    }
   }
 
   /** PhotonVision subtable keys under {@code photonvision/<cameraName>/}. */

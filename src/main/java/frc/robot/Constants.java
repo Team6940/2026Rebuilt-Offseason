@@ -114,7 +114,7 @@ public final class Constants {
     public static final double RollerkV = 0.213;
     public static final double RollerkS = 0.353;
     public static final double RollerVelocityToleranceRps = 0.5;
-    public static final double IntakingRps = 45.0;
+    public static final double IntakingRps = 20.0;
     public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Opposed;
 
     /* Rack */
@@ -150,10 +150,10 @@ public final class Constants {
     public static final double ANGLE_MAX_ACCELERATION = 20.0;
 
     /** Auto-aim heading hold: plain PID, higher gain for faster snap (some overshoot is OK). */
-    public static final double AUTO_AIM_ANGLE_KP = 8.0;
+    public static final double AUTO_AIM_ANGLE_KP = 5.0;
 
     public static final double AUTO_AIM_ANGLE_KI = 0.0;
-    public static final double AUTO_AIM_ANGLE_KD = 0.35;
+    public static final double AUTO_AIM_ANGLE_KD = 0.4;
 
     /**
      * Drive motor supply limit (A) while {@code driveAutoAim} is active; frees battery for shooter.
@@ -202,7 +202,7 @@ public final class Constants {
     public static final double EDGE_SNAP_HYSTERESIS_DEG = 20.0;
 
     /** Trench heading hold (stronger than default field-centric rotate). */
-    public static final double TRENCH_ANGLE_KP = 9.0;
+    public static final double TRENCH_ANGLE_KP = 5.0;
 
     public static final double TRENCH_ANGLE_KD = 0.65;
   }
@@ -535,42 +535,44 @@ public final class Constants {
         new InterpolatingDoubleTreeMap();
 
     static {
-      DistanceToShooterRps.put(1.05, 38.9);
-      DistanceToShooterRps.put(1.32, 39.61);
-      DistanceToShooterRps.put(1.88, 41.84);
-      DistanceToShooterRps.put(2.6, 44.8);
-      DistanceToShooterRps.put(3.4, 47.4);
-      DistanceToShooterRps.put(4.1, 51.4);
-      DistanceToShooterRps.put(4.99, 54.9);
-      DistanceToShooterRps.put(5.2, 57.5);
+      DistanceToShooterRps.put(0.947, 25.9);
+      DistanceToShooterRps.put(1.32, 27.61);
+      DistanceToShooterRps.put(1.88, 31.84);
+      DistanceToShooterRps.put(2.6, 34.8);
+      DistanceToShooterRps.put(3.4, 38.4);
+      DistanceToShooterRps.put(4.1, 42.4);
+      DistanceToShooterRps.put(4.99, 48.9);
+      DistanceToShooterRps.put(5.2, 51.5);
+      DistanceToShooterRps.put(5.7, 53.5);
 
-      DistanceToHoodDegs.put(1.05, 17.8);
-      DistanceToHoodDegs.put(1.32, 18.49);
-      DistanceToHoodDegs.put(1.88, 23.40);
-      DistanceToHoodDegs.put(2.6, 27.3);
-      DistanceToHoodDegs.put(3.4, 33.9);
-      DistanceToHoodDegs.put(4.1, 38.5);
-      DistanceToHoodDegs.put(4.99, 43.5);
-      DistanceToHoodDegs.put(5.2, 43.5);
+      DistanceToHoodDegs.put(0.947, 17.842);
+      DistanceToHoodDegs.put(1.32, 17.89);
+      DistanceToHoodDegs.put(1.88, 20.40);
+      DistanceToHoodDegs.put(2.6, 21.0);
+      DistanceToHoodDegs.put(3.4, 23.3);
+      DistanceToHoodDegs.put(4.1, 26.5);
+      DistanceToHoodDegs.put(4.99, 35.5);
+      DistanceToHoodDegs.put(5.2, 38.5);
+      DistanceToShooterRps.put(5.7, 41.);
 
       DistanceToFlightTimeSecs.put(0.96, 0.8);
       DistanceToFlightTimeSecs.put(1.2, 0.95);
       DistanceToFlightTimeSecs.put(3.0, 1.18);
       DistanceToFlightTimeSecs.put(5.0, 1.28);
 
-      PassDistanceToShooterRps.put(1.05, 24.9);
-      PassDistanceToShooterRps.put(1.32, 29.61);
-      PassDistanceToShooterRps.put(1.88, 31.84);
-      PassDistanceToShooterRps.put(2.6, 33.8);
-      PassDistanceToShooterRps.put(3.4, 37.4);
-      PassDistanceToShooterRps.put(4.1, 41.4);
-      PassDistanceToShooterRps.put(4.99, 44.9);
-      PassDistanceToShooterRps.put(6.0, 47.5);
-      PassDistanceToShooterRps.put(7.0, 51.5);
-      PassDistanceToShooterRps.put(13.0, 70.5);
+      PassDistanceToShooterRps.put(1.05, 14.9);
+      PassDistanceToShooterRps.put(1.32, 19.61);
+      PassDistanceToShooterRps.put(1.88, 21.84);
+      PassDistanceToShooterRps.put(2.6, 23.8);
+      PassDistanceToShooterRps.put(3.4, 27.4);
+      PassDistanceToShooterRps.put(4.1, 31.4);
+      PassDistanceToShooterRps.put(4.99, 34.9);
+      PassDistanceToShooterRps.put(6.0, 37.5);
+      PassDistanceToShooterRps.put(7.0, 41.5);
+      PassDistanceToShooterRps.put(13.0, 60.);
 
-      PassDistanceToHoodDegs.put(1.05, 14.8);
-      PassDistanceToHoodDegs.put(1.32, 16.49);
+      PassDistanceToHoodDegs.put(1.05, 17.842);
+      PassDistanceToHoodDegs.put(1.32, 17.842);
       PassDistanceToHoodDegs.put(1.88, 19.40);
       PassDistanceToHoodDegs.put(2.6, 23.3);
       PassDistanceToHoodDegs.put(3.4, 29.9);
@@ -597,7 +599,7 @@ public final class Constants {
     public static final double StatorCurrentLimit = 60.0;
 
     /** Robot origin to shooter exit point (+X forward, +Y left), meters. */
-    public static final Translation2d ShooterOffset = new Translation2d(-0.30, 0.0);
+    public static final Translation2d ShooterOffset = new Translation2d(-0.24, 0.0);
 
     /** Sim velocity lag (s): lower = faster spin-up, higher = smoother. */
     public static final double SimSpinupTimeConstantSec = 0.35;
@@ -611,11 +613,11 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.2;
     public static final double kV = 0.0;
-    public static final double kS = 0.;
-    public static final double kG = 0.45;
+    public static final double kS = 0.0;
+    public static final double kG = 0.4;
     public static final double MotionMagicMaxVelocity = 40.0;
     public static final double MotionMagicAcceleration = 80.0;
-    public static final double PositionToleranceDegs = 3.0;
+    public static final double PositionToleranceDegs = 0.0;
     public static final double MinDegs = 17.842;
     public static final double MaxDegs = 57.6;
     public static final double IdlePositionDegs = 17.842;
@@ -625,7 +627,7 @@ public final class Constants {
   public static final class HybridShootConstants {
     // --- Ready gate (AIM to READY) ---
     public static final double HeadingToleranceDegs = 3.0;
-    public static final double HoodToleranceDegs = HoodConstants.PositionToleranceDegs;
+    public static final double HoodToleranceDegs = 1.5;
     public static final double ShooterToleranceRps = 3.;
 
     // --- Operator trims (AIM / READY) ---
@@ -637,8 +639,8 @@ public final class Constants {
     public static final double DriverTranslationFineTuneDeadband = 0.3;
 
     // --- SHOOT: indexer feed, then intake retract timing ---
-    public static final double FeedDurationSec = 2.0;
-    public static final double PostRetractWaitSec = 1.0;
+    public static final double FeedDurationSec = 1.0;
+    public static final double PostRetractWaitSec = 0.4;
 
     // --- Operator RPS offset steps (B / A / X / Y) ---
     public static final double RpsOffsetB = -1.0;
@@ -744,7 +746,7 @@ public final class Constants {
      */
     public static final Transform3d kRobotToPhotonBack =
         new Transform3d(
-            new Translation3d(0.00646, -0.342, 0.501), new Rotation3d(0.0, 0.0, Math.PI));
+            new Translation3d(-0.342, 0., 0.501), new Rotation3d(Math.PI / 12., 0.0, Math.PI));
 
     /**
      * Pose θ standard deviation (rad) for Photon when xy σ comes from {@link
@@ -764,37 +766,6 @@ public final class Constants {
     public static final int LL_MT2_X_STDDEV_INDEX = 6;
     public static final int LL_MT2_Y_STDDEV_INDEX = 7;
     public static final int LL_MT2_YAW_STDDEV_INDEX = 11;
-  }
-
-  /** PhotonFront driver camera streaming (CameraServer + optional port forwarding). */
-  public static final class DriverCam {
-    /** Dashboard / CameraServer stream name. */
-    public static final String STREAM_NAME = "DriverCam";
-
-    /**
-     * Static IP of the PhotonVision coprocessor. Leave empty to derive {@code 10.TE.AM.xx} from the
-     * team number and {@link #PHOTON_COPROCESSOR_HOST_OCTET}.
-     */
-    public static final String PHOTON_COPROCESSOR_STATIC_IP = "";
-
-    /** Last octet when using team IP (10.TE.AM.xx). */
-    public static final int PHOTON_COPROCESSOR_HOST_OCTET = 10;
-
-    /** Fallback team number when roboRIO team number is not configured yet. */
-    public static final int DEFAULT_TEAM_NUMBER = 6940;
-
-    /**
-     * PhotonFront processed output port. PhotonVision assigns 1181/1182 to camera 1 and 1183/1184
-     * to camera 2; use the even port for pipeline output (driver-mode feed).
-     */
-    public static final int PHOTON_FRONT_OUTPUT_STREAM_PORT = 1184;
-
-    public static final int PHOTON_WEB_UI_PORT = 5800;
-
-    /**
-     * Forward coprocessor ports when tethered to roboRIO USB (not needed on VH-109 DS ethernet).
-     */
-    public static final boolean ENABLE_PORT_FORWARDING = true;
   }
 
   /**

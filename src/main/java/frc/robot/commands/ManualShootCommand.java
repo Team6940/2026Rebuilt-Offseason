@@ -154,7 +154,7 @@ public class ManualShootCommand extends Command {
     hood.setIdle();
     shooter.stop();
     drive.releaseAutoAimCurrentLimits();
-    superStructure.setShootPhase(ShootPhase.OFF);
+    superStructure.setShootPhase(ShootPhase.HEATUP);
     if (!interrupted) {
       superStructure.claimDriveMode(DriveMode.MANUAL);
     }

@@ -779,6 +779,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
   }
 
+  public void driveAutoAimWithSpeedLimit(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, Rotation2d targetRotation) {
+    driveAutoAim(
+        xSupplier,
+        ySupplier,
+        () -> targetRotation,
+        getMaxLinearSpeedMetersPerSec() * 0.2,
+        DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
+        DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
+  }
+
   /** Restores default module current limits after {@link #driveAutoAim} ends. */
   public void releaseAutoAimCurrentLimits() {
     if (!autoAimCurrentLimitsActive) {

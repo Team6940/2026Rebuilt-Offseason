@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import frc.robot.Constants.HoodConstants;
 import frc.robot.Constants.MotorIDs;
@@ -24,6 +25,7 @@ public class HoodIOPhoenix6 implements HoodIO {
     config.Slot0.kV = HoodConstants.kV;
     config.Slot0.kS = HoodConstants.kS;
     config.Slot0.kG = HoodConstants.kG;
+    config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = HoodConstants.SupplyCurrentLimit;
     config.MotionMagic.MotionMagicCruiseVelocity = HoodConstants.MotionMagicMaxVelocity;

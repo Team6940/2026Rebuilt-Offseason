@@ -63,7 +63,7 @@ public class RobotContainer {
 
   // Create all Subsystems
   private final CommandSwerveDrivetrain drive;
-  // private final VisionSubsystem vision;
+  private final VisionSubsystem vision;
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   // private final LEDController leds = LEDController.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
@@ -90,7 +90,7 @@ public class RobotContainer {
       FieldSimulation.initialize(drive, new Pose2d(0.7, 0.7, new Rotation2d()));
     }
 
-    // vision = new VisionSubsystem(drive);
+    vision = new VisionSubsystem(drive);
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
@@ -166,7 +166,7 @@ public class RobotContainer {
 
     hybridScore.whileTrue(superStructure.getShootCommand(ControlMode.SCORE, Button.kRightTrigger));
     hybridPass.whileTrue(superStructure.getShootCommand(ControlMode.PASS, Button.kRightTrigger));
-    hybridManual.whileTrue(
+    hybridManual.toggleOnTrue(
         superStructure.getShootCommand(ControlMode.MANUAL, Button.kRightTrigger));
 
     operatorController

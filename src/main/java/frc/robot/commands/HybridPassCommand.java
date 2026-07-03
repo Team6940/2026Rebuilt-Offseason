@@ -150,7 +150,7 @@ public class HybridPassCommand extends Command {
     hood.setIdle();
     shooter.stop();
     drive.releaseAutoAimCurrentLimits();
-    superStructure.setShootPhase(ShootPhase.OFF);
+    superStructure.setShootPhase(ShootPhase.HEATUP);
     if (!interrupted) {
       superStructure.claimDriveMode(DriveMode.MANUAL);
     }
@@ -214,9 +214,7 @@ public class HybridPassCommand extends Command {
   }
 
   private boolean isReady(double hoodDegs, double shooterRps, Rotation2d heading) {
-    return isAtTargetAngle(heading)
-        && isAtTargetHood(hoodDegs)
-        && isAtTargetShooter(shooterRps);
+    return isAtTargetAngle(heading) && isAtTargetHood(hoodDegs) && isAtTargetShooter(shooterRps);
   }
 
   private boolean isAtTargetAngle(Rotation2d desired) {

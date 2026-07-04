@@ -22,6 +22,7 @@ public class IntakeDefaultCommand extends Command {
       case RETRACTED -> runRetracted();
       case OFF -> runOff();
       case REVERSE -> runReverse();
+      case MID -> runMid();
     }
   }
 
@@ -38,6 +39,11 @@ public class IntakeDefaultCommand extends Command {
   private void runRetracted() {
     intake.stopRollers();
     intake.setRackPosition(IntakeConstants.RackRetractedRotations);
+  }
+
+  private void runMid() {
+    intake.stopRollers();
+    intake.setRackPosition(IntakeConstants.RackMidRotations);
   }
 
   private void runOff() {

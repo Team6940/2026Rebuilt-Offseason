@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
@@ -15,6 +16,7 @@ import java.util.Set;
 
 public class LeftDoubleSwipe extends SequentialCommandGroup {
   CommandSwerveDrivetrain drive = CommandSwerveDrivetrain.getInstance();
+  ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   SuperStructure superStructure = SuperStructure.getInstance();
 
   public LeftDoubleSwipe() {
@@ -25,26 +27,32 @@ public class LeftDoubleSwipe extends SequentialCommandGroup {
         new InstantCommand(
             () -> {
               if (DriverStation.getAlliance().get() == Alliance.Blue) {
-                drive.setPose(drive.generatePPPath("LSt-LInt1").getStartingHolonomicPose().get());
+                drive.resetPose(drive.generatePPPath("LSt-LInt1").getStartingHolonomicPose().get());
               } else {
-                drive.setPose(
+                drive.resetPose(
                     drive.generatePPPath("LSt-LInt1").flipPath().getStartingHolonomicPose().get());
               }
             }));
 
-    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(
         superStructure.runOnce(
             () -> superStructure.setShootPhase(SuperStructure.ShootPhase.HEATUP)));
-    addCommands(drive.followPPPath("LSt-LInt1"));
-
+    addCommands(
+        drive
+            .followPPPath("LSt-LInt1")
+            .alongWith(
+                Commands.waitSeconds(0.3)
+                    .andThen(
+                        superStructure.runOnce(
+                            () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
     addCommands(drive.followPPPath("LInt1-LSh1"));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(3.));
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh1-LInt2"));
-
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
     addCommands(drive.followPPPath("LInt2-LSh2"));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(3.));

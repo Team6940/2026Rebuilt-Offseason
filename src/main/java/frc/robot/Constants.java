@@ -114,7 +114,7 @@ public final class Constants {
     public static final double RollerkV = 0.213;
     public static final double RollerkS = 0.353;
     public static final double RollerVelocityToleranceRps = 0.5;
-    public static final double IntakingRps = 20.0;
+    public static final double IntakingRps = 50.0;
     public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Opposed;
 
     /* Rack */
@@ -134,6 +134,7 @@ public final class Constants {
     public static final double RackMaxRotations = 4.59;
     public static final double RackIdleRotations = 0.;
     public static final double RackRetractedRotations = 2.41;
+    public static final double RackMidRotations = 4.0;
     public static final double RackExtendedRotations = 4.58;
 
     /**
@@ -537,7 +538,7 @@ public final class Constants {
     static {
       DistanceToShooterRps.put(0.947, 25.9);
       DistanceToShooterRps.put(1.32, 27.61);
-      DistanceToShooterRps.put(1.88, 31.84);
+      DistanceToShooterRps.put(1.88, 33.04);
       DistanceToShooterRps.put(2.6, 34.8);
       DistanceToShooterRps.put(3.4, 38.4);
       DistanceToShooterRps.put(4.1, 42.4);
@@ -546,7 +547,7 @@ public final class Constants {
       DistanceToShooterRps.put(5.7, 53.5);
 
       DistanceToHoodDegs.put(0.947, 17.842);
-      DistanceToHoodDegs.put(1.32, 17.89);
+      DistanceToHoodDegs.put(1.32, 17.842);
       DistanceToHoodDegs.put(1.88, 20.40);
       DistanceToHoodDegs.put(2.6, 21.0);
       DistanceToHoodDegs.put(3.4, 23.3);

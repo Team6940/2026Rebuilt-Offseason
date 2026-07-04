@@ -25,9 +25,10 @@ public class LeftDepotSingleSwipe extends SequentialCommandGroup {
         new InstantCommand(
             () -> {
               if (DriverStation.getAlliance().get() == Alliance.Blue) {
-                drive.setPose(drive.generatePPPath("LSt2-LDepot").getStartingHolonomicPose().get());
+                drive.resetPose(
+                    drive.generatePPPath("LSt2-LDepot").getStartingHolonomicPose().get());
               } else {
-                drive.setPose(
+                drive.resetPose(
                     drive
                         .generatePPPath("LSt2-LDepot")
                         .flipPath()
@@ -48,7 +49,7 @@ public class LeftDepotSingleSwipe extends SequentialCommandGroup {
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh3-LInt2b"));
-
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
     addCommands(drive.followPPPath("LInt2-LSh2"));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(3.));

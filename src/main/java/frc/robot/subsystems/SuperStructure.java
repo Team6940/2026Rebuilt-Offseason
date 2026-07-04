@@ -66,7 +66,8 @@ public class SuperStructure extends SubsystemBase {
     HYBRID,
     RETRACTED,
     OFF,
-    REVERSE
+    REVERSE,
+    MID
   }
 
   private final LoggedNetworkNumber manualShootVelocityRps =

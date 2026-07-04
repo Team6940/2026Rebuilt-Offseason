@@ -26,27 +26,33 @@ public class RightDoubleSwipe extends SequentialCommandGroup {
         new InstantCommand(
             () -> {
               if (DriverStation.getAlliance().get() == Alliance.Blue) {
-                drive.setPose(drive.generatePPPath("RSt-RInt1").getStartingHolonomicPose().get());
+                drive.resetPose(drive.generatePPPath("RSt-RInt1").getStartingHolonomicPose().get());
               } else {
-                drive.setPose(
+                drive.resetPose(
                     drive.generatePPPath("RSt-RInt1").flipPath().getStartingHolonomicPose().get());
               }
             }));
 
     // route
-    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(
         superStructure.runOnce(
             () -> superStructure.setShootPhase(SuperStructure.ShootPhase.HEATUP)));
-    addCommands(drive.followPPPath("RSt-RInt1"));
-
+    addCommands(
+        drive
+            .followPPPath("RSt-RInt1")
+            .alongWith(
+                Commands.waitSeconds(0.3)
+                    .andThen(
+                        superStructure.runOnce(
+                            () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
     addCommands(drive.followPPPath("RInt1-RSh1"));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(3.));
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("RSh1-RInt2"));
-
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
     addCommands(drive.followPPPath("RInt2-RSh2"));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(3.));

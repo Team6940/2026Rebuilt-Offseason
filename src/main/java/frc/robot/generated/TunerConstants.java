@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.units.measure.*;
 // import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
@@ -88,6 +89,12 @@ public class TunerConstants {
   // CAN bus that the devices are located on;
   // All swerve devices must share the same CAN bus
   public static final CANBus kCANBus = new CANBus("canivore", "./logs/example.hoot");
+
+  /** CANivore status frame rate for non-swerve devices on {@link #kCANBus}. */
+  public static final Frequency kCANivoreUpdateFrequency = Hertz.of(120);
+
+  /** Swerve odometry thread and CANivore swerve signal rate (Hz). */
+  public static final double kOdometryUpdateFrequencyHz = 120.0;
 
   // Measured robot speed (m/s) at 12 V applied output;
   // This is NOT the desired max robot speed - see MaxSpeed in RobotContainer
@@ -258,7 +265,12 @@ public class TunerConstants {
    */
   public static CommandSwerveDrivetrain createDrivetrain() {
     return new CommandSwerveDrivetrain(
-        DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight);
+        DrivetrainConstants,
+        kOdometryUpdateFrequencyHz,
+        FrontLeft,
+        FrontRight,
+        BackLeft,
+        BackRight);
   }
 
   /** Swerve Drive class utilizing CTR Electronics' Phoenix 6 API with the selected device types. */

@@ -33,6 +33,9 @@ public class LeftDoubleSwipe extends SequentialCommandGroup {
             }));
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
+    addCommands(
+        superStructure.runOnce(
+            () -> superStructure.setShootPhase(SuperStructure.ShootPhase.HEATUP)));
     addCommands(drive.followPPPath("LSt-LInt1"));
 
     addCommands(drive.followPPPath("LInt1-LSh1"));

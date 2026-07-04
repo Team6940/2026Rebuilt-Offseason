@@ -3,35 +3,51 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4395200376157415,
-        "y": 6.212613570601852
+        "x": 0.5244717261904761,
+        "y": 5.95
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.7314212962962965,
-        "y": 6.761314453124999
+        "x": 1.5880952380952378,
+        "y": 5.959962797619048
       },
       "isLocked": false,
-      "linkedName": "L-AftSh2"
+      "linkedName": "L-AftIntakeDepot"
     },
     {
       "anchor": {
-        "x": 3.8523116319444446,
-        "y": 7.362438151041666
+        "x": 1.464114583333333,
+        "y": 5.95
       },
       "prevControl": {
-        "x": 3.2377774808005064,
-        "y": 7.362438151041666
+        "x": 0.9641145833333331,
+        "y": 5.95
+      },
+      "nextControl": {
+        "x": 1.964114583333333,
+        "y": 5.95
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.6729241071428569,
+        "y": 4.791934523809524
+      },
+      "prevControl": {
+        "x": 1.8491071428571426,
+        "y": 5.32048363095238
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "L-AftSh3"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 0.817717206132879,
+      "rotationDegrees": 180.0
     }
   ],
   "constraintZones": [],
@@ -47,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 167.105
   },
   "reversed": false,
   "folder": "Left",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 135.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

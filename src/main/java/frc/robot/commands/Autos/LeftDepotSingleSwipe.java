@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
@@ -15,6 +16,7 @@ import java.util.Set;
 
 public class LeftDepotSingleSwipe extends SequentialCommandGroup {
   CommandSwerveDrivetrain drive = CommandSwerveDrivetrain.getInstance();
+  ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   SuperStructure superStructure = SuperStructure.getInstance();
 
   public LeftDepotSingleSwipe() {
@@ -41,6 +43,7 @@ public class LeftDepotSingleSwipe extends SequentialCommandGroup {
     addCommands(
         superStructure.runOnce(
             () -> superStructure.setShootPhase(SuperStructure.ShootPhase.HEATUP)));
+    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(drive.followPPPath("LSt2-LDepot"));
 
     addCommands(drive.followPPPath("LDepot-LSh3"));

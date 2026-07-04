@@ -150,11 +150,10 @@ public final class Constants {
     public static final double ANGLE_MAX_VELOCITY = 8.0;
     public static final double ANGLE_MAX_ACCELERATION = 20.0;
 
-    /** Auto-aim heading hold: plain PID, higher gain for faster snap (some overshoot is OK). */
     public static final double AUTO_AIM_ANGLE_KP = 5.0;
 
     public static final double AUTO_AIM_ANGLE_KI = 0.0;
-    public static final double AUTO_AIM_ANGLE_KD = 0.4;
+    public static final double AUTO_AIM_ANGLE_KD = 0.1;
 
     /**
      * Drive motor supply limit (A) while {@code driveAutoAim} is active; frees battery for shooter.
@@ -202,10 +201,10 @@ public final class Constants {
     /** Degrees: new square edge must beat current edge by this much to switch. */
     public static final double EDGE_SNAP_HYSTERESIS_DEG = 20.0;
 
-    /** Trench heading hold (stronger than default field-centric rotate). */
+    /** Trench heading hold. */
     public static final double TRENCH_ANGLE_KP = 5.0;
 
-    public static final double TRENCH_ANGLE_KD = 0.65;
+    public static final double TRENCH_ANGLE_KD = 0.1;
   }
 
   public final class OperatorConstants {
@@ -629,7 +628,7 @@ public final class Constants {
     // --- Ready gate (AIM to READY) ---
     public static final double HeadingToleranceDegs = 3.0;
     public static final double HoodToleranceDegs = 1.5;
-    public static final double ShooterToleranceRps = 3.;
+    public static final double ShooterToleranceRps = 2.;
 
     // --- Operator trims (AIM / READY) ---
     public static final double AimHeadingCompRangeDegs = 10.0;
@@ -640,7 +639,7 @@ public final class Constants {
     public static final double DriverTranslationFineTuneDeadband = 0.3;
 
     // --- SHOOT: indexer feed, then intake retract timing ---
-    public static final double FeedDurationSec = 1.0;
+    public static final double FeedDurationSec = 0.6;
     public static final double PostRetractWaitSec = 0.4;
 
     // --- Operator RPS offset steps (B / A / X / Y) ---
@@ -699,7 +698,7 @@ public final class Constants {
     public static final double DumperExitHeightMeters = 0.52;
 
     /** Full-width dumper: m/s per shooter mechanism RPS (lower than flywheel). */
-    public static final double DumperMetersPerSecondPerRps = 0.055 * 3.;
+    public static final double DumperMetersPerSecondPerRps = 0.055 * 4;
 
     public static final double DumperMinLaunchSpeedMps = 2.5;
 

@@ -37,6 +37,7 @@ public class LeftDoubleSwipe extends SequentialCommandGroup {
     addCommands(
         superStructure.runOnce(
             () -> superStructure.setShootPhase(SuperStructure.ShootPhase.HEATUP)));
+    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(
         drive
             .followPPPath("LSt-LInt1")

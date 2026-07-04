@@ -1,11 +1,9 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
-import frc.robot.util.ProjectileCalculator;
 
 /** Operator RT: spin up shooter to hub distance table speed without hood or drive aim. */
 public class HeatupCommand extends Command {

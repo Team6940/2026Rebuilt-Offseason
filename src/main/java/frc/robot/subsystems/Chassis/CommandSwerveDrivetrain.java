@@ -938,8 +938,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           updateTraversalSignFromDriver(robotPose, driverForTraversal, trenchTraversalSign);
     }
     HybridTrenchReference trenchRef = computeHybridTrenchReference(robotPose, trenchTraversalSign);
-    Translation2d fieldLinear =
-        blendDriverInput(driverLinear, trenchRef, driverHasInput, maxLinearSpeed);
+    Translation2d fieldLinear = blendDriverInput(driverLinear, trenchRef, false, maxLinearSpeed);
     Rotation2d desiredFacing =
         getDesiredFacingHybridTrench(intakeMode, trenchTraversalSign, robotPose);
     logHybridTrench(trenchRef, desiredFacing, fieldLinear);

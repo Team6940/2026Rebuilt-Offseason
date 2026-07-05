@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.851974866818601,
-        "y": 5.877647394524886
+        "x": 7.424968944099379,
+        "y": 6.566069210292812
       },
       "isLocked": false,
       "linkedName": "L-AftIntake2"
@@ -45,6 +45,10 @@
     }
   ],
   "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -162.92607927803098
+    },
     {
       "waypointRelativePos": 1,
       "rotationDegrees": 90.0

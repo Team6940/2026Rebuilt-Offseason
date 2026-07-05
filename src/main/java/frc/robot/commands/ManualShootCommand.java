@@ -220,7 +220,6 @@ public class ManualShootCommand extends Command {
       }
       case RETRACT_WAIT -> {
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
-          superStructure.setIntakeMode(IntakeMode.OFF);
           shootSequence = ShootSequence.COMPLETE;
         }
       }

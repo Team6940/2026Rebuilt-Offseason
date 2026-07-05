@@ -149,6 +149,7 @@ public class HybridPassCommand extends Command {
       shootSequenceStartSec = 0.0;
     }
     hood.setIdle();
+    superStructure.setIntakeMode(IntakeMode.INTAKE);
     shooter.setVelocityRps(33.3);
     drive.releaseAutoAimCurrentLimits();
     superStructure.setShootPhase(ShootPhase.HEATUP);
@@ -212,7 +213,6 @@ public class HybridPassCommand extends Command {
       }
       case RETRACT_WAIT -> {
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
-          superStructure.setIntakeMode(IntakeMode.OFF);
           shootSequence = ShootSequence.COMPLETE;
         }
       }

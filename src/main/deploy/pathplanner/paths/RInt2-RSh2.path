@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.074576099537037,
-        "y": 2.3765625723379626
+        "x": 6.636273291925465,
+        "y": 1.1095829636202303
       },
       "isLocked": false,
       "linkedName": "R-AftIntake2"
@@ -45,6 +45,10 @@
     }
   ],
   "rotationTargets": [
+    {
+      "waypointRelativePos": 0.8278481012658226,
+      "rotationDegrees": 160.35760709405963
+    },
     {
       "waypointRelativePos": 1.0310649671052636,
       "rotationDegrees": -90.0

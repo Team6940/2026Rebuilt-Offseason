@@ -152,7 +152,7 @@ public class HybridScoreCommand extends Command {
     shooter.setVelocityRps(33.3);
     drive.releaseAutoAimCurrentLimits();
     superStructure.setShootPhase(ShootPhase.HEATUP);
-    superStructure.setIntakeMode(IntakeMode.OFF);
+    superStructure.setIntakeMode(IntakeMode.INTAKE);
     if (!interrupted) {
       superStructure.claimDriveMode(DriveMode.MANUAL);
     }
@@ -217,7 +217,6 @@ public class HybridScoreCommand extends Command {
       case RETRACT_WAIT -> {
         indexer.feed();
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
-          superStructure.setIntakeMode(IntakeMode.OFF);
           shootSequence = ShootSequence.COMPLETE;
         }
       }

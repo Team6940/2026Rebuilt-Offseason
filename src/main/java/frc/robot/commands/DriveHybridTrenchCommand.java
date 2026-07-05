@@ -40,8 +40,8 @@ public class DriveHybridTrenchCommand extends Command {
         () -> -driverController.getLeftY(),
         () -> -driverController.getLeftX(),
         () -> -driverController.getRightX(),
-        drive.getMaxLinearSpeedMetersPerSec() / 2.,
-        drive.getMaxAngularSpeedRadPerSec() / 2.);
+        drive.getMaxLinearSpeedMetersPerSec() * 0.6,
+        drive.getMaxAngularSpeedRadPerSec() * 0.6);
   }
 
   /** RT to HYBRID intake; otherwise preserve intake mode captured at init. */

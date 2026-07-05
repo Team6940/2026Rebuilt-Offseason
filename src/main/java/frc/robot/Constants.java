@@ -114,7 +114,7 @@ public final class Constants {
     public static final double RollerkV = 0.213;
     public static final double RollerkS = 0.353;
     public static final double RollerVelocityToleranceRps = 0.5;
-    public static final double IntakingRps = 40.0;
+    public static final double IntakingRps = 25.0;
     public static final double IntakeEmergencyOutRps = 60.0;
     public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Opposed;
 
@@ -540,7 +540,7 @@ public final class Constants {
       DistanceToShooterRps.put(1.32, 27.61);
       DistanceToShooterRps.put(1.88, 33.04);
       DistanceToShooterRps.put(2.6, 34.8);
-      DistanceToShooterRps.put(3.4, 38.4);
+      DistanceToShooterRps.put(3.4, 40.4);
       DistanceToShooterRps.put(4.1, 42.4);
       DistanceToShooterRps.put(4.99, 48.9);
       DistanceToShooterRps.put(5.2, 51.5);
@@ -794,9 +794,9 @@ public final class Constants {
 
   public static class Settings {
     public static class LED {
-      public static final int LED_LENGTH = 20;
+      public static final int LED_LENGTH = 35;
       public static final int[] GYRO_BUFFER = {0, 1};
-      public static final int[] SHOOTER_BUFFER = {2, 19};
+      public static final int[] SHOOTER_BUFFER = {2, 34};
     }
 
     public interface LEDs {

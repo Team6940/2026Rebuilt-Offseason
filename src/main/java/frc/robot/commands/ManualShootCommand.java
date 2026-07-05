@@ -142,12 +142,13 @@ public class ManualShootCommand extends Command {
     }
 
     log(plan, finalHoodDegs, finalShooterRps, finalHeading, ready, fire);
+    applyOperatorForcedFeed();
   }
 
   @Override
   public void end(boolean interrupted) {
+    indexer.stop();
     if (superStructure.getShootPhase() == ShootPhase.SHOOT) {
-      indexer.stop();
       shootSequence = ShootSequence.FEEDING;
       shootSequenceStartSec = 0.0;
     }
@@ -192,6 +193,12 @@ public class ManualShootCommand extends Command {
     headingCompDegs =
         ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX())
             * AimHeadingCompRangeDegs;
+  }
+
+  private void applyOperatorForcedFeed() {
+    if (operatorController.getButton(Button.kLeftBumper)) {
+      indexer.feed();
+    }
   }
 
   private void runShootSequence(double finalHoodDegs, boolean ready, boolean fire) {

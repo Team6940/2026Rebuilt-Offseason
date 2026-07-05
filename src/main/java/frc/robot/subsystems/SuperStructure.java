@@ -3,12 +3,14 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.HeatupCommand;
 import frc.robot.commands.HybridPassCommand;
 import frc.robot.commands.HybridScoreCommand;
+import frc.robot.commands.IntakeEmergencyOutCommand;
 import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.commands.ManualShootCommand;
@@ -110,6 +112,7 @@ public class SuperStructure extends SubsystemBase {
     claimDriveMode(DriveMode.MANUAL);
     setIntakeMode(IntakeMode.OFF);
     setShootPhase(ShootPhase.OFF);
+    CommandScheduler.getInstance().cancel(getIntake().getCurrentCommand());
   }
 
   public void setControlMode(ControlMode mode) {
@@ -215,6 +218,10 @@ public class SuperStructure extends SubsystemBase {
 
   public IntakeDefaultCommand getIntakeDefaultCommand() {
     return new IntakeDefaultCommand();
+  }
+
+  public IntakeEmergencyOutCommand getIntakeEmergencyOutCommand() {
+    return new IntakeEmergencyOutCommand();
   }
 
   public LEDDefaultCommand getLEDDefaultCommand() {

@@ -171,6 +171,8 @@ public class RobotContainer {
     hybridManual.toggleOnTrue(
         superStructure.getShootCommand(ControlMode.MANUAL, Button.kRightTrigger));
 
+    operatorController.leftTrigger().onTrue(superStructure.getIntakeEmergencyOutCommand());
+
     operatorController
         .rightTrigger()
         .onTrue(Commands.runOnce(() -> superStructure.setShootPhase(ShootPhase.HEATUP)));

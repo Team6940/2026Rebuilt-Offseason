@@ -114,7 +114,8 @@ public final class Constants {
     public static final double RollerkV = 0.213;
     public static final double RollerkS = 0.353;
     public static final double RollerVelocityToleranceRps = 0.5;
-    public static final double IntakingRps = 50.0;
+    public static final double IntakingRps = 40.0;
+    public static final double IntakeEmergencyOutRps = 60.0;
     public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Opposed;
 
     /* Rack */

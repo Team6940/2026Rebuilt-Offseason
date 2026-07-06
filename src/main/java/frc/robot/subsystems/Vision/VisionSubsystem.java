@@ -142,13 +142,24 @@ public class VisionSubsystem extends SubsystemBase {
   private static VisionMeasurement selectBestMeasurement(List<VisionMeasurement> measurements) {
     List<VisionMeasurement> hubTag =
         measurements.stream().filter(VisionSubsystem::usesHubTag).toList();
-    List<VisionMeasurement> pool = !hubTag.isEmpty() ? hubTag : measurements;
+    List<VisionMeasurement> trenchTag =
+        measurements.stream().filter(VisionSubsystem::usesTrenchTag).toList();   
+    List<VisionMeasurement> pool = !hubTag.isEmpty() ? hubTag : !trenchTag.isEmpty() ? trenchTag : measurements;
     return pool.stream().min(Comparator.comparingDouble(VisionSubsystem::xyVariance)).orElseThrow();
   }
 
   private static boolean usesHubTag(VisionMeasurement measurement) {
     for (int tagId : measurement.tagIds()) {
       if (VisionFusion.isHubTag(tagId)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean usesTrenchTag(VisionMeasurement measurement) {
+    for (int tagId : measurement.tagIds()) {
+      if (VisionFusion.isTrenchTag(tagId)) {
         return true;
       }
     }

@@ -536,8 +536,8 @@ public final class Constants {
         new InterpolatingDoubleTreeMap();
 
     static {
-      DistanceToShooterRps.put(0.947, 25.9);
-      DistanceToShooterRps.put(1.32, 27.61);
+      DistanceToShooterRps.put(0.947, 27.9);
+      DistanceToShooterRps.put(1.32, 29.0);
       DistanceToShooterRps.put(1.88, 33.04);
       DistanceToShooterRps.put(2.6, 34.8);
       DistanceToShooterRps.put(3.4, 40.4);
@@ -718,11 +718,22 @@ public final class Constants {
    */
   public static final class VisionFusion {
     /** AprilTag IDs on alliance / opponent hub faces (z = 1.12+-0.2 m on 2026 field). */
-    public static final int[] HUB_TAG_IDS = {4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26};
+    public static final int[] HUB_TAG_IDS = {2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27};
+    public static final int[] TRENCH_TAG_IDS = {7, 6, 12, 1, 17, 28, 22, 23};
+
 
     public static boolean isHubTag(int tagId) {
       for (int hubId : HUB_TAG_IDS) {
         if (hubId == tagId) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    public static boolean isTrenchTag(int tagId) {
+      for (int trenchId : TRENCH_TAG_IDS) {
+        if (trenchId == tagId) {
           return true;
         }
       }

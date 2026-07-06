@@ -9,6 +9,8 @@ import frc.robot.Constants.Settings;
 import frc.robot.Constants.Ports.LED;
 import frc.robot.subsystems.leds.LEDController;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.ShootPhase;
+
 import java.util.Map;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
@@ -23,11 +25,14 @@ public class LEDDefaultCommand extends Command {
     private final SuperStructure superStructure;
 
 
+
     public LEDDefaultCommand(LEDController leds) {
         this.leds = leds;
         superStructure = SuperStructure.getInstance();
         addRequirements(leds);    
     }
+
+
 
     @Override
     public boolean runsWhenDisabled() {
@@ -45,6 +50,8 @@ public class LEDDefaultCommand extends Command {
         else{
         // These probably won't actually be what we want the LEDs to be showing
         // TODO: Figure out what we want the LEDs to show
+
+
 
         switch (superStructure.getShootPhase()) {
             case READY:
@@ -72,5 +79,12 @@ public class LEDDefaultCommand extends Command {
                 
         }
     }
+
+
+    }
+
+    @Override
+    public boolean isFinished(){
+        return false;
     }
 }

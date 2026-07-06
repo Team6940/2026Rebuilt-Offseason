@@ -7,8 +7,8 @@ package frc.robot.subsystems.leds;
 
 import frc.robot.Constants.Ports;
 import frc.robot.Constants.Settings;
-import frc.robot.Constants.Ports.LED;
 import frc.robot.subsystems.SuperStructure;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.AddressableLEDBufferView;
@@ -31,9 +31,14 @@ public class LEDController extends SubsystemBase {
         private AddressableLEDBufferView gyroView;
 
         private AddressableLEDBufferView shooterView;
-    
-        public static LEDController getInstance() {
-                return instance == null ? instance = new LEDController() : instance;
+
+    private String currentPatternName = "DISABLED";
+
+    public static LEDController getInstance() {
+        if (instance == null) {
+        instance = new LEDController();
+        }
+        return instance;
     }
 
     private LEDController() {
@@ -54,31 +59,65 @@ public class LEDController extends SubsystemBase {
 
     public void applyAll(LEDPattern pattern) {
         pattern.applyTo(buffer);
+        currentPatternName = "ALL";
     }
 
     
     public void applyShoot(LEDPattern pattern) {
         pattern.applyTo(buffer);
+        currentPatternName = "SHOOT";
     }
 
     
     public void applyGyro(LEDPattern pattern) {
         pattern.applyTo(gyroView);
+        currentPatternName = "GYRO";
     }
 
     public void applyPattern(LEDPattern pattern) {
         pattern.applyTo(buffer);
+        currentPatternName = "PATTERN";
+    }
+
+    public void updateFromSuperStructure() {
+        var superStructure = SuperStructure.getInstance();
+        LEDPattern pattern;
+        if (DriverStation.isDisabled()) {
+            pattern = Settings.LEDs.DISABLED.breathe(Units.Seconds.of(2));
+            currentPatternName = "DISABLED";
+        } else {
+            pattern =
+                switch (superStructure.getShootPhase()) {
+                    case READY -> Settings.LEDs.READY;
+                    case SHOOT -> Settings.LEDs.SHOOT;
+                    case AIM -> Settings.LEDs.AIM;
+                    case HEATUP -> Settings.LEDs.HEATUP;
+                    case OFF -> Settings.LEDs.OFF;
+                };
+            currentPatternName = superStructure.getShootPhase().name();
+        }
+
+        pattern.applyTo(buffer);
+        led.setData(buffer);
     }
 
     @Override
     public void periodic() {
-        // NOTE: Settings.EnabledSubsystems is not defined in Constants.java.
-        // Always update the LED hardware from the current buffer so default/command patterns work.
-        led.setData(buffer);
+        updateFromSuperStructure();
+
         // Log the dynamic state that determines what the LEDs are currently displaying
         var superStructure = SuperStructure.getInstance();
         Logger.recordOutput("LED/DriveMode", superStructure.getDriveMode().name());
         Logger.recordOutput("LED/ShootPhase", superStructure.getShootPhase().name());
         Logger.recordOutput("LED/IsDisabled", DriverStation.isDisabled());
+        Logger.recordOutput("LED/CurrentPattern", currentPatternName);
+        
+        // Log the first LED color as a sample of current output
+        if (buffer.getLength() > 0) {
+            double r = buffer.getLED(0).red;
+            double g = buffer.getLED(0).green;
+            double b = buffer.getLED(0).blue;
+            Logger.recordOutput("LED/FirstLEDColor", String.format("RGB(%d,%d,%d)", (double)r, (double)g, (double)b));
+        }
     }
 }

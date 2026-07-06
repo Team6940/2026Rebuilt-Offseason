@@ -826,7 +826,7 @@ public final class Constants {
       LEDPattern AUTO_AIM = LEDPattern.solid(Color.kYellow);
       LEDPattern AIM = LEDPattern.solid(Color.kYellow);
       LEDPattern HEATUP = LEDPattern.solid(Color.kWhite);
-      LEDPattern Off = LEDPattern.solid(Color.kAliceBlue);
+      LEDPattern OFF = LEDPattern.solid(Color.kAliceBlue);
     }
   }
 }

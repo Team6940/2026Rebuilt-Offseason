@@ -121,6 +121,7 @@ public class SuperStructure extends SubsystemBase {
 
   public void setShootPhase(ShootPhase phase) {
     shootPhase = phase;
+    getLEDs().updateFromSuperStructure();
   }
 
   public void setIntakeMode(IntakeMode mode) {

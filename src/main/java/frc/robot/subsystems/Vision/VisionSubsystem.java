@@ -136,18 +136,13 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   /**
-   * Prefers hub-tag measurements when any are available; else Limelight MegaTag2; else lowest XY
-   * variance among all candidates.
+   * Prefers hub-tag measurements when any are available;else lowest XY variance among all
+   * candidates.
    */
   private static VisionMeasurement selectBestMeasurement(List<VisionMeasurement> measurements) {
     List<VisionMeasurement> hubTag =
         measurements.stream().filter(VisionSubsystem::usesHubTag).toList();
-    List<VisionMeasurement> megaTag2 =
-        measurements.stream()
-            .filter(m -> m.source() == MeasurementSource.LIMELIGHT_MEGATAG2)
-            .toList();
-    List<VisionMeasurement> pool =
-        !hubTag.isEmpty() ? hubTag : megaTag2.isEmpty() ? measurements : megaTag2;
+    List<VisionMeasurement> pool = !hubTag.isEmpty() ? hubTag : measurements;
     return pool.stream().min(Comparator.comparingDouble(VisionSubsystem::xyVariance)).orElseThrow();
   }
 

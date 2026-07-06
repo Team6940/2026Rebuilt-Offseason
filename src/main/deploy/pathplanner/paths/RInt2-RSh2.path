@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 7.8168936631944455,
-        "y": 1.8500380497685183
+        "y": 1.8097515527950305
       },
       "prevControl": null,
       "nextControl": {
         "x": 6.636273291925465,
-        "y": 1.1095829636202303
+        "y": 1.0692964666467426
       },
       "isLocked": false,
       "linkedName": "R-AftIntake2"
@@ -91,7 +91,7 @@
   "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -89.09769041159716
+    "rotation": -117.5820292077971
   },
   "useDefaultConstraints": true
 }

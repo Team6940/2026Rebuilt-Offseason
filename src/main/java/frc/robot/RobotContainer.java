@@ -29,6 +29,8 @@ import frc.robot.Constants.Ports.LED;
 import frc.robot.commands.Autos.LeftDepotSingleSwipe;
 import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.commands.Autos.RightDoubleSwipe;
+import frc.robot.commands.Autos.RightDoubleSwipeOverMid;
+import frc.robot.commands.Autos.RightSingleSwipeToOppHub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FieldSimulation;
@@ -98,6 +100,8 @@ public class RobotContainer {
     autoChooser.addOption("LeftDoubleSwipe", new LeftDoubleSwipe());
     autoChooser.addOption("RightDoubleSwipe", new RightDoubleSwipe());
     autoChooser.addOption("LeftDepotSingleSwipe", new LeftDepotSingleSwipe());
+    autoChooser.addOption("RightDoubleSwipeOverMid", new RightDoubleSwipeOverMid());
+    autoChooser.addOption("RightSingleSwipeToOppHub", new RightSingleSwipeToOppHub());
 
     // Set up SysId routines
     // autoChooser.addOption(

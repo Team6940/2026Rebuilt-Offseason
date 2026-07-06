@@ -1,0 +1,75 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 6.072919254658385,
+        "y": 2.7755013309671686
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.227888198757764,
+        "y": 2.7513575865128654
+      },
+      "isLocked": false,
+      "linkedName": "R-AftOppHub"
+    },
+    {
+      "anchor": {
+        "x": 3.513682342502218,
+        "y": 2.7755013309671686
+      },
+      "prevControl": {
+        "x": 4.319350741161706,
+        "y": 2.789888266657518
+      },
+      "nextControl": {
+        "x": 3.062999112688553,
+        "y": 2.7674534161490665
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.684747116237799,
+        "y": 2.397249334516415
+      },
+      "prevControl": {
+        "x": 3.1273824312333627,
+        "y": 2.799645075421472
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "R-AftSh2"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0253164556962024,
+      "rotationDegrees": -89.43916275546889
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -132.657
+  },
+  "reversed": false,
+  "folder": "Right07OppHub",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -90.0
+  },
+  "useDefaultConstraints": true
+}

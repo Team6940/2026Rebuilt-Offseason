@@ -5,7 +5,9 @@
   "pathFolders": [
     "Left",
     "Mid",
-    "Right"
+    "Right07OppHub",
+    "Right",
+    "RightOverMid"
   ],
   "autoFolders": [],
   "defaultMaxVel": 5.0,

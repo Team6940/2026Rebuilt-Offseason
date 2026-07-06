@@ -12,9 +12,11 @@ import frc.robot.subsystems.SuperStructure;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.AddressableLEDBufferView;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class LEDController extends SubsystemBase {
 
@@ -43,6 +45,7 @@ public class LEDController extends SubsystemBase {
         this.gyroView = buffer.createView(Settings.LED.GYRO_BUFFER[0], Settings.LED.GYRO_BUFFER[1]);
         this.shooterView = buffer.createView(Settings.LED.SHOOTER_BUFFER[0], Settings.LED.SHOOTER_BUFFER[1]);
 
+
         applyAll(defaultPattern);
         SmartDashboard.putData(instance);
     }
@@ -55,7 +58,7 @@ public class LEDController extends SubsystemBase {
 
     
     public void applyShoot(LEDPattern pattern) {
-        pattern.applyTo(shooterView);
+        pattern.applyTo(buffer);
     }
 
     
@@ -72,5 +75,10 @@ public class LEDController extends SubsystemBase {
         // NOTE: Settings.EnabledSubsystems is not defined in Constants.java.
         // Always update the LED hardware from the current buffer so default/command patterns work.
         led.setData(buffer);
+        // Log the dynamic state that determines what the LEDs are currently displaying
+        var superStructure = SuperStructure.getInstance();
+        Logger.recordOutput("LED/DriveMode", superStructure.getDriveMode().name());
+        Logger.recordOutput("LED/ShootPhase", superStructure.getShootPhase().name());
+        Logger.recordOutput("LED/IsDisabled", DriverStation.isDisabled());
     }
 }

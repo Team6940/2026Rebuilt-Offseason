@@ -45,49 +45,30 @@ public class LEDDefaultCommand extends Command {
         else{
         // These probably won't actually be what we want the LEDs to be showing
         // TODO: Figure out what we want the LEDs to show
-        switch (superStructure.getDriveMode()) {
-            case HYBRID_TRENCH:
-            {
-                leds.applyGyro( Settings.LEDs.HYBRID_TRENCH);
-            }
-            case HYBRID_INTAKE_DRIVE:
-            {
-                leds.applyGyro( Settings.LEDs.HYBRID_INTAKE_DRIVE);
-            }
-            case MANUAL:
-            {
-                leds.applyGyro( Settings.LEDs.MANUAL);
-            }
-            case AUTO_AIM:
-            {
-                leds.applyGyro( Settings.LEDs.MANUAL);
 
-            }
-            default:
-            {
-                leds.applyGyro( Settings.LEDs.DISABLED);
-            }
-
-        }
         switch (superStructure.getShootPhase()) {
             case READY:
             {
-                leds.applyShoot( Settings.LEDs.READY);
+                leds.applyPattern(Settings.LEDs.READY);
             }
             case SHOOT:
             {
-                leds.applyShoot( Settings.LEDs.SHOOT);
+                leds.applyPattern(Settings.LEDs.SHOOT);
             }
             case AIM :
             {
-                leds.applyShoot( Settings.LEDs.AIM);
+                leds.applyPattern(Settings.LEDs.AIM);
             }
-            
-        
-            default:
+            case HEATUP :
             {
-                leds.applyShoot(Settings.LEDs.DISABLED);
+                leds.applyPattern(Settings.LEDs.HEATUP);
             }
+            case OFF :
+            {
+                leds.applyPattern(Settings.LEDs.Off);
+            }
+
+            
                 
         }
     }

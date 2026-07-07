@@ -107,7 +107,7 @@ public final class Constants {
     /* Rollers */
     public static final double RollerRatio = 35. / 20.;
     public static final InvertedValue RollerInverted = InvertedValue.Clockwise_Positive;
-    public static final double RollerSupplyCurrentLimit = 40.0;
+    public static final double RollerSupplyCurrentLimit = 20.0;
     public static final double RollerkP = 0.1;
     public static final double RollerkI = 0.0;
     public static final double RollerkD = 0.0;
@@ -121,8 +121,8 @@ public final class Constants {
     /* Rack */
     public static final double RackRatio = 48. / 14.;
     public static final InvertedValue RackInverted = InvertedValue.Clockwise_Positive;
-    public static final double RackSupplyCurrentLimit = 40.0;
-    public static final double RackStatorCurrentLimit = 60.0;
+    public static final double RackSupplyCurrentLimit = 20.0;
+    public static final double RackStatorCurrentLimit = 40.0;
     public static final double RackkP = 20.;
     public static final double RackkI = 0.0;
     public static final double RackkD = 0.0;
@@ -594,7 +594,7 @@ public final class Constants {
     public static final double kP = 8.;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
-    public static final double kV = 0.11;
+    public static final double kV = 0.13;
     public static final double kS = 9;
     public static final double SupplyCurrentLimit = 60.0;
     public static final double StatorCurrentLimit = 60.0;
@@ -655,8 +655,8 @@ public final class Constants {
     public static final double IndexerRatio = 1.0;
     public static final InvertedValue FeederInverted = InvertedValue.Clockwise_Positive;
     public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
-    public static final double FeederSupplyCurrentLimit = 40.0;
-    public static final double IndexerSupplyCurrentLimit = 40.0;
+    public static final double FeederSupplyCurrentLimit = 30.0;
+    public static final double IndexerSupplyCurrentLimit = 20.0;
     public static final double FeederkP = 0.1;
     public static final double FeederkI = 0.0;
     public static final double FeederkD = 0.0;
@@ -718,9 +718,11 @@ public final class Constants {
    */
   public static final class VisionFusion {
     /** AprilTag IDs on alliance / opponent hub faces (z = 1.12+-0.2 m on 2026 field). */
-    public static final int[] HUB_TAG_IDS = {2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27};
-    public static final int[] TRENCH_TAG_IDS = {7, 6, 12, 1, 17, 28, 22, 23};
+    public static final int[] HUB_TAG_IDS = {
+      2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27
+    };
 
+    public static final int[] TRENCH_TAG_IDS = {7, 6, 12, 1, 17, 28, 22, 23};
 
     public static boolean isHubTag(int tagId) {
       for (int hubId : HUB_TAG_IDS) {

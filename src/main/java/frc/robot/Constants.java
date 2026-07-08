@@ -581,7 +581,7 @@ public final class Constants {
     public static final double kP = 8.;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
-    public static final double kV = 0.13;
+    public static final double kV = 0.11;
     public static final double kS = 9;
     public static final double SupplyCurrentLimit = 60.0;
     public static final double StatorCurrentLimit = 60.0;
@@ -616,7 +616,7 @@ public final class Constants {
     // --- Ready gate (AIM to READY) ---
     public static final double HeadingToleranceDegs = 3.0;
     public static final double HoodToleranceDegs = 1.5;
-    public static final double ShooterToleranceRpsLower = 5.;
+    public static final double ShooterToleranceRpsLower = 3.;
     public static final double ShooterToleranceRpsHigher = 2.;
 
     // --- Operator trims (AIM / READY) ---
@@ -795,9 +795,9 @@ public final class Constants {
 
   public static class Settings {
     public static class LED {
-      public static final int LED_LENGTH = 35;
+      public static final int LED_LENGTH = 32;
       public static final int[] GYRO_BUFFER = {0, 1};
-      public static final int[] SHOOTER_BUFFER = {2, 34};
+      public static final int[] SHOOTER_BUFFER = {2, 31};
     }
 
     public interface LEDs {

@@ -1,5 +1,3 @@
-// Must Regenerate
-
 package frc.robot.subsystems.Chassis;
 
 import static edu.wpi.first.units.Units.Amps;

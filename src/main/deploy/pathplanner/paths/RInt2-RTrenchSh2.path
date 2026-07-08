@@ -3,64 +3,73 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.45,
-        "y": 7.441433232060185
+        "x": 7.8168936631944455,
+        "y": 1.8097515527950305
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.819226200810185,
-        "y": 7.4533087384259264
+        "x": 7.411425670903956,
+        "y": 1.0995699814618636
       },
       "isLocked": false,
-      "linkedName": "L-StartTrench"
+      "linkedName": "R-AftIntake2"
     },
     {
       "anchor": {
-        "x": 5.907430338541667,
-        "y": 7.441433232060185
+        "x": 5.395488888153249,
+        "y": 0.6529603637005652
       },
       "prevControl": {
-        "x": 4.907466916905928,
-        "y": 7.449986324515104
+        "x": 5.985053733905974,
+        "y": 0.6606380080920038
       },
       "nextControl": {
-        "x": 6.521085648148148,
-        "y": 7.436184389467593
+        "x": 4.8121383408368645,
+        "y": 0.645363645391949
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.772606553819445,
-        "y": 6.915827256944445
+        "x": 3.470954658810028,
+        "y": 0.6529603637005652
       },
       "prevControl": {
-        "x": 7.780348596643519,
-        "y": 7.545425925925925
+        "x": 4.614284957627119,
+        "y": 0.6656860765360171
       },
       "nextControl": {
-        "x": 7.76568972295399,
-        "y": 6.3533365028350515
+        "x": 2.870741879772791,
+        "y": 0.6462797610137485
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.787127976190476,
-        "y": 4.517872023809524
+        "x": 2.4716716874117237,
+        "y": 1.3082619946151124
       },
       "prevControl": {
-        "x": 7.787652860449734,
-        "y": 5.035342292906747
+        "x": 2.408575377383475,
+        "y": 0.8260881223516934
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "L-AftIntake1"
+      "linkedName": "R-AftTrenchSh2"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 1.9211152219873142,
+      "rotationDegrees": 180.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -74,13 +83,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": -129.65752202740978
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "RStep3",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": -117.5820292077971
   },
   "useDefaultConstraints": true
 }

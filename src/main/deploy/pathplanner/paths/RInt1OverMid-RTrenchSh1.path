@@ -8,90 +8,90 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.396708074534162,
-        "y": 4.3126530612244895
+        "x": 7.411486208652894,
+        "y": 3.644367645294116
       },
       "isLocked": false,
       "linkedName": "R-AftIntake1OverMid"
     },
     {
       "anchor": {
-        "x": 9.815199645075422,
-        "y": 1.560266193433895
+        "x": 5.968097579007768,
+        "y": 1.7852584856108753
       },
       "prevControl": {
-        "x": 8.815199645075422,
-        "y": 1.5602661934338953
+        "x": 5.892662650070622,
+        "y": 3.1811191847634177
       },
       "nextControl": {
-        "x": 10.815199645075422,
-        "y": 1.560266193433895
+        "x": 6.01269200131849,
+        "y": 0.9600757435841246
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 10.764853593611358,
-        "y": 3.250328305235137
+        "x": 5.395488888153249,
+        "y": 0.6529603637005652
       },
       "prevControl": {
-        "x": 10.64114019520852,
-        "y": 2.348961845607808
+        "x": 5.985053733905974,
+        "y": 0.6606380080920038
       },
       "nextControl": {
-        "x": 10.888566992014196,
-        "y": 4.151694764862465
+        "x": 4.8121383408368645,
+        "y": 0.645363645391949
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.626166814551908,
-        "y": 3.5320053238686775
+        "x": 3.470954658810028,
+        "y": 0.6529603637005652
       },
       "prevControl": {
-        "x": 8.503389529724934,
-        "y": 3.5561490683229815
+        "x": 4.614284957627119,
+        "y": 0.6656860765360171
       },
       "nextControl": {
-        "x": 6.797506322375571,
-        "y": 3.5091981543592365
+        "x": 2.870741879772791,
+        "y": 0.6462797610137485
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.072919254658385,
-        "y": 2.7755013309671686
+        "x": 2.4716716874117237,
+        "y": 1.3082619946151124
       },
       "prevControl": {
-        "x": 6.266069210292813,
-        "y": 3.749299023957409
+        "x": 2.408575377383475,
+        "y": 0.8260881223516934
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "R-AftOppHub"
+      "linkedName": "R-AftTrenchSh1"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.4177215189873416,
-      "rotationDegrees": -73.05318130520172
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -129.766642546436
     },
     {
-      "waypointRelativePos": 2.0240506329113988,
-      "rotationDegrees": 90.54866425924553
+      "waypointRelativePos": 1.1223242600422831,
+      "rotationDegrees": -89.56371847301465
     },
     {
-      "waypointRelativePos": 2.4645569620253225,
-      "rotationDegrees": -177.78225174079373
+      "waypointRelativePos": 1.9505483615221988,
+      "rotationDegrees": 180.0
     },
     {
-      "waypointRelativePos": 3.16962025316456,
-      "rotationDegrees": -172.34075448777736
+      "waypointRelativePos": 2.921115221987314,
+      "rotationDegrees": 180.0
     }
   ],
   "constraintZones": [],
@@ -107,7 +107,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": -129.65752202740978
   },
   "reversed": false,
   "folder": "RStep1",

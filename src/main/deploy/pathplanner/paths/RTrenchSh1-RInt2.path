@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.572076308784383,
-        "y": 2.558207630878437
+        "x": 2.4716716874117237,
+        "y": 1.3082619946151124
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9121472937000883,
-        "y": 1.8741348713398396
+        "x": 2.680024993379237,
+        "y": 0.9386356814971748
       },
       "isLocked": false,
-      "linkedName": "R-AftSh1"
+      "linkedName": "R-AftTrenchSh1"
     },
     {
       "anchor": {
@@ -96,32 +96,32 @@
     },
     {
       "anchor": {
-        "x": 8.366574977817214,
-        "y": 3.596388642413486
+        "x": 7.690550133096718,
+        "y": 3.5883407275953854
       },
       "prevControl": {
-        "x": 8.09443064316284,
-        "y": 3.820570264649734
+        "x": 7.418405798442344,
+        "y": 3.8125223498316334
       },
       "nextControl": {
-        "x": 8.59705563347823,
-        "y": 3.4065278931688554
+        "x": 7.921030788757735,
+        "y": 3.3984799783507547
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.55167701863354,
-        "y": 1.785607808340727
+        "x": 7.8168936631944455,
+        "y": 1.8097515527950305
       },
       "prevControl": {
-        "x": 8.717180452571007,
-        "y": 2.6108698718260097
+        "x": 7.859556344276841,
+        "y": 2.654782608695651
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "R-AftIntake2OverMid"
+      "linkedName": "R-AftIntake2"
     }
   ],
   "rotationTargets": [
@@ -169,7 +169,7 @@
   "folder": "RStep2",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -137.22899999999998
+    "rotation": -129.65752202740978
   },
   "useDefaultConstraints": true
 }

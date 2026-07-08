@@ -234,7 +234,8 @@ public class HybridPassCommand extends Command {
   }
 
   private boolean isAtTargetShooter(double shooterRps) {
-    return MathUtil.isNear(shooterRps, shooter.getVelocityRps(), ShooterToleranceRps);
+    return shooterRps - ShooterToleranceRpsLower <= shooter.getVelocityRps()
+        && shooter.getVelocityRps() <= shooterRps + ShooterToleranceRpsHigher;
   }
 
   private void transitionTo(ShootPhase next) {

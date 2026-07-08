@@ -629,7 +629,8 @@ public final class Constants {
     // --- Ready gate (AIM to READY) ---
     public static final double HeadingToleranceDegs = 3.0;
     public static final double HoodToleranceDegs = 1.5;
-    public static final double ShooterToleranceRps = 2.;
+    public static final double ShooterToleranceRpsLower = 5.;
+    public static final double ShooterToleranceRpsHigher = 2.;
 
     // --- Operator trims (AIM / READY) ---
     public static final double AimHeadingCompRangeDegs = 10.0;

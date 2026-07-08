@@ -889,6 +889,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return xController.atSetpoint() && yController.atSetpoint() && thetaController.atGoal();
   }
 
+  public edu.wpi.first.wpilibj.smartdashboard.Field2d getField2d() {
+    return field2d;
+  }
+
   private void loadTrenchPaths() {
     trenchPathAtlBlue = generatePPPath(TrenchLane.ATLtoNTL.pathName);
     trenchPathAtrBlue = generatePPPath(TrenchLane.ATRtoNTR.pathName);

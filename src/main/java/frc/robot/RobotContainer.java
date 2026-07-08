@@ -26,11 +26,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Ports.LED;
-import frc.robot.commands.Autos.LeftDepotSingleSwipe;
-import frc.robot.commands.Autos.LeftDoubleSwipe;
-import frc.robot.commands.Autos.RightDoubleSwipe;
-import frc.robot.commands.Autos.RightDoubleSwipeOverMid;
-import frc.robot.commands.Autos.RightSingleSwipeToOppHub;
+import frc.robot.autos.AutoBuilder;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FieldSimulation;
@@ -48,7 +44,7 @@ import frc.robot.subsystems.SuperStructure.ShootPhase;
 import frc.robot.subsystems.Vision.VisionSubsystem;
 import frc.robot.subsystems.leds.LEDController;
 import java.util.Set;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
@@ -81,7 +77,9 @@ public class RobotContainer {
       new ImprovedCommandXboxController(1);
 
   // Dashboard inputs
-  private final LoggedDashboardChooser<Command> autoChooser;
+  private final AutoBuilder autoBuilder;
+  public static final LoggedNetworkBoolean enableHeatup =
+      new LoggedNetworkBoolean("SmartDashboard/Enable HEATUP", false);
   public static final LoggedNetworkNumber autoDelaySeconds =
       new LoggedNetworkNumber("SmartDashboard/Auto Delay", 0.0);
 
@@ -96,12 +94,7 @@ public class RobotContainer {
     vision = new VisionSubsystem(drive);
 
     // Set up auto routines
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices");
-    autoChooser.addOption("LeftDoubleSwipe", new LeftDoubleSwipe());
-    autoChooser.addOption("RightDoubleSwipe", new RightDoubleSwipe());
-    autoChooser.addOption("LeftDepotSingleSwipe", new LeftDepotSingleSwipe());
-    autoChooser.addOption("RightDoubleSwipeOverMid", new RightDoubleSwipeOverMid());
-    autoChooser.addOption("RightSingleSwipeToOppHub", new RightSingleSwipeToOppHub());
+    autoBuilder = new AutoBuilder();
 
     // Set up SysId routines
     // autoChooser.addOption(
@@ -219,7 +212,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    return autoBuilder.getAutoCommand();
   }
 
   public void resetSimulationField() {

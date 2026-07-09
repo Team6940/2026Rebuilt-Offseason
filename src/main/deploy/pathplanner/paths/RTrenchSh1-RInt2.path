@@ -80,16 +80,16 @@
     },
     {
       "anchor": {
-        "x": 5.845001710363701,
-        "y": 3.7975662628001414
+        "x": 6.008535936113576,
+        "y": 3.75734693877551
       },
       "prevControl": {
-        "x": 6.197578250366553,
-        "y": 3.7944482389769867
+        "x": 6.361112476116428,
+        "y": 3.754228914952355
       },
       "nextControl": {
-        "x": 5.595011485809566,
-        "y": 3.7997770607043617
+        "x": 5.758545711559441,
+        "y": 3.75955773667973
       },
       "isLocked": false,
       "linkedName": null
@@ -127,7 +127,7 @@
     },
     {
       "waypointRelativePos": 5,
-      "rotationDegrees": 178.75566591324792
+      "rotationDegrees": -113.32783939590429
     }
   ],
   "constraintZones": [],
@@ -135,7 +135,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 5.0,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -143,7 +143,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 179.78282715828792
+    "rotation": -88.9271628633808
   },
   "reversed": false,
   "folder": "RStep2",

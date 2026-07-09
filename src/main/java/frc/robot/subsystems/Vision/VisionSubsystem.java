@@ -173,7 +173,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   enum MeasurementSource {
-    LIMELIGHT_MEGATAG1,
+    LIMELIGHT_MEGATAG2,
     PHOTON
   }
 

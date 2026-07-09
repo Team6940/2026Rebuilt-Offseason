@@ -115,8 +115,8 @@ public final class Constants {
     public static final double RackkD = 0.0;
     public static final double RackkV = 0.0;
     public static final double RackkS = 0.34;
-    public static final double RackMotionMagicMaxVelocity = 40.0;
-    public static final double RackMotionMagicAcceleration = 80.0;
+    public static final double RackMotionMagicMaxVelocity = 80.0;
+    public static final double RackMotionMagicAcceleration = 120.0;
     public static final double RackPositionToleranceRotations = 0.01;
     public static final double RackMinRotations = 0.;
     public static final double RackMaxRotations = 4.59;
@@ -526,7 +526,8 @@ public final class Constants {
       DistanceToShooterRps.put(0.947, 27.9);
       DistanceToShooterRps.put(1.32, 29.0);
       DistanceToShooterRps.put(1.88, 33.04);
-      DistanceToShooterRps.put(2.6, 34.8);
+      DistanceToShooterRps.put(2.1, 34.54);
+      DistanceToShooterRps.put(2.6, 36.8);
       DistanceToShooterRps.put(3.4, 40.4);
       DistanceToShooterRps.put(4.1, 42.4);
       DistanceToShooterRps.put(4.99, 48.9);
@@ -556,7 +557,7 @@ public final class Constants {
       PassDistanceToShooterRps.put(4.1, 31.4);
       PassDistanceToShooterRps.put(4.99, 34.9);
       PassDistanceToShooterRps.put(6.0, 37.5);
-      PassDistanceToShooterRps.put(7.0, 41.5);
+      PassDistanceToShooterRps.put(7.0, 60.5);
       PassDistanceToShooterRps.put(13.0, 60.);
 
       PassDistanceToHoodDegs.put(1.05, 17.842);
@@ -736,7 +737,7 @@ public final class Constants {
     /**
      * Reject when estimated tag distance to robot exceeds this (meters). Tune per camera mounting.
      */
-    public static final double REJECT_MAX_DISTANCE_METERS = 5.0;
+    public static final double REJECT_MAX_DISTANCE_METERS = 3.0;
 
     public static final double REJECT_STALE_SECONDS = 0.5;
     public static final double REJECT_MAX_OMEGA_RAD_PER_SEC = 4.0 * Math.PI;

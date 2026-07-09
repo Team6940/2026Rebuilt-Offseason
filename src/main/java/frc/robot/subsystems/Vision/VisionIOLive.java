@@ -108,13 +108,12 @@ public class VisionIOLive implements VisionIO {
       CommandSwerveDrivetrain drive,
       double fpgaNow) {
     clearInputs(inputs);
-    drive.applyLimelightGyroForMegaTag2(limelightName);
 
-    LimelightHelpers.PoseEstimate mt2 =
-        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
-    logLimelightPoseEstimate(logSide, mt2);
+    LimelightHelpers.PoseEstimate mt1 =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
+    logLimelightPoseEstimate(logSide, mt1);
 
-    if (mt2 == null) {
+    if (mt1 == null) {
       Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Connected", false);
       return;
     }
@@ -130,22 +129,22 @@ public class VisionIOLive implements VisionIO {
     inputs.seesTarget = true;
     Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/SeesTarget", true);
 
-    if (mt2.tagCount <= 0) {
+    if (mt1.tagCount <= 0) {
       Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", false);
       return;
     }
 
     snapshotEntry.setNumber(1);
     ChassisSpeeds speeds = drive.getChassisSpeeds();
-    double tagDistRobotM = VisionSubsystem.limelightTagDistanceToRobotMeters(mt2);
+    double tagDistRobotM = VisionSubsystem.limelightTagDistanceToRobotMeters(mt1);
 
     if (VisionSubsystem.shouldReject(
-        mt2.avgTagArea, mt2.tagCount, mt2.timestampSeconds, tagDistRobotM, fpgaNow, speeds)) {
+        mt1.avgTagArea, mt1.tagCount, mt1.timestampSeconds, tagDistRobotM, fpgaNow, speeds)) {
       Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", false);
       return;
     }
 
-    VisionSubsystem.LlStdDevs std = resolveLimelightStdDevs(limelightName, mt2.avgTagArea);
+    VisionSubsystem.LlStdDevs std = resolveLimelightStdDevs(limelightName, mt1.avgTagArea);
     Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevsValid", true);
     Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevX", std.sigmaXMeters());
     Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevY", std.sigmaYMeters());
@@ -156,16 +155,16 @@ public class VisionIOLive implements VisionIO {
 
     fillMeasurement(
         inputs,
-        mt2.pose,
-        mt2.timestampSeconds,
+        mt1.pose,
+        mt1.timestampSeconds,
         std.sigmaXMeters(),
         std.sigmaYMeters(),
         std.sigmaYawRadians(),
-        VisionSubsystem.MeasurementSource.LIMELIGHT_MEGATAG2,
+        VisionSubsystem.MeasurementSource.LIMELIGHT_MEGATAG1,
         "Limelight" + logSide,
         std.source(),
-        mt2.tagCount,
-        VisionSubsystem.limelightTagIds(mt2));
+        mt1.tagCount,
+        VisionSubsystem.limelightTagIds(mt1));
   }
 
   private static void updatePhotonDriver(VisionCameraInputs inputs, PhotonCamera driverCamera) {

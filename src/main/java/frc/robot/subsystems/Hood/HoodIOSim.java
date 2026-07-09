@@ -15,5 +15,7 @@ public class HoodIOSim implements HoodIO {
   public void updateInputs(HoodIOInputs inputs) {
     inputs.motorConnected = true;
     inputs.hoodPositionDegs = positionDegs;
+    inputs.supplyVoltageV = 12.0;
+    inputs.supplyCurrentA = 0.5;
   }
 }

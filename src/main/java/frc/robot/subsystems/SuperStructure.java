@@ -19,6 +19,7 @@ import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Power.PowerMonitor;
 import frc.robot.subsystems.leds.LEDController;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -86,7 +87,10 @@ public class SuperStructure extends SubsystemBase {
     return LEDController.getInstance();
   }
 
-  private SuperStructure() {}
+  private SuperStructure() {
+    // Ensure PowerMonitor is instantiated and scheduled
+    PowerMonitor.getInstance();
+  }
 
   public CommandSwerveDrivetrain getDrive() {
     return CommandSwerveDrivetrain.getInstance();

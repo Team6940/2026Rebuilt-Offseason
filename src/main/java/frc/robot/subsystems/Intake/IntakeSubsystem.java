@@ -64,6 +64,15 @@ public class IntakeSubsystem extends SubsystemBase {
     return targetRackRotations;
   }
 
+  public double getTotalSupplyCurrentA() {
+    return inputs.rackSupplyCurrentA + inputs.rollerSupplyCurrentA;
+  }
+
+  public double getTotalPowerW() {
+    return inputs.rackSupplyVoltageV * inputs.rackSupplyCurrentA
+        + inputs.rollerSupplyVoltageV * inputs.rollerSupplyCurrentA;
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputs);
@@ -73,5 +82,7 @@ public class IntakeSubsystem extends SubsystemBase {
     Logger.recordOutput("Intake/TargetRackRotations", targetRackRotations);
     Logger.recordOutput("Intake/RackPositionRotations", inputs.rackPositionRotations);
     Logger.recordOutput("Intake/RackAtTarget", isRackAtTarget());
+    Logger.recordOutput("Intake/TotalSupplyCurrentA", getTotalSupplyCurrentA());
+    Logger.recordOutput("Intake/TotalPowerW", getTotalPowerW());
   }
 }

@@ -33,6 +33,10 @@ public class ShooterIOSim implements ShooterIO {
     inputs.leaderBConnected = true;
     inputs.leaderAVelocityRps = velocityRps;
     inputs.leaderBVelocityRps = velocityRps;
+    inputs.leaderASupplyVoltageV = 12.0;
+    inputs.leaderASupplyCurrentA = velocityRps > 0 ? 5.0 : 0.0;
+    inputs.leaderBSupplyVoltageV = 12.0;
+    inputs.leaderBSupplyCurrentA = velocityRps > 0 ? 5.0 : 0.0;
   }
 
   @Override

@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -468,6 +469,42 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     field2d.setRobotPose(getPose());
     Logger.recordOutput("Odometry/Robot", getPose());
     Logger.recordOutput("Drive/ChassisSpeeds", getChassisSpeeds());
+
+    // Log per-module and total chassis power
+    double totalDriveCurrentA = 0;
+    double totalSteerCurrentA = 0;
+    double totalChassisPowerW = 0;
+    var modules = getModules();
+    // Refresh supply signals for all module motors
+    var driveSignals = new BaseStatusSignal[modules.length * 2];
+    var steerSignals = new BaseStatusSignal[modules.length * 2];
+    for (int i = 0; i < modules.length; i++) {
+      driveSignals[i * 2] = modules[i].getDriveMotor().getSupplyCurrent();
+      driveSignals[i * 2 + 1] = modules[i].getDriveMotor().getSupplyVoltage();
+      steerSignals[i * 2] = modules[i].getSteerMotor().getSupplyCurrent();
+      steerSignals[i * 2 + 1] = modules[i].getSteerMotor().getSupplyVoltage();
+    }
+    BaseStatusSignal.refreshAll(driveSignals);
+    BaseStatusSignal.refreshAll(steerSignals);
+    for (int i = 0; i < modules.length; i++) {
+      var driveMotor = modules[i].getDriveMotor();
+      var steerMotor = modules[i].getSteerMotor();
+      double driveCurrent = driveMotor.getSupplyCurrent().getValueAsDouble();
+      double driveVoltage = driveMotor.getSupplyVoltage().getValueAsDouble();
+      double steerCurrent = steerMotor.getSupplyCurrent().getValueAsDouble();
+      double steerVoltage = steerMotor.getSupplyVoltage().getValueAsDouble();
+      totalDriveCurrentA += driveCurrent;
+      totalSteerCurrentA += steerCurrent;
+      totalChassisPowerW += driveVoltage * driveCurrent + steerVoltage * steerCurrent;
+      Logger.recordOutput("Drive/Module" + i + "/DriveSupplyCurrentA", driveCurrent);
+      Logger.recordOutput("Drive/Module" + i + "/SteerSupplyCurrentA", steerCurrent);
+      Logger.recordOutput("Drive/Module" + i + "/DrivePowerW", driveVoltage * driveCurrent);
+      Logger.recordOutput("Drive/Module" + i + "/SteerPowerW", steerVoltage * steerCurrent);
+    }
+    Logger.recordOutput("Drive/TotalDriveCurrentA", totalDriveCurrentA);
+    Logger.recordOutput("Drive/TotalSteerCurrentA", totalSteerCurrentA);
+    Logger.recordOutput("Drive/TotalChassisCurrentA", totalDriveCurrentA + totalSteerCurrentA);
+    Logger.recordOutput("Drive/TotalChassisPowerW", totalChassisPowerW);
   }
 
   private void updateSwerveInputs() {

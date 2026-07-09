@@ -90,10 +90,20 @@ public class ShooterIOPhoenix6 implements ShooterIO {
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    inputs.leaderAConnected = BaseStatusSignal.refreshAll(leaderA.getVelocity()).isOK();
+    inputs.leaderAConnected =
+        BaseStatusSignal.refreshAll(
+                leaderA.getVelocity(), leaderA.getSupplyCurrent(), leaderA.getSupplyVoltage())
+            .isOK();
     inputs.leaderAVelocityRps = leaderA.getVelocity().getValueAsDouble();
+    inputs.leaderASupplyCurrentA = leaderA.getSupplyCurrent().getValueAsDouble();
+    inputs.leaderASupplyVoltageV = leaderA.getSupplyVoltage().getValueAsDouble();
 
-    inputs.leaderBConnected = BaseStatusSignal.refreshAll(leaderB.getVelocity()).isOK();
+    inputs.leaderBConnected =
+        BaseStatusSignal.refreshAll(
+                leaderB.getVelocity(), leaderB.getSupplyCurrent(), leaderB.getSupplyVoltage())
+            .isOK();
     inputs.leaderBVelocityRps = leaderB.getVelocity().getValueAsDouble();
+    inputs.leaderBSupplyCurrentA = leaderB.getSupplyCurrent().getValueAsDouble();
+    inputs.leaderBSupplyVoltageV = leaderB.getSupplyVoltage().getValueAsDouble();
   }
 }

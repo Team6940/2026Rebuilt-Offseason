@@ -7,6 +7,8 @@ public interface HoodIO {
   public class HoodIOInputs {
     public boolean motorConnected = false;
     public double hoodPositionDegs = 0.0;
+    public double supplyVoltageV = 0.0;
+    public double supplyCurrentA = 0.0;
   }
 
   public default void setPosition(double positionDegs) {}

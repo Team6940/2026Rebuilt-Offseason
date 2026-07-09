@@ -102,10 +102,24 @@ public class IndexerIOPhoenix6 implements IndexerIO {
 
   @Override
   public void updateInputs(IndexerIOInputs inputs) {
-    inputs.feederConnected = BaseStatusSignal.refreshAll(feederLeader.getVelocity()).isOK();
+    inputs.feederConnected =
+        BaseStatusSignal.refreshAll(
+                feederLeader.getVelocity(),
+                feederLeader.getSupplyCurrent(),
+                feederLeader.getSupplyVoltage())
+            .isOK();
     inputs.feederVelocityRps = feederLeader.getVelocity().getValueAsDouble();
+    inputs.feederSupplyCurrentA = feederLeader.getSupplyCurrent().getValueAsDouble();
+    inputs.feederSupplyVoltageV = feederLeader.getSupplyVoltage().getValueAsDouble();
 
-    inputs.indexerConnected = BaseStatusSignal.refreshAll(indexerLeader.getVelocity()).isOK();
+    inputs.indexerConnected =
+        BaseStatusSignal.refreshAll(
+                indexerLeader.getVelocity(),
+                indexerLeader.getSupplyCurrent(),
+                indexerLeader.getSupplyVoltage())
+            .isOK();
     inputs.indexerVelocityRps = indexerLeader.getVelocity().getValueAsDouble();
+    inputs.indexerSupplyCurrentA = indexerLeader.getSupplyCurrent().getValueAsDouble();
+    inputs.indexerSupplyVoltageV = indexerLeader.getSupplyVoltage().getValueAsDouble();
   }
 }

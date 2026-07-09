@@ -52,11 +52,22 @@ public class ShooterSubsystem extends SubsystemBase {
     return (inputs.leaderAVelocityRps + inputs.leaderBVelocityRps) / 2.0;
   }
 
+  public double getTotalSupplyCurrentA() {
+    return inputs.leaderASupplyCurrentA + inputs.leaderBSupplyCurrentA;
+  }
+
+  public double getTotalPowerW() {
+    return inputs.leaderASupplyVoltageV * inputs.leaderASupplyCurrentA
+        + inputs.leaderBSupplyVoltageV * inputs.leaderBSupplyCurrentA;
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
     Logger.recordOutput("Shooter/TargetRps", targetRps);
     Logger.recordOutput("Shooter/VelocityRps", getVelocityRps());
+    Logger.recordOutput("Shooter/TotalSupplyCurrentA", getTotalSupplyCurrentA());
+    Logger.recordOutput("Shooter/TotalPowerW", getTotalPowerW());
   }
 }

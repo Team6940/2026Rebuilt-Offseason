@@ -50,10 +50,21 @@ public class IndexerSubsystem extends SubsystemBase {
     return feeding;
   }
 
+  public double getTotalSupplyCurrentA() {
+    return inputs.feederSupplyCurrentA + inputs.indexerSupplyCurrentA;
+  }
+
+  public double getTotalPowerW() {
+    return inputs.feederSupplyVoltageV * inputs.feederSupplyCurrentA
+        + inputs.indexerSupplyVoltageV * inputs.indexerSupplyCurrentA;
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Indexer", inputs);
     Logger.recordOutput("Indexer/Feeding", feeding);
+    Logger.recordOutput("Indexer/TotalSupplyCurrentA", getTotalSupplyCurrentA());
+    Logger.recordOutput("Indexer/TotalPowerW", getTotalPowerW());
   }
 }

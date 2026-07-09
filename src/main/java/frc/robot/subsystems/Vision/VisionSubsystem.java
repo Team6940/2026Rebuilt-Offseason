@@ -32,7 +32,6 @@ public class VisionSubsystem extends SubsystemBase {
       new VisionCameraInputsAutoLogged();
   private final VisionCameraInputsAutoLogged limelightRightInputs =
       new VisionCameraInputsAutoLogged();
-  private final VisionCameraInputsAutoLogged photonBackInputs = new VisionCameraInputsAutoLogged();
   private final VisionCameraInputsAutoLogged photonFrontInputs = new VisionCameraInputsAutoLogged();
 
   public static VisionSubsystem m_instance;
@@ -56,33 +55,23 @@ public class VisionSubsystem extends SubsystemBase {
 
     if (!Logger.hasReplaySource()) {
       visionIO.updateInputs(
-          limelightLeftInputs,
-          limelightRightInputs,
-          photonBackInputs,
-          photonFrontInputs,
-          drive,
-          fpgaNow);
+          limelightLeftInputs, limelightRightInputs, photonFrontInputs, drive, fpgaNow);
     }
 
     if (!Logger.hasReplaySource()) {
       visionIO.updateInputs(
-          limelightLeftInputs,
-          limelightRightInputs,
-          photonBackInputs,
-          photonFrontInputs,
-          drive,
-          fpgaNow);
+          limelightLeftInputs, limelightRightInputs, photonFrontInputs, drive, fpgaNow);
     }
 
     Logger.processInputs("Vision/LimelightLeft", limelightLeftInputs);
     Logger.processInputs("Vision/LimelightRight", limelightRightInputs);
-    Logger.processInputs("Vision/PhotonBack", photonBackInputs);
+    // Logger.processInputs("Vision/PhotonBack", photonBackInputs);
     Logger.processInputs("Vision/PhotonFront", photonFrontInputs);
 
     List<VisionMeasurement> accepted = new ArrayList<>(4);
     measurementFromInputs(limelightLeftInputs).ifPresent(accepted::add);
     measurementFromInputs(limelightRightInputs).ifPresent(accepted::add);
-    measurementFromInputs(photonBackInputs).ifPresent(accepted::add);
+    // measurementFromInputs(photonBackInputs).ifPresent(accepted::add);
 
     if (accepted.isEmpty()) {
       Logger.recordOutput("VisionFusion/Selected/Accepted", false);
@@ -143,8 +132,9 @@ public class VisionSubsystem extends SubsystemBase {
     List<VisionMeasurement> hubTag =
         measurements.stream().filter(VisionSubsystem::usesHubTag).toList();
     List<VisionMeasurement> trenchTag =
-        measurements.stream().filter(VisionSubsystem::usesTrenchTag).toList();   
-    List<VisionMeasurement> pool = !hubTag.isEmpty() ? hubTag : !trenchTag.isEmpty() ? trenchTag : measurements;
+        measurements.stream().filter(VisionSubsystem::usesTrenchTag).toList();
+    List<VisionMeasurement> pool =
+        !hubTag.isEmpty() ? hubTag : !trenchTag.isEmpty() ? trenchTag : measurements;
     return pool.stream().min(Comparator.comparingDouble(VisionSubsystem::xyVariance)).orElseThrow();
   }
 

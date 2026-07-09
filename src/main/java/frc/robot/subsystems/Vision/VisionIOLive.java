@@ -26,35 +26,25 @@ public class VisionIOLive implements VisionIO {
   private static final double[] LL_DEFAULT_STDDEVS =
       new double[VisionFusion.LL_STDDEV_ARRAY_LENGTH];
 
-  private final PhotonCameraSetup photonBack;
   private final PhotonCamera photonFront;
 
   private final NetworkTableEntry llLeftSnapshot =
-      NetworkTableInstance.getDefault().getTable(RobotContainer.limelightLeft).getEntry("snapshot");
+      NetworkTableInstance.getDefault().getTable(RobotContainer.limelightBack).getEntry("snapshot");
   private final NetworkTableEntry llRightSnapshot =
       NetworkTableInstance.getDefault()
           .getTable(RobotContainer.limelightRight)
           .getEntry("snapshot");
 
   public VisionIOLive() {
-    photonBack =
-        new PhotonCameraSetup(
-            RobotContainer.photonCameraBack, "Back", VisionFusion.kRobotToPhotonBack);
     photonFront = new PhotonCamera(RobotContainer.photonCameraFront);
-    configurePhotonNetworkTables(photonBack.camera, photonFront);
+    configurePhotonNetworkTables(photonFront);
   }
 
   /** PhotonVision subtable keys under {@code photonvision/<cameraName>/}. */
-  private static void configurePhotonNetworkTables(
-      PhotonCamera aprilTagCamera, PhotonCamera driverCamera) {
-    aprilTagCamera.setDriverMode(false);
+  private static void configurePhotonNetworkTables(PhotonCamera driverCamera) {
     driverCamera.setDriverMode(true);
 
     NetworkTableInstance nt = NetworkTableInstance.getDefault();
-    nt.getTable("photonvision")
-        .getSubTable(RobotContainer.photonCameraBack)
-        .getEntry("driverMode")
-        .setBoolean(false);
     nt.getTable("photonvision")
         .getSubTable(RobotContainer.photonCameraFront)
         .getEntry("driverMode")
@@ -65,7 +55,6 @@ public class VisionIOLive implements VisionIO {
   public void updateInputs(
       VisionCameraInputs limelightLeft,
       VisionCameraInputs limelightRight,
-      VisionCameraInputs photonBackInputs,
       VisionCameraInputs photonFrontInputs,
       CommandSwerveDrivetrain drive,
       double fpgaNow) {
@@ -73,10 +62,9 @@ public class VisionIOLive implements VisionIO {
     llRightSnapshot.setNumber(0);
 
     updateLimelight(
-        limelightLeft, RobotContainer.limelightLeft, "Left", llLeftSnapshot, drive, fpgaNow);
+        limelightLeft, RobotContainer.limelightBack, "Left", llLeftSnapshot, drive, fpgaNow);
     updateLimelight(
         limelightRight, RobotContainer.limelightRight, "Right", llRightSnapshot, drive, fpgaNow);
-    updatePhoton(photonBackInputs, photonBack, fpgaNow, drive);
     updatePhotonDriver(photonFrontInputs, photonFront);
   }
 
@@ -176,109 +164,110 @@ public class VisionIOLive implements VisionIO {
     Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/DriverMode", true);
   }
 
-  private void updatePhoton(
-      VisionCameraInputs inputs,
-      PhotonCameraSetup setup,
-      double fpgaNow,
-      CommandSwerveDrivetrain drive) {
-    clearInputs(inputs);
-    String cameraName = setup.camera.getName();
-    setup.poseEstimator.addHeadingData(fpgaNow, drive.getPose().getRotation());
+  // private void updatePhoton(
+  //     VisionCameraInputs inputs,
+  //     PhotonCameraSetup setup,
+  //     double fpgaNow,
+  //     CommandSwerveDrivetrain drive) {
+  //   clearInputs(inputs);
+  //   String cameraName = setup.camera.getName();
+  //   setup.poseEstimator.addHeadingData(fpgaNow, drive.getPose().getRotation());
 
-    List<PhotonPipelineResult> unread = setup.camera.getAllUnreadResults();
-    PhotonPipelineResult result =
-        unread.stream()
-            .filter(PhotonPipelineResult::hasTargets)
-            .max(Comparator.comparingDouble(PhotonPipelineResult::getTimestampSeconds))
-            .orElse(null);
-    if (result == null) {
-      logPhotonPoseEstimate(setup.logSide, Optional.empty(), Optional.empty());
-      Logger.recordOutput(
-          "VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/SeesTarget", false);
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-      return;
-    }
+  //   List<PhotonPipelineResult> unread = setup.camera.getAllUnreadResults();
+  //   PhotonPipelineResult result =
+  //       unread.stream()
+  //           .filter(PhotonPipelineResult::hasTargets)
+  //           .max(Comparator.comparingDouble(PhotonPipelineResult::getTimestampSeconds))
+  //           .orElse(null);
+  //   if (result == null) {
+  //     logPhotonPoseEstimate(setup.logSide, Optional.empty(), Optional.empty());
+  //     Logger.recordOutput(
+  //         "VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
+  //     Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/SeesTarget", false);
+  //     Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
+  //     return;
+  //   }
 
-    inputs.connected = setup.camera.isConnected();
-    inputs.seesTarget = true;
-    Logger.recordOutput(
-        "VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
-    Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/SeesTarget", true);
+  //   inputs.connected = setup.camera.isConnected();
+  //   inputs.seesTarget = true;
+  //   Logger.recordOutput(
+  //       "VisionFusion/Photon/" + cameraName + "/Connected", setup.camera.isConnected());
+  //   Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/SeesTarget", true);
 
-    Optional<EstimatedRobotPose> multiOpt = setup.poseEstimator.estimateCoprocMultiTagPose(result);
-    Optional<EstimatedRobotPose> pnpOpt =
-        multiOpt.isPresent()
-            ? Optional.empty()
-            : setup.poseEstimator.estimatePnpDistanceTrigSolvePose(result);
-    logPhotonPoseEstimate(setup.logSide, multiOpt, pnpOpt);
+  //   Optional<EstimatedRobotPose> multiOpt =
+  // setup.poseEstimator.estimateCoprocMultiTagPose(result);
+  //   Optional<EstimatedRobotPose> pnpOpt =
+  //       multiOpt.isPresent()
+  //           ? Optional.empty()
+  //           : setup.poseEstimator.estimatePnpDistanceTrigSolvePose(result);
+  //   logPhotonPoseEstimate(setup.logSide, multiOpt, pnpOpt);
 
-    if (multiOpt.isPresent()) {
-      EstimatedRobotPose est = multiOpt.get();
-      List<PhotonTrackedTarget> targets = est.targetsUsed;
-      int tagCount = Math.max(1, targets.size());
-      double taMean = VisionSubsystem.photonAvgAreaFraction(targets);
-      double tagDistM = VisionSubsystem.photonAvgCameraToTagDistanceMeters(targets);
+  //   if (multiOpt.isPresent()) {
+  //     EstimatedRobotPose est = multiOpt.get();
+  //     List<PhotonTrackedTarget> targets = est.targetsUsed;
+  //     int tagCount = Math.max(1, targets.size());
+  //     double taMean = VisionSubsystem.photonAvgAreaFraction(targets);
+  //     double tagDistM = VisionSubsystem.photonAvgCameraToTagDistanceMeters(targets);
 
-      if (VisionSubsystem.shouldReject(
-          taMean, tagCount, est.timestampSeconds, tagDistM, fpgaNow, drive.getChassisSpeeds())) {
-        Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-        return;
-      }
+  //     if (VisionSubsystem.shouldReject(
+  //         taMean, tagCount, est.timestampSeconds, tagDistM, fpgaNow, drive.getChassisSpeeds())) {
+  //       Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
+  //       return;
+  //     }
 
-      double xyStd = PoseEstimatorConstants.tAtoDev.get(taMean);
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", true);
-      fillMeasurement(
-          inputs,
-          est.estimatedPose.toPose2d(),
-          est.timestampSeconds,
-          xyStd,
-          xyStd,
-          VisionFusion.PHOTON_THETA_STDDEV_RADIANS,
-          VisionSubsystem.MeasurementSource.PHOTON,
-          "Photon" + setup.logSide,
-          "TA_LOOKUP",
-          tagCount,
-          VisionSubsystem.photonTagIds(targets));
-      return;
-    }
+  //     double xyStd = PoseEstimatorConstants.tAtoDev.get(taMean);
+  //     Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", true);
+  //     fillMeasurement(
+  //         inputs,
+  //         est.estimatedPose.toPose2d(),
+  //         est.timestampSeconds,
+  //         xyStd,
+  //         xyStd,
+  //         VisionFusion.PHOTON_THETA_STDDEV_RADIANS,
+  //         VisionSubsystem.MeasurementSource.PHOTON,
+  //         "Photon" + setup.logSide,
+  //         "TA_LOOKUP",
+  //         tagCount,
+  //         VisionSubsystem.photonTagIds(targets));
+  //     return;
+  //   }
 
-    if (pnpOpt.isEmpty()) {
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-      return;
-    }
+  //   if (pnpOpt.isEmpty()) {
+  //     Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
+  //     return;
+  //   }
 
-    EstimatedRobotPose est = pnpOpt.get();
-    PhotonTrackedTarget best = result.getBestTarget();
-    if (best == null) {
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-      return;
-    }
+  //   EstimatedRobotPose est = pnpOpt.get();
+  //   PhotonTrackedTarget best = result.getBestTarget();
+  //   if (best == null) {
+  //     Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
+  //     return;
+  //   }
 
-    double taFrac = best.area / 100.0;
-    double tagDistM = VisionSubsystem.photonCameraToTagDistanceMeters(best);
+  //   double taFrac = best.area / 100.0;
+  //   double tagDistM = VisionSubsystem.photonCameraToTagDistanceMeters(best);
 
-    if (VisionSubsystem.shouldReject(
-        taFrac, 1, est.timestampSeconds, tagDistM, fpgaNow, drive.getChassisSpeeds())) {
-      Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
-      return;
-    }
+  //   if (VisionSubsystem.shouldReject(
+  //       taFrac, 1, est.timestampSeconds, tagDistM, fpgaNow, drive.getChassisSpeeds())) {
+  //     Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", false);
+  //     return;
+  //   }
 
-    double xyStd = PoseEstimatorConstants.tAtoDev.get(taFrac);
-    Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", true);
-    fillMeasurement(
-        inputs,
-        est.estimatedPose.toPose2d(),
-        est.timestampSeconds,
-        xyStd,
-        xyStd,
-        VisionFusion.PHOTON_THETA_STDDEV_RADIANS,
-        VisionSubsystem.MeasurementSource.PHOTON,
-        "Photon" + setup.logSide,
-        "TA_LOOKUP",
-        1,
-        new int[] {best.getFiducialId()});
-  }
+  //   double xyStd = PoseEstimatorConstants.tAtoDev.get(taFrac);
+  //   Logger.recordOutput("VisionFusion/Photon/" + cameraName + "/Accepted", true);
+  //   fillMeasurement(
+  //       inputs,
+  //       est.estimatedPose.toPose2d(),
+  //       est.timestampSeconds,
+  //       xyStd,
+  //       xyStd,
+  //       VisionFusion.PHOTON_THETA_STDDEV_RADIANS,
+  //       VisionSubsystem.MeasurementSource.PHOTON,
+  //       "Photon" + setup.logSide,
+  //       "TA_LOOKUP",
+  //       1,
+  //       new int[] {best.getFiducialId()});
+  // }
 
   private static void fillMeasurement(
       VisionCameraInputs inputs,
@@ -334,16 +323,16 @@ public class VisionIOLive implements VisionIO {
       return mt2.get();
     }
 
-    Optional<VisionSubsystem.LlStdDevs> mt1 =
-        VisionSubsystem.parseLimelightNtStdDevs(
-            arr,
-            VisionFusion.LL_MT1_X_STDDEV_INDEX,
-            VisionFusion.LL_MT1_Y_STDDEV_INDEX,
-            VisionFusion.LL_MT1_YAW_STDDEV_INDEX,
-            "MT1");
-    if (mt1.isPresent()) {
-      return mt1.get();
-    }
+    // Optional<VisionSubsystem.LlStdDevs> mt1 =
+    //     VisionSubsystem.parseLimelightNtStdDevs(
+    //         arr,
+    //         VisionFusion.LL_MT1_X_STDDEV_INDEX,
+    //         VisionFusion.LL_MT1_Y_STDDEV_INDEX,
+    //         VisionFusion.LL_MT1_YAW_STDDEV_INDEX,
+    //         "MT1");
+    // if (mt1.isPresent()) {
+    //   return mt1.get();
+    // }
 
     double taFrac = avgTagArea / 100.0;
     double xyStd = PoseEstimatorConstants.tAtoDev.get(taFrac);

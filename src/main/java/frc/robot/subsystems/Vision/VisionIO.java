@@ -22,8 +22,10 @@ public interface VisionIO {
     public int tagId1 = -1;
     public int tagId2 = -1;
     public int tagId3 = -1;
+
     /** {@link VisionSubsystem.MeasurementSource} ordinal. */
     public int measurementSource = 0;
+
     public String sourceLabel = "";
     public String stdDevSource = "";
   }
@@ -31,7 +33,6 @@ public interface VisionIO {
   default void updateInputs(
       VisionCameraInputs limelightLeft,
       VisionCameraInputs limelightRight,
-      VisionCameraInputs photonBack,
       VisionCameraInputs photonFront,
       CommandSwerveDrivetrain drive,
       double fpgaNow) {}

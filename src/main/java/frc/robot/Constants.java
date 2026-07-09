@@ -101,7 +101,7 @@ public final class Constants {
     public static final double RollerkV = 0.213;
     public static final double RollerkS = 0.353;
     public static final double RollerVelocityToleranceRps = 0.5;
-    public static final double IntakingRps = 25.0;
+    public static final double IntakingRps = 40.0;
     public static final double IntakeEmergencyOutRps = 60.0;
     public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Opposed;
 
@@ -115,8 +115,8 @@ public final class Constants {
     public static final double RackkD = 0.0;
     public static final double RackkV = 0.0;
     public static final double RackkS = 0.34;
-    public static final double RackMotionMagicMaxVelocity = 80.0;
-    public static final double RackMotionMagicAcceleration = 120.0;
+    public static final double RackMotionMagicMaxVelocity = 40.0;
+    public static final double RackMotionMagicAcceleration = 80.0;
     public static final double RackPositionToleranceRotations = 0.01;
     public static final double RackMinRotations = 0.;
     public static final double RackMaxRotations = 4.59;

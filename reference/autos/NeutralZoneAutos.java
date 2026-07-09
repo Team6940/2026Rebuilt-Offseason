@@ -1,0 +1,329 @@
+package frc.robot.autos;
+
+import static frc.robot.Constants.AutoConstants.*;
+import static edu.wpi.first.units.Units.Meters;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.autos.ComplexAutoChooser.AutoSegment;
+import frc.robot.lib.BLine.Path;
+import frc.robot.lib.BLine.Path.PathElement;
+import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/** Neutral-zone intake patterns (Spartronics 4915). */
+public class NeutralZoneAutos {
+  private final CommandSwerveDrivetrain drive;
+
+  public NeutralZoneAutos(CommandSwerveDrivetrain drive) {
+    this.drive = drive;
+  }
+
+  public enum IntakeShift {
+    CLOSE(-1.5),
+    NORMAL(0),
+    FAR(0.3);
+
+    private final double shiftDist;
+
+    IntakeShift(double shiftDist) {
+      this.shiftDist = shiftDist;
+    }
+  }
+
+  private static final Map<AutoSegment, IntakeShift> segmentToIntakeShiftMap =
+      Map.of(
+          AutoSegment.INTAKE_CLOSE, IntakeShift.CLOSE,
+          AutoSegment.INTAKE_NORMAL, IntakeShift.NORMAL,
+          AutoSegment.INTAKE_FAR, IntakeShift.FAR);
+
+  public static IntakeShift convertToIntakeShift(AutoSegment segment) {
+    if (segment == null) {
+      return IntakeShift.NORMAL;
+    }
+    return segmentToIntakeShiftMap.getOrDefault(segment, IntakeShift.NORMAL);
+  }
+
+  public Command generateQuadrantCommand(
+      boolean isRightSide, boolean fromTrench, IntakeShift intakeShift) {
+    return Commands.defer(
+        () -> {
+          double sideMultiplier = isRightSide ? -1 : 1;
+          Rotation2d rotation = Rotation2d.fromDegrees(isRightSide ? 90 : -90);
+
+          Translation2d offsetFromCenter =
+              new Translation2d(
+                  -robotWidth.in(Meters) / 2 - paddingFromOp.in(Meters) + intakeShift.shiftDist,
+                  (robotLength.in(Meters) / 2) * sideMultiplier);
+
+          Pose2d intakeStart =
+              new Pose2d(
+                  centerPose
+                      .plus(offsetFromCenter)
+                      .plus(
+                          fuelIntakeTransform.times(
+                              sideMultiplier * (fromTrench ? 1 : 0.45))),
+                  rotation);
+          Pose2d quadrantEnd =
+              new Pose2d(
+                  centerPose
+                      .plus(offsetFromCenter)
+                      .plus(new Translation2d(0, paddingFromCenter.in(Meters)).times(sideMultiplier)),
+                  rotation);
+
+          List<PathElement> pathElements =
+              new ArrayList<>(
+                  List.of(
+                      new Path.Waypoint(drive.getRelativePose()),
+                      new Path.RotationTarget(intakeStart.getRotation(), 0.75),
+                      new Path.Waypoint(intakeStart, 0.9),
+                      new Path.Waypoint(quadrantEnd)));
+
+          Path.PathConstraints constraints =
+              Autos.combineConstraints(
+                  Autos.generatePathConstraintZone(driveToCenterConstraints, 0, 1),
+                  Autos.generatePathConstraintZone(intakePathConstraints, 1, 2));
+
+          Path path = new Path(pathElements, constraints);
+          return Autos.build(
+              path,
+              quadrantEnd.getTranslation().minus(intakeStart.getTranslation()).getAngle(),
+              drive);
+        },
+        Set.of(drive));
+  }
+
+  public Command generateShortCommand(
+      boolean isRightSide, boolean fromTrench, IntakeShift intakeShift) {
+    return Commands.defer(
+        () -> {
+          double sideMultiplier = isRightSide ? -1 : 1;
+          Rotation2d rotation = Rotation2d.fromDegrees(isRightSide ? 90 : -90);
+
+          Translation2d offsetFromCenter =
+              new Translation2d(
+                  -robotWidth.in(Meters) / 2 - paddingFromOp.in(Meters) + intakeShift.shiftDist,
+                  (robotLength.in(Meters) / 2) * sideMultiplier);
+
+          Pose2d intakeStart =
+              new Pose2d(
+                  centerPose
+                      .plus(offsetFromCenter)
+                      .plus(
+                          fuelIntakeTransform.times(
+                              sideMultiplier * (fromTrench ? 1 : 0.45))),
+                  rotation);
+          Pose2d quadrantEnd =
+              new Pose2d(
+                  centerPose
+                      .plus(offsetFromCenter)
+                      .plus(
+                          new Translation2d(0, paddingFromCenter.in(Meters) + 1)
+                              .times(sideMultiplier)),
+                  rotation);
+
+          List<PathElement> pathElements =
+              new ArrayList<>(
+                  List.of(
+                      new Path.Waypoint(drive.getRelativePose()),
+                      new Path.RotationTarget(intakeStart.getRotation(), 0.75),
+                      new Path.Waypoint(intakeStart, 1.4),
+                      new Path.Waypoint(quadrantEnd)));
+
+          Path.PathConstraints constraints =
+              Autos.combineConstraints(
+                  Autos.generatePathConstraintZone(driveToCenterConstraints, 0, 1),
+                  Autos.generatePathConstraintZone(intakePathConstraints, 1, 2));
+
+          Path path = new Path(pathElements, constraints);
+          return Autos.build(
+              path,
+              quadrantEnd.getTranslation().minus(intakeStart.getTranslation()).getAngle(),
+              drive);
+        },
+        Set.of(drive));
+  }
+
+  public Command generateHairpinCommand(boolean isRightSide, boolean fromTrench) {
+    return Commands.defer(
+        () -> {
+          double sideMultiplier = isRightSide ? -1 : 1;
+          Rotation2d rotation = Rotation2d.fromDegrees(isRightSide ? 90 : -90);
+
+          Translation2d offsetFromCenter =
+              new Translation2d(
+                  -robotWidth.in(Meters) / 2 - paddingFromOp.in(Meters),
+                  (robotLength.in(Meters) / 2 + intakeLength.in(Meters)) * sideMultiplier);
+
+          Pose2d intakeStart =
+              new Pose2d(
+                  centerPose
+                      .plus(offsetFromCenter)
+                      .plus(
+                          fuelIntakeTransform.times(
+                              sideMultiplier * (fromTrench ? 1 : 0.6))),
+                  rotation);
+          Pose2d quadrantEnd =
+              new Pose2d(
+                  centerPose.plus(new Translation2d(offsetFromCenter.getX(), 0)), rotation);
+          Pose2d quadrantTurnAround =
+              new Pose2d(
+                  quadrantEnd.getTranslation().plus(new Translation2d(-1.5, 0)),
+                  rotation.rotateBy(Rotation2d.k180deg));
+          Pose2d quadrantBack =
+              new Pose2d(
+                  quadrantTurnAround
+                      .getTranslation()
+                      .plus(fuelIntakeTransform.times(sideMultiplier / 1.5)),
+                  rotation.rotateBy(Rotation2d.k180deg));
+
+          List<PathElement> pathElements =
+              new ArrayList<>(
+                  List.of(
+                      new Path.Waypoint(drive.getRelativePose()),
+                      new Path.RotationTarget(intakeStart.getRotation(), 0.75),
+                      new Path.Waypoint(intakeStart, 0.9),
+                      new Path.Waypoint(quadrantEnd, 0.4),
+                      new Path.Waypoint(quadrantTurnAround, 0.3),
+                      new Path.Waypoint(quadrantBack, 0.2)));
+
+          Path.PathConstraints constraints =
+              Autos.combineConstraints(
+                  Autos.generatePathConstraintZone(driveToCenterConstraints, 0, 1),
+                  Autos.generatePathConstraintZone(intakePathConstraints, 1, 5));
+
+          Path path = new Path(pathElements, constraints);
+          return Autos.build(path, intakeStart.getRotation().plus(Rotation2d.k180deg), drive);
+        },
+        Set.of(drive));
+  }
+
+  public Command generateInvertedQuadrantCommand(
+      boolean toRightSide, boolean toTrench, IntakeShift intakeShift) {
+    return Commands.defer(
+        () -> {
+          double sideMultiplier = toRightSide ? 1 : -1;
+          Rotation2d rotation = Rotation2d.fromDegrees(toRightSide ? -90 : 90);
+
+          Translation2d offsetFromCenter =
+              new Translation2d(
+                  -robotWidth.in(Meters) / 2 - paddingFromOp.in(Meters) + intakeShift.shiftDist,
+                  (robotLength.in(Meters) / 2 + intakeLength.in(Meters)) * sideMultiplier);
+
+          Pose2d intakeStart = new Pose2d(centerPose.plus(offsetFromCenter), rotation);
+          Pose2d quadrantEnd =
+              new Pose2d(
+                  centerPose
+                      .plus(new Translation2d(offsetFromCenter.getX(), 0))
+                      .plus(
+                          fuelIntakeTransform.times(
+                              -sideMultiplier * (toTrench ? 1 : 0.7))),
+                  rotation);
+
+          List<PathElement> pathElements =
+              new ArrayList<>(
+                  List.of(
+                      new Path.Waypoint(drive.getRelativePose()),
+                      new Path.RotationTarget(intakeStart.getRotation(), 0.25),
+                      new Path.Waypoint(intakeStart, 0.9),
+                      new Path.Waypoint(quadrantEnd)));
+
+          Path.PathConstraints constraints =
+              Autos.combineConstraints(
+                  Autos.generatePathConstraintZone(driveToCenterConstraints, 0, 1),
+                  Autos.generatePathConstraintZone(intakePathConstraints, 1, 2));
+
+          Path path = new Path(pathElements, constraints);
+          return Autos.build(
+              path,
+              quadrantEnd.getTranslation().minus(intakeStart.getTranslation()).getAngle(),
+              drive);
+        },
+        Set.of(drive));
+  }
+
+  public Command generateHalfCommand(
+      boolean isRightSide, boolean fromTrench, boolean toTrench, IntakeShift intakeShift) {
+    return Commands.defer(
+        () -> {
+          double sideMultiplier = isRightSide ? -1 : 1;
+          Rotation2d rotation = Rotation2d.fromDegrees(isRightSide ? 90 : -90);
+
+          Translation2d startOffset =
+              new Translation2d(
+                      -robotWidth.in(Meters) / 2 - paddingFromOp.in(Meters) + intakeShift.shiftDist,
+                      (robotLength.in(Meters) / 2 + intakeLength.in(Meters)) * sideMultiplier)
+                  .plus(
+                      fuelIntakeTransform.times(sideMultiplier * (fromTrench ? 1 : 0.45)));
+
+          Translation2d endOffset =
+              new Translation2d(startOffset.getX(), 0)
+                  .plus(fuelIntakeTransform.times(-sideMultiplier * (toTrench ? 1 : 0.7)));
+
+          Pose2d fuelStart = new Pose2d(centerPose.plus(startOffset), rotation);
+          Pose2d fuelEnd = new Pose2d(centerPose.plus(endOffset), rotation);
+
+          List<PathElement> pathElements =
+              new ArrayList<>(
+                  List.of(
+                      new Path.Waypoint(drive.getRelativePose()),
+                      new Path.RotationTarget(fuelStart.getRotation(), 0.75),
+                      new Path.Waypoint(fuelStart, 0.9),
+                      new Path.Waypoint(fuelEnd)));
+
+          Path.PathConstraints constraints =
+              Autos.combineConstraints(
+                  Autos.generatePathConstraintZone(driveToCenterConstraints, 0, 1),
+                  Autos.generatePathConstraintZone(intakePathConstraints, 1, 2));
+
+          Path path = new Path(pathElements, constraints);
+          return Autos.build(
+              path, fuelEnd.getTranslation().minus(fuelStart.getTranslation()).getAngle(), drive);
+        },
+        Set.of(drive));
+  }
+
+  public Command generateStopCommand(boolean isRightSide) {
+    return Commands.defer(
+        () -> {
+          double sideMultiplier = isRightSide ? -1 : 1;
+          Translation2d endOffset = centerPose.plus(new Translation2d(-0.25, 3.5 * sideMultiplier));
+          Pose2d stopPoint = new Pose2d(endOffset, Rotation2d.kZero);
+          List<PathElement> pathElements = new ArrayList<>(List.of(new Path.Waypoint(stopPoint)));
+          Path path = new Path(pathElements);
+          return Autos.build(path);
+        },
+        Set.of(drive));
+  }
+
+  public Command generateMiddleCommand() {
+    return Commands.defer(
+        () -> {
+          Translation2d endOffset =
+              new Translation2d(-(robotLength.in(Meters) / 2 + intakeLength.in(Meters)), 0);
+
+          Pose2d intakeStart =
+              new Pose2d(centerPose.plus(endOffset).plus(middleIntakeTransform), Rotation2d.kZero);
+          Pose2d intakeEnd = new Pose2d(centerPose.plus(endOffset), Rotation2d.kZero);
+
+          List<PathElement> pathElements =
+              new ArrayList<>(
+                  List.of(
+                      new Path.Waypoint(intakeStart, 0.7),
+                      new Path.Waypoint(intakeEnd),
+                      new Path.Waypoint(intakeStart, 1)));
+
+          Path.PathConstraints constraints =
+              Autos.generatePathConstraintZone(intakePathConstraints, 1, 3);
+          Path path = new Path(pathElements, constraints);
+          return Autos.build(path);
+        },
+        Set.of(drive));
+  }
+}

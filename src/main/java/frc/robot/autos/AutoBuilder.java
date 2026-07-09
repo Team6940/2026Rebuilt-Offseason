@@ -21,30 +21,23 @@ import java.util.stream.Collectors;
 /** Dynamic path chooser for per-step autonomous selection. */
 public class AutoBuilder {
   private static final int kMaxSteps = 20;
-  private static final String kChooserTopicPrefix = "/SmartDashboard/Auto Chooser/Step ";
+  private static final String kChooserTopicPrefix = "Auto Chooser/Step ";
   private static final String kPreviewObjectName = "Auto Path Preview";
 
   private final CommandSwerveDrivetrain drive = CommandSwerveDrivetrain.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final SendableChooser<AutoSegment>[] stepChoosers;
+  private final AutoSegment[] stepSources;
 
   @SuppressWarnings("unchecked")
   public AutoBuilder() {
     stepChoosers = new SendableChooser[kMaxSteps];
-    initChoosers();
-  }
-
-  private void initChoosers() {
-    for (int step = 0; step < kMaxSteps; step++) {
-      SendableChooser<AutoSegment> chooser = new SendableChooser<>();
-      chooser.setDefaultOption(AutoSegment.UNUSED.getDisplayName(), AutoSegment.UNUSED);
-      for (AutoSegment segment : AutoSegment.getStartingSegments()) {
-        chooser.addOption(segment.getDisplayName(), segment);
-      }
-      chooser.onChange(selected -> resolveSteps());
-      stepChoosers[step] = chooser;
-      SmartDashboard.putData(kChooserTopicPrefix + step, chooser);
+    stepSources = new AutoSegment[kMaxSteps];
+    for (int i = 0; i < kMaxSteps; i++) {
+      stepSources[i] = null;
+      stepChoosers[i] = buildChooser(null);
+      SmartDashboard.putData(kChooserTopicPrefix + i, stepChoosers[i]);
     }
     resolveSteps();
   }
@@ -117,8 +110,8 @@ public class AutoBuilder {
   }
 
   private List<AutoSegment> resolveSteps() {
-    List<AutoSegment> resolved = new ArrayList<>();
     AutoSegment lastPathSegment = null;
+    List<AutoSegment> resolved = new ArrayList<>();
 
     for (int i = 0; i < kMaxSteps; i++) {
       AutoSegment selected = stepChoosers[i].getSelected();
@@ -126,7 +119,6 @@ public class AutoBuilder {
 
       if (normalized == AutoSegment.UNUSED) {
         resolved.add(AutoSegment.UNUSED);
-        updateChooserOptions(i, lastPathSegment);
         break;
       }
 
@@ -135,7 +127,6 @@ public class AutoBuilder {
           normalized = AutoSegment.UNUSED;
         } else {
           resolved.add(normalized);
-          updateChooserOptions(i + 1, lastPathSegment);
           continue;
         }
       }
@@ -154,30 +145,30 @@ public class AutoBuilder {
 
       if (normalized == AutoSegment.UNUSED) {
         resolved.add(AutoSegment.UNUSED);
-        updateChooserOptions(i, lastPathSegment);
         break;
       }
 
       resolved.add(normalized);
       lastPathSegment = normalized;
-      updateChooserOptions(i + 1, lastPathSegment);
     }
 
-    for (int j = resolved.size(); j < kMaxSteps; j++) {
-      stepChoosers[j] = buildChooser(lastPathSegment);
-      resolved.add(AutoSegment.UNUSED);
+    // Rebuild and publish choosers that need updating
+    for (int i = 0; i < kMaxSteps; i++) {
+      AutoSegment source = (i == 0) ? null : (i <= resolved.size() ? resolved.get(i - 1) : lastPathSegment);
+      if (source == AutoSegment.UNUSED) source = null;
+
+      if (stepSources[i] == source && stepChoosers[i] != null) {
+        continue;
+      }
+
+      SendableChooser<AutoSegment> chooser = buildChooser(source);
+      SmartDashboard.putData(kChooserTopicPrefix + i, chooser);
+      stepChoosers[i] = chooser;
+      stepSources[i] = source;
     }
 
     updatePreview(resolved);
     return resolved.stream().filter(segment -> segment != AutoSegment.UNUSED).collect(Collectors.toList());
-  }
-
-  private void updateChooserOptions(int step, AutoSegment previousPathSegment) {
-    if (step >= kMaxSteps) {
-      return;
-    }
-    stepChoosers[step] = buildChooser(previousPathSegment);
-    SmartDashboard.putData(kChooserTopicPrefix + step, stepChoosers[step]);
   }
 
   private SendableChooser<AutoSegment> buildChooser(AutoSegment previousPathSegment) {
@@ -191,7 +182,11 @@ public class AutoBuilder {
       chooser.addOption(AutoSegment.SHOOT_SCORE.getDisplayName(), AutoSegment.SHOOT_SCORE);
       chooser.addOption(AutoSegment.SHOOT_PASS.getDisplayName(), AutoSegment.SHOOT_PASS);
     }
-    chooser.onChange(selected -> resolveSteps());
+    chooser.onChange(selected -> {
+      if (stepChoosers.length > 0) {
+        resolveSteps();
+      }
+    });
     return chooser;
   }
 

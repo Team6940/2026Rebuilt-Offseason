@@ -42,7 +42,7 @@ import org.littletonrobotics.junction.Logger;
  * href="https://shenzhen-robotics-alliance.github.io/maple-sim/rebuilt/">Rebuilt Simulation</a>.
  */
 public final class FieldSimulation {
-  private static final double WHEEL_COF = 2.255;
+  private static final double WHEEL_COF = 1.9;
   private static final double ROBOT_MASS_KG = 74.088;
 
   private static FieldSimulation instance;

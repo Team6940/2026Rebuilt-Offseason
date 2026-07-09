@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Ports.LED;
+import frc.robot.commands.Autos.LeftDepot;
 import frc.robot.commands.Autos.LeftDepotSingleSwipe;
 import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.commands.Autos.RightDoubleSwipe;
@@ -89,6 +90,7 @@ public class RobotContainer {
     autoChooser.addOption("LeftDepotSingleSwipe", new LeftDepotSingleSwipe());
     autoChooser.addOption("RightDoubleSwipeOverMid", new RightDoubleSwipeOverMid());
     autoChooser.addOption("RightSingleSwipeToOppHub", new RightSingleSwipeToOppHub());
+    autoChooser.addOption("LeftDepot", new LeftDepot());
 
     // Set up SysId routines
     // autoChooser.addOption(

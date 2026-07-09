@@ -50,10 +50,7 @@ public class LeftDoubleSwipe extends SequentialCommandGroup {
         drive
             .followPPPath("LInt1-LSh1")
             .alongWith(
-                Commands.waitSeconds(0.5)
-                    .andThen(
-                        superStructure.runOnce(
-                            () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
+                superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE))));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
 

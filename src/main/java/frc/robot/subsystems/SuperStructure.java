@@ -273,9 +273,9 @@ public class SuperStructure extends SubsystemBase {
 
   public Command getFieldCentricDriveCommand(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+    claimDriveMode(DriveMode.MANUAL);
     CommandSwerveDrivetrain drive = getDrive();
-    return Commands.run(() -> drive.driveFieldCentric(xSupplier, ySupplier, omegaSupplier), drive)
-        .beforeStarting(Commands.runOnce(() -> claimDriveMode(DriveMode.MANUAL), this));
+    return Commands.run(() -> drive.driveFieldCentric(xSupplier, ySupplier, omegaSupplier), drive);
   }
 
   /**
@@ -283,19 +283,13 @@ public class SuperStructure extends SubsystemBase {
    * command.
    */
   public Command getShootCommand(ControlMode mode, Button shootButton) {
-    Command shoot =
-        switch (mode) {
-          case SCORE -> new HybridScoreCommand(getDrive(), shootButton);
-          case PASS -> new HybridPassCommand(getDrive(), shootButton);
-          case MANUAL -> new ManualShootCommand(getDrive(), shootButton);
-        };
-    return shoot.beforeStarting(
-        Commands.runOnce(
-            () -> {
-              setControlMode(mode);
-              claimDriveMode(DriveMode.AUTO_AIM);
-            },
-            this));
+    setControlMode(mode);
+    claimDriveMode(DriveMode.AUTO_AIM);
+    return switch (mode) {
+      case SCORE -> new HybridScoreCommand(getDrive(), shootButton);
+      case PASS -> new HybridPassCommand(getDrive(), shootButton);
+      case MANUAL -> new ManualShootCommand(getDrive(), shootButton);
+    };
   }
 
   public HeatupCommand getHeatupCommand() {
@@ -303,8 +297,8 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getHybridTrenchCommand() {
-    return new DriveHybridTrenchCommand(getDrive())
-        .beforeStarting(Commands.runOnce(() -> claimDriveMode(DriveMode.HYBRID_TRENCH), this));
+    claimDriveMode(DriveMode.HYBRID_TRENCH);
+    return new DriveHybridTrenchCommand(getDrive());
   }
 
   public Command getHybridIntakeCommand(
@@ -312,9 +306,8 @@ public class SuperStructure extends SubsystemBase {
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
-    return new IntakeHybridCommand(getDrive(), controller, xSupplier, ySupplier, omegaSupplier)
-        .beforeStarting(
-            Commands.runOnce(() -> claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE), this));
+    claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE);
+    return new IntakeHybridCommand(getDrive(), controller, xSupplier, ySupplier, omegaSupplier);
   }
 
   public IntakeDefaultCommand getIntakeDefaultCommand() {

@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Ports;
@@ -112,6 +113,7 @@ public class LEDController extends SubsystemBase {
     Logger.recordOutput("LED/IsDisabled", DriverStation.isDisabled());
     Logger.recordOutput("LED/LayerCount", layers.size());
     logLedBuffer();
+    publishColorForElastic();
   }
 
   // ==================== Pattern Declaration ====================
@@ -172,7 +174,7 @@ public class LEDController extends SubsystemBase {
   private void applyAnimation() {
     int start = 0;
     int end = Settings.LED.LEDLength - 1;
-    int center = (start + end) / 2 + 1; // temporary right shift
+    int center = (start + end) / 2; // temporary right shift
 
     // Reusable buffer for pattern color extraction (avoids per-pixel allocation)
     var tmpBuf = new AddressableLEDBuffer(1);
@@ -282,5 +284,13 @@ public class LEDController extends SubsystemBase {
       rgb[i * 3 + 2] = buffer.getLED(i).blue;
     }
     Logger.recordOutput("LED/Buffer", rgb);
+  }
+
+  private void publishColorForElastic() {
+    int len = buffer.getLength();
+    for (int i = 0; i < len; i++) {
+      Color c = buffer.getLED(i);
+      SmartDashboard.putString("LED/LED" + i, c.toHexString());
+    }
   }
 }

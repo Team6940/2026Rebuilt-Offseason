@@ -187,7 +187,7 @@ public class RobotContainer {
 
     driverController.x().onTrue(Commands.runOnce(superStructure::stopDriveWithX, drive));
     driverController
-        .b()
+        .povLeft()
         .onTrue(Commands.runOnce(superStructure::resetRobotHeading, drive).ignoringDisable(true));
 
     hybridIntakeDrive.whileTrue(
@@ -208,11 +208,9 @@ public class RobotContainer {
                 () -> superStructure.setIntakeMode(IntakeMode.REVERSE), superStructure));
 
     driverController
-        .back()
-        .onTrue(Commands.runOnce(superStructure::disableAttackMode, superStructure));
-    driverController
-        .start()
-        .onTrue(Commands.runOnce(superStructure::enableAttackMode, superStructure));
+        .b()
+        .onTrue(Commands.runOnce(superStructure::enableAttackMode, superStructure))
+        .onFalse(Commands.runOnce(superStructure::disableAttackMode, superStructure));
   }
 
   /**

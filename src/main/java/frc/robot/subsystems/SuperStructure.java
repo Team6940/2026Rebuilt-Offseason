@@ -10,6 +10,7 @@ import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.HeatupCommand;
 import frc.robot.commands.HybridPassCommand;
 import frc.robot.commands.HybridScoreCommand;
+import frc.robot.commands.IndexerDefaultCommand;
 import frc.robot.commands.IntakeEmergencyOutCommand;
 import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.IntakeHybridCommand;
@@ -231,6 +232,10 @@ public class SuperStructure extends SubsystemBase {
 
   public LEDDefaultCommand getLEDDefaultCommand() {
     return new LEDDefaultCommand(getLEDs());
+  }
+
+  public IndexerDefaultCommand getIndexerDefaultCommand() {
+    return new IndexerDefaultCommand();
   }
 
   @Override

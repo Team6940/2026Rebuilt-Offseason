@@ -98,12 +98,24 @@ public class ShooterIOPhoenix6 implements ShooterIO {
     inputs.leaderASupplyCurrentA = leaderA.getSupplyCurrent().getValueAsDouble();
     inputs.leaderASupplyVoltageV = leaderA.getSupplyVoltage().getValueAsDouble();
 
+    inputs.followerAConnected =
+        BaseStatusSignal.refreshAll(followerA.getSupplyCurrent(), followerA.getSupplyVoltage())
+            .isOK();
+    inputs.followerASupplyCurrentA = followerA.getSupplyCurrent().getValueAsDouble();
+    inputs.followerASupplyVoltageV = followerA.getSupplyVoltage().getValueAsDouble();
+
     inputs.leaderBConnected =
         BaseStatusSignal.refreshAll(
-                leaderB.getVelocity(), leaderB.getSupplyCurrent(), leaderB.getSupplyVoltage())
+                leaderA.getVelocity(), leaderA.getSupplyCurrent(), leaderA.getSupplyVoltage())
             .isOK();
-    inputs.leaderBVelocityRps = leaderB.getVelocity().getValueAsDouble();
-    inputs.leaderBSupplyCurrentA = leaderB.getSupplyCurrent().getValueAsDouble();
-    inputs.leaderBSupplyVoltageV = leaderB.getSupplyVoltage().getValueAsDouble();
+    inputs.leaderBVelocityRps = leaderA.getVelocity().getValueAsDouble();
+    inputs.leaderBSupplyCurrentA = leaderA.getSupplyCurrent().getValueAsDouble();
+    inputs.leaderBSupplyVoltageV = leaderA.getSupplyVoltage().getValueAsDouble();
+
+    inputs.followerBConnected =
+        BaseStatusSignal.refreshAll(followerB.getSupplyCurrent(), followerB.getSupplyVoltage())
+            .isOK();
+    inputs.followerBSupplyCurrentA = followerB.getSupplyCurrent().getValueAsDouble();
+    inputs.followerBSupplyVoltageV = followerB.getSupplyVoltage().getValueAsDouble();
   }
 }

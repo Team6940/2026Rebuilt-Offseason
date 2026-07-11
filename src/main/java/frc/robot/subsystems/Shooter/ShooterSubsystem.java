@@ -53,12 +53,17 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public double getTotalSupplyCurrentA() {
-    return inputs.leaderASupplyCurrentA + inputs.leaderBSupplyCurrentA;
+    return inputs.leaderASupplyCurrentA
+        + inputs.leaderBSupplyCurrentA
+        + inputs.followerASupplyCurrentA
+        + inputs.followerBSupplyCurrentA;
   }
 
   public double getTotalPowerW() {
     return inputs.leaderASupplyVoltageV * inputs.leaderASupplyCurrentA
-        + inputs.leaderBSupplyVoltageV * inputs.leaderBSupplyCurrentA;
+        + inputs.leaderBSupplyVoltageV * inputs.leaderBSupplyCurrentA
+        + inputs.followerASupplyCurrentA * inputs.followerASupplyVoltageV
+        + inputs.followerBSupplyCurrentA * inputs.followerBSupplyVoltageV;
   }
 
   @Override

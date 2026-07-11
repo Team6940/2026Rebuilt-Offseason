@@ -41,7 +41,7 @@ public class IndexerSubsystem extends SubsystemBase {
     setVelocities(0.0, 0.0);
   }
 
-  private void setVelocities(double feederRps, double indexerRps) {
+  public void setVelocities(double feederRps, double indexerRps) {
     io.setFeederRps(feederRps);
     io.setIndexerRps(indexerRps);
   }
@@ -64,6 +64,8 @@ public class IndexerSubsystem extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Indexer", inputs);
     Logger.recordOutput("Indexer/Feeding", feeding);
+    Logger.recordOutput("Indexer/IndexerVelocityRPS", inputs.indexerVelocityRps);
+    Logger.recordOutput("Indexer/FeederVelocityRPS", inputs.feederVelocityRps);
     Logger.recordOutput("Indexer/TotalSupplyCurrentA", getTotalSupplyCurrentA());
     Logger.recordOutput("Indexer/TotalPowerW", getTotalPowerW());
   }

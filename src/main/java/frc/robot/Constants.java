@@ -525,12 +525,13 @@ public final class Constants {
     static {
       DistanceToShooterRps.put(0.947, 27.9);
       DistanceToShooterRps.put(1.32, 29.0);
-      DistanceToShooterRps.put(1.88, 33.04);
-      DistanceToShooterRps.put(2.1, 34.54);
-      DistanceToShooterRps.put(2.6, 36.8);
-      DistanceToShooterRps.put(3.4, 40.4);
+      DistanceToShooterRps.put(1.88, 34.04);
+      DistanceToShooterRps.put(2.1, 35.54);
+      DistanceToShooterRps.put(2.6, 36.2);
+      DistanceToShooterRps.put(3.4, 39.4);
+      DistanceToShooterRps.put(3.6, 41.4);
       DistanceToShooterRps.put(4.1, 42.4);
-      DistanceToShooterRps.put(4.99, 48.9);
+      DistanceToShooterRps.put(4.99, 46.9);
       DistanceToShooterRps.put(5.2, 51.5);
       DistanceToShooterRps.put(5.7, 53.5);
 
@@ -540,7 +541,7 @@ public final class Constants {
       DistanceToHoodDegs.put(2.6, 21.0);
       DistanceToHoodDegs.put(3.4, 23.3);
       DistanceToHoodDegs.put(4.1, 26.5);
-      DistanceToHoodDegs.put(4.99, 35.5);
+      DistanceToHoodDegs.put(4.99, 30.5);
       DistanceToHoodDegs.put(5.2, 38.5);
       DistanceToShooterRps.put(5.7, 41.);
 
@@ -557,8 +558,8 @@ public final class Constants {
       PassDistanceToShooterRps.put(4.1, 31.4);
       PassDistanceToShooterRps.put(4.99, 34.9);
       PassDistanceToShooterRps.put(6.0, 37.5);
-      PassDistanceToShooterRps.put(7.0, 60.5);
-      PassDistanceToShooterRps.put(13.0, 60.);
+      PassDistanceToShooterRps.put(7.0, 54.5);
+      PassDistanceToShooterRps.put(13.0, 54.);
 
       PassDistanceToHoodDegs.put(1.05, 17.842);
       PassDistanceToHoodDegs.put(1.32, 17.842);
@@ -598,7 +599,7 @@ public final class Constants {
     public static final double HoodRatio = 31. / 20. * 40. / 14. * 14.;
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double SupplyCurrentLimit = 40.0;
-    public static final double kP = 20.0;
+    public static final double kP = 70.0;
     public static final double kI = 0.0;
     public static final double kD = 0.2;
     public static final double kV = 0.0;
@@ -615,7 +616,7 @@ public final class Constants {
   /** Tuning for hybrid shoot commands ({@link frc.robot.commands.HybridScoreCommand}). */
   public static final class HybridShootConstants {
     // --- Ready gate (AIM to READY) ---
-    public static final double HeadingToleranceDegs = 3.0;
+    public static final double HeadingToleranceDegs = 1.5;
     public static final double HoodToleranceDegs = 1.5;
     public static final double ShooterToleranceRpsLower = 3.;
     public static final double ShooterToleranceRpsHigher = 2.;
@@ -737,7 +738,7 @@ public final class Constants {
     /**
      * Reject when estimated tag distance to robot exceeds this (meters). Tune per camera mounting.
      */
-    public static final double REJECT_MAX_DISTANCE_METERS = 3.0;
+    public static final double REJECT_MAX_DISTANCE_METERS = 4.0;
 
     public static final double REJECT_STALE_SECONDS = 0.5;
     public static final double REJECT_MAX_OMEGA_RAD_PER_SEC = 4.0 * Math.PI;

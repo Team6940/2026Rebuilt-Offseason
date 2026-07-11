@@ -110,10 +110,11 @@ public class RobotContainer {
     intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
     shooter.setDefaultCommand(superStructure.getHeatupCommand());
     leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
+    indexer.setDefaultCommand(superStructure.getIndexerDefaultCommand());
 
     configureButtonBindings();
     // testBindings();
-    drive.registerTelemetry(logger::telemeterize);
+    // drive.registerTelemetry(logger::telemeterize);
     CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
     CommandScheduler.getInstance()
         .schedule(
@@ -202,6 +203,9 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(
                 () -> superStructure.setIntakeMode(IntakeMode.REVERSE), superStructure));
+
+    driverController.back().whileTrue(Commands.run(() -> hood.setAutoSetpoint(40.)));
+    driverController.start().whileTrue(Commands.run(() -> hood.setAutoSetpoint(18.)));
   }
 
   /**

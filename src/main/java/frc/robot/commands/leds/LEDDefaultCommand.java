@@ -20,7 +20,7 @@ public class LEDDefaultCommand extends Command {
 
   @Override
   public void execute() {
-    leds.updateFromSuperStructure();
+    // LEDs update in LEDController.periodic()
   }
 
   @Override

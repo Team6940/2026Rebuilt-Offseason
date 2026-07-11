@@ -2,17 +2,19 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.HeatupCommand;
 import frc.robot.commands.HybridPassCommand;
 import frc.robot.commands.HybridScoreCommand;
 import frc.robot.commands.IndexerDefaultCommand;
-import frc.robot.commands.IntakeEmergencyOutCommand;
 import frc.robot.commands.IntakeDefaultCommand;
+import frc.robot.commands.IntakeEmergencyOutCommand;
 import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.leds.LEDDefaultCommand;
@@ -22,7 +24,6 @@ import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Power.PowerMonitor;
-
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -82,7 +83,7 @@ public class SuperStructure extends SubsystemBase {
     /** Reduced drive current to free battery for shooter. */
     SHOOTING,
     /** No current limits at all. */
-    ATTACK
+    ATTACKMODE
   }
 
   private final LoggedNetworkNumber manualShootVelocityRps =
@@ -96,6 +97,14 @@ public class SuperStructure extends SubsystemBase {
   private IntakeMode intakeMode = IntakeMode.OFF;
   private ChassisMode chassisMode = ChassisMode.NORMAL;
   private ChassisMode previousChassisMode = ChassisMode.NORMAL;
+  private boolean attackModeActive = false;
+  private final Timer attackModeTimer = new Timer();
+
+  /** AIM-phase readiness flags for LED progress visualization. */
+  private boolean atAngle = false;
+
+  private boolean atHood = false;
+  private boolean atShooter = false;
 
   public LEDController getLEDs() {
     return LEDController.getInstance();
@@ -139,7 +148,6 @@ public class SuperStructure extends SubsystemBase {
 
   public void setShootPhase(ShootPhase phase) {
     shootPhase = phase;
-    getLEDs().updateFromSuperStructure();
   }
 
   public void setIntakeMode(IntakeMode mode) {
@@ -212,6 +220,57 @@ public class SuperStructure extends SubsystemBase {
     return chassisMode;
   }
 
+  public void enableAttackMode() {
+    if (attackModeActive) {
+      return;
+    }
+    attackModeActive = true;
+    attackModeTimer.reset();
+    attackModeTimer.start();
+    setChassisMode(ChassisMode.ATTACKMODE);
+  }
+
+  public void disableAttackMode() {
+    if (!attackModeActive) {
+      return;
+    }
+    attackModeActive = false;
+    attackModeTimer.stop();
+    attackModeTimer.reset();
+    setChassisMode(ChassisMode.NORMAL);
+  }
+
+  public boolean isAttackModeActive() {
+    return attackModeActive;
+  }
+
+  public void setAimReadiness(boolean atAngle, boolean atHood, boolean atShooter) {
+    this.atAngle = atAngle;
+    this.atHood = atHood;
+    this.atShooter = atShooter;
+  }
+
+  public boolean isAtAngle() {
+    return atAngle;
+  }
+
+  public boolean isAtHood() {
+    return atHood;
+  }
+
+  public boolean isAtShooter() {
+    return atShooter;
+  }
+
+  /** Returns 0-3 count of ready subsystems. */
+  public int getAimReadyCount() {
+    int count = 0;
+    if (atAngle) count++;
+    if (atHood) count++;
+    if (atShooter) count++;
+    return count;
+  }
+
   public Command getFieldCentricDriveCommand(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
     CommandSwerveDrivetrain drive = getDrive();
@@ -276,11 +335,18 @@ public class SuperStructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if (attackModeActive
+        && attackModeTimer.hasElapsed(Constants.DriveConstants.AttackModeTimeoutSec)) {
+      disableAttackMode();
+    }
+
     Logger.recordOutput("SuperStructure/DriveMode", driveMode);
     Logger.recordOutput("SuperStructure/ControlMode", controlMode);
     Logger.recordOutput("SuperStructure/ShootPhase", shootPhase);
     Logger.recordOutput("SuperStructure/IntakeMode", intakeMode);
     Logger.recordOutput("SuperStructure/ChassisMode", chassisMode.name());
+    Logger.recordOutput("SuperStructure/AttackModeActive", attackModeActive);
+    Logger.recordOutput("SuperStructure/AttackModeTimerSec", attackModeTimer.get());
     Logger.recordOutput("SuperStructure/ManualShootVelocityRps", manualShootVelocityRps.get());
     Logger.recordOutput("SuperStructure/ManualHoodDegs", manualHoodDegs.get());
   }

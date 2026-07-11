@@ -287,6 +287,10 @@ public class ManualShootCommand extends Command {
     Logger.recordOutput("Cmds/MaunalShoot/AtAngle", isAtTargetAngle(finalHeading));
     Logger.recordOutput("Cmds/MaunalShoot/AtHood", isAtTargetHood(finalHoodDegs));
     Logger.recordOutput("Cmds/MaunalShoot/AtShooter", isAtTargetShooter(finalShooterRps));
+    superStructure.setAimReadiness(
+        isAtTargetAngle(finalHeading),
+        isAtTargetHood(finalHoodDegs),
+        isAtTargetShooter(finalShooterRps));
     if (plan.virtualTarget != null) {
       Logger.recordOutput(
           "Cmds/MaunalShoot/VirtualTarget", new Pose2d(plan.virtualTarget, Rotation2d.kZero));

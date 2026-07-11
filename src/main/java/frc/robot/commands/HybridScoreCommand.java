@@ -284,6 +284,10 @@ public class HybridScoreCommand extends Command {
     Logger.recordOutput("Cmds/HybridScore/AtAngle", isAtTargetAngle(finalHeading));
     Logger.recordOutput("Cmds/HybridScore/AtHood", isAtTargetHood(finalHoodDegs));
     Logger.recordOutput("Cmds/HybridScore/AtShooter", isAtTargetShooter(finalShooterRps));
+    superStructure.setAimReadiness(
+        isAtTargetAngle(finalHeading),
+        isAtTargetHood(finalHoodDegs),
+        isAtTargetShooter(finalShooterRps));
     if (plan.virtualTarget != null) {
       Logger.recordOutput(
           "Cmds/HybridScore/VirtualTarget", new Pose2d(plan.virtualTarget, Rotation2d.kZero));

@@ -758,10 +758,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     SuperStructure.getInstance().setChassisMode(SuperStructure.ChassisMode.SHOOTING);
     if (operatorTrimmingHeading || driverTrimmingTranslation) {
       driveAutoAim(
-          xSupplier,
-          ySupplier,
-          () -> targetRotation,
-          getMaxLinearSpeedMetersPerSec() * 0.2);
+          xSupplier, ySupplier, () -> targetRotation, getMaxLinearSpeedMetersPerSec() * 0.2);
     } else {
       stopWithX();
     }
@@ -769,11 +766,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public void driveAutoAimWithSpeedLimit(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, Rotation2d targetRotation) {
-    driveAutoAim(
-        xSupplier,
-        ySupplier,
-        () -> targetRotation,
-        getMaxLinearSpeedMetersPerSec() * 0.2);
+    driveAutoAim(xSupplier, ySupplier, () -> targetRotation, getMaxLinearSpeedMetersPerSec() * 0.2);
   }
 
   /** Applies the current limits for the given {@link SuperStructure.ChassisMode}. */
@@ -793,7 +786,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             DriveConstants.AutoAimSteerSupplyCurrentLimitAmps,
             DriveConstants.AutoAimSteerStatorCurrentLimitAmps);
         break;
-      case ATTACK:
+      case ATTACKMODE:
         applyUnlimitedCurrentLimits();
         break;
     }
@@ -823,9 +816,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   private void applyUnlimitedCurrentLimits() {
-    CurrentLimitsConfigs noLimits = new CurrentLimitsConfigs()
-        .withSupplyCurrentLimitEnable(false)
-        .withStatorCurrentLimitEnable(false);
+    CurrentLimitsConfigs noLimits =
+        new CurrentLimitsConfigs()
+            .withSupplyCurrentLimitEnable(false)
+            .withStatorCurrentLimitEnable(false);
     for (var module : getModules()) {
       module.getDriveMotor().getConfigurator().apply(noLimits);
       module.getSteerMotor().getConfigurator().apply(noLimits);

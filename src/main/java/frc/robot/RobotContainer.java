@@ -204,8 +204,12 @@ public class RobotContainer {
             Commands.runOnce(
                 () -> superStructure.setIntakeMode(IntakeMode.REVERSE), superStructure));
 
-    driverController.back().whileTrue(Commands.run(() -> hood.setAutoSetpoint(40.)));
-    driverController.start().whileTrue(Commands.run(() -> hood.setAutoSetpoint(18.)));
+    driverController
+        .back()
+        .onTrue(Commands.runOnce(superStructure::disableAttackMode, superStructure));
+    driverController
+        .start()
+        .onTrue(Commands.runOnce(superStructure::enableAttackMode, superStructure));
   }
 
   /**

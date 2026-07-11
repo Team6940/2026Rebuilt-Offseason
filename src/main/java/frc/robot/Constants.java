@@ -133,6 +133,10 @@ public final class Constants {
 
   public final class DriveConstants {
     public static final double Deadband = 0.05;
+
+    /** Maximum seconds AttackMode stays active per enable. */
+    public static final double AttackModeTimeoutSec = 10.0;
+
     public static final double AnglekP = 5.0;
     public static final double AnglekD = 0.4;
     public static final double AngleMaxVelocity = 8.0;
@@ -795,28 +799,31 @@ public final class Constants {
 
   public static class Ports {
     public static class LED {
-      public static final int LED_PWM_PORT = 8;
+      public static final int LEDPWMPort = 8;
     }
   }
 
   public static class Settings {
     public static class LED {
-      public static final int LED_LENGTH = 32;
-      public static final int[] GYRO_BUFFER = {0, 1};
-      public static final int[] SHOOTER_BUFFER = {2, 31};
+      public static final int LEDLength = 32;
+      public static final int[] GyroBuffer = {0, 1};
+      public static final int[] ChassisLeft = {2, 5};
+      public static final int[] ShooterMid = {6, 27};
+      public static final int[] ChassisRight = {28, 31};
+      public static final Color AttackModeColor = new Color("#267ce4");
     }
 
     public interface LEDs {
 
       // TODO: Get actual length of led, along with length of individual sections
-      int LED_LENGTH = Settings.LED.LED_LENGTH;
+      int LED_LENGTH = Settings.LED.LEDLength;
       // LED Pattern
 
       LEDPattern DISABLED = LEDPattern.solid(Color.kPurple);
 
       LEDPattern CHASSIS_NORMAL = LEDPattern.solid(Color.kWhite);
       LEDPattern CHASSIS_SHOOTING = LEDPattern.solid(Color.kRed);
-      LEDPattern CHASSIS_ATTACKMODE = LEDPattern.solid(Color.kBlue);
+      LEDPattern CHASSIS_ATTACKMODE = LEDPattern.solid(Settings.LED.AttackModeColor);
       LEDPattern MANUAL = LEDPattern.solid(Color.kPurple);
       LEDPattern SHOOT = LEDPattern.solid(Color.kRed);
       LEDPattern READY = LEDPattern.solid(Color.kGreen);

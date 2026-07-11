@@ -280,6 +280,10 @@ public class HybridPassCommand extends Command {
     Logger.recordOutput("Cmds/HybridPass/AtAngle", isAtTargetAngle(finalHeading));
     Logger.recordOutput("Cmds/HybridPass/AtHood", isAtTargetHood(finalHoodDegs));
     Logger.recordOutput("Cmds/HybridPass/AtShooter", isAtTargetShooter(finalShooterRps));
+    superStructure.setAimReadiness(
+        isAtTargetAngle(finalHeading),
+        isAtTargetHood(finalHoodDegs),
+        isAtTargetShooter(finalShooterRps));
     if (plan.virtualTarget != null) {
       Logger.recordOutput(
           "Cmds/HybridPass/VirtualTarget", new Pose2d(plan.virtualTarget, Rotation2d.kZero));

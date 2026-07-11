@@ -182,13 +182,13 @@ public class ImprovedCommandXboxController extends CommandXboxController {
    *
    * <p>Formula: {@code sign(raw) * pow(|applyDeadband(raw)|, power)}
    *
-   * <p>Uses {@link OperatorConstants#DEADBAND} and {@link OperatorConstants#INPUT_POWER}.
+   * <p>Uses {@link OperatorConstants#DeadBand} and {@link OperatorConstants#InputPower}.
    *
    * @param raw The raw axis value in the range [-1, 1].
    * @return The shaped value in the range [-1, 1].
    */
   public static double applyInputCurve(double raw) {
-    double db = MathUtil.applyDeadband(raw, OperatorConstants.DEADBAND);
-    return Math.copySign(Math.pow(Math.abs(db), OperatorConstants.INPUT_POWER), db);
+    double db = MathUtil.applyDeadband(raw, OperatorConstants.DeadBand);
+    return Math.copySign(Math.pow(Math.abs(db), OperatorConstants.InputPower), db);
   }
 }

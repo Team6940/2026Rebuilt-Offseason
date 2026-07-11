@@ -13,6 +13,12 @@ public interface IndexerIO {
     public double indexerVelocityRps = 0.0;
     public double indexerSupplyVoltageV = 0.0;
     public double indexerSupplyCurrentA = 0.0;
+    public boolean feederFollowerConnected = false;
+    public double feederFollowerSupplyVoltageV = 0.0;
+    public double feederFollowerSupplyCurrentA = 0.0;
+    public boolean indexerFollowerConnected = false;
+    public double indexerFollowerSupplyVoltageV = 0.0;
+    public double indexerFollowerSupplyCurrentA = 0.0;
   }
 
   public default void setFeederRps(double rps) {}

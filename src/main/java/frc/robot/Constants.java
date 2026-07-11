@@ -132,78 +132,82 @@ public final class Constants {
   }
 
   public final class DriveConstants {
-    public static final double DEADBAND = 0.05;
-    public static final double ANGLE_KP = 5.0;
-    public static final double ANGLE_KD = 0.4;
-    public static final double ANGLE_MAX_VELOCITY = 8.0;
-    public static final double ANGLE_MAX_ACCELERATION = 20.0;
+    public static final double Deadband = 0.05;
+    public static final double AnglekP = 5.0;
+    public static final double AnglekD = 0.4;
+    public static final double AngleMaxVelocity = 8.0;
+    public static final double AngleMaxAcceleration = 20.0;
 
-    public static final double AUTO_AIM_ANGLE_KP = 5.0;
+    public static final double AutoAimAnglekP = 5.0;
 
-    public static final double AUTO_AIM_ANGLE_KI = 0.0;
-    public static final double AUTO_AIM_ANGLE_KD = 0.1;
+    public static final double AutoAimAnglekI = 0.0;
+    public static final double AutoAimAnglekD = 0.1;
 
     /**
      * Drive motor supply limit (A) while {@code driveAutoAim} is active; frees battery for shooter.
      */
-    public static final double AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS = 40.0;
+    public static final double AutoAimDriveSupplyCurrentLimitAmps = 20.0;
+
+    public static final double AutoAimDriveStatorCurrentLimitAmps = 40.0;
 
     /** Steer motor stator limit (A) while {@code driveAutoAim} is active. */
-    public static final double AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS = 45.0;
+    public static final double AutoAimSteerSupplyCurrentLimitAmps = 25.0;
 
-    public static final double MOVE_TO_X_KP = 5.;
-    public static final double MOVE_TO_Y_KP = 5.;
-    public static final double MOVE_TO_THETA_KP = 5.;
-    public static final double MOVE_TO_X_KD = 0.4;
-    public static final double MOVE_TO_Y_KD = 0.4;
-    public static final double MOVE_TO_THETA_KD = 0.4;
-    public static final double MOVE_TO_POSITION_TOLERANCE_METERS = 0.05;
-    public static final double MOVE_TO_ANGLE_TOLERANCE_DEGREES = 3.;
+    public static final double AutoAimSteerStatorCurrentLimitAmps = 45.0;
 
-    public static final double PP_TRANSLATION_KP = 5.;
-    public static final double PP_TRANSLATION_KD = 0.4;
-    public static final double PP_ROTATION_KP = 5.;
-    public static final double PP_ROTATION_KD = 0.4;
+    public static final double MoveToXkP = 5.;
+    public static final double MoveToYkP = 5.;
+    public static final double MoveToThetakP = 5.;
+    public static final double MoveToXkD = 0.4;
+    public static final double MoveToYkD = 0.4;
+    public static final double MoveToThetakD = 0.4;
+    public static final double MoveToPositionToleranceMeters = 0.05;
+    public static final double MoveToAngleToleranceDegrees = 3.;
+
+    public static final double PathPlannerTranslationkP = 5.;
+    public static final double PathPlannerTranslationkD = 0.4;
+    public static final double PathPlannerRotationkP = 5.;
+    public static final double PathPlannerRotationkD = 0.4;
 
     /** Pure-pursuit-style lookahead distance along the trench centerline (m). */
-    public static final double TRENCH_LOOKAHEAD_METERS = 0.6;
+    public static final double TrenchLookAheadMeters = 0.6;
 
     /** Field-relative driver speed (m/s) required to set path traversal direction. */
-    public static final double TRENCH_DRIVER_INTENT_THRESHOLD = 0.08;
+    public static final double TrenchDriveIntentThreshold = 0.08;
 
     /** Epsilon (m) for finite-difference path tangent at the nearest point. */
-    public static final double TRENCH_TANGENT_EPSILON = 0.05;
+    public static final double TrenchTangentEpsilon = 0.05;
 
     /** Maximum fraction of max linear speed applied as trench guidance assist. */
-    public static final double TRENCH_MAX_ASSIST = 0.65;
+    public static final double TrenchMaxAssist = 0.65;
 
     /** Minimum driver–guidance alignment (dot product) before assist ramps up. */
-    public static final double TRENCH_MIN_ALIGNMENT = -0.2;
+    public static final double TrenchMinAlignment = -0.2;
 
     /** Cross-track distance (m) at which path adhesion reaches zero. */
-    public static final double TRENCH_MAX_CROSS_TRACK_METERS = 1.0;
+    public static final double TrenchMaxCrossTrackMeters = 1.0;
 
     /** Exponent on blended adhesion (0.5 = sqrt); boosts assist when near/on the path. */
-    public static final double TRENCH_BLEND_EXPONENT = 0.5;
+    public static final double TrenchBlendExponent = 0.5;
 
     /** Degrees: new square edge must beat current edge by this much to switch. */
-    public static final double EDGE_SNAP_HYSTERESIS_DEG = 20.0;
+    public static final double EdgeSnapHysteresisDeg = 20.0;
 
     /** Trench heading hold. */
-    public static final double TRENCH_ANGLE_KP = 5.0;
+    public static final double TrenchAnglekP = 5.0;
 
-    public static final double TRENCH_ANGLE_KD = 0.1;
+    public static final double TrenchAnglekD = 0.1;
   }
 
   public final class OperatorConstants {
     /** Joystick deadband applied before scaling operator inputs. */
-    public static final double DEADBAND = 0.05;
+    public static final double DeadBand = 0.05;
 
     /**
      * Power exponent for the input curve. Values > 1 give finer control near center and bolder
      * response near full deflection. 2.0 = quadratic (recommended starting point).
      */
-    public static final double INPUT_POWER = 2.0;
+    public static final double InputPower = 2.0;
   }
 
   public static final class FieldConstants {
@@ -810,8 +814,9 @@ public final class Constants {
 
       LEDPattern DISABLED = LEDPattern.solid(Color.kPurple);
 
-      LEDPattern HYBRID_TRENCH = LEDPattern.solid(Color.kGreen);
-      LEDPattern HYBRID_INTAKE_DRIVE = LEDPattern.solid(Color.kBlue);
+      LEDPattern CHASSIS_NORMAL = LEDPattern.solid(Color.kWhite);
+      LEDPattern CHASSIS_SHOOTING = LEDPattern.solid(Color.kRed);
+      LEDPattern CHASSIS_ATTACKMODE = LEDPattern.solid(Color.kBlue);
       LEDPattern MANUAL = LEDPattern.solid(Color.kPurple);
       LEDPattern SHOOT = LEDPattern.solid(Color.kRed);
       LEDPattern READY = LEDPattern.solid(Color.kGreen);

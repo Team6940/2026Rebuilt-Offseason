@@ -13,6 +13,9 @@ public interface IntakeIO {
     public double rollerVelocityRps = 0.0;
     public double rollerSupplyVoltageV = 0.0;
     public double rollerSupplyCurrentA = 0.0;
+    public boolean rollerFollowerConnected = false;
+    public double rollerFollowerSupplyVoltageV = 0.0;
+    public double rollerFollowerSupplyCurrentA = 0.0;
     public int fuelInIntakeCount = 0;
   }
 

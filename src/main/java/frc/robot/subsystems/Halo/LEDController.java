@@ -1,5 +1,5 @@
 // Reference: 694 StuyPulse
-package frc.robot.subsystems.leds;
+package frc.robot.subsystems.Halo;
 
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -76,6 +76,7 @@ public class LEDController extends SubsystemBase {
     LEDPattern pattern;
     if (DriverStation.isDisabled()) {
       pattern = Settings.LEDs.DISABLED.breathe(Units.Seconds.of(2));
+      pattern = Settings.LEDs.DISABLED.scrollAtAbsoluteSpeed(null, null);
       currentPatternName = "DISABLED";
     } else {
       pattern =

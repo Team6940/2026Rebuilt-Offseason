@@ -150,7 +150,7 @@ public class HybridScoreCommand extends Command {
     }
     hood.setIdle();
     shooter.setVelocityRps(33.3);
-    drive.releaseAutoAimCurrentLimits();
+    superStructure.restoreChassisMode();
     superStructure.setShootPhase(ShootPhase.HEATUP);
     superStructure.setIntakeMode(IntakeMode.INTAKE);
     if (!interrupted) {

@@ -65,12 +65,15 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public double getTotalSupplyCurrentA() {
-    return inputs.rackSupplyCurrentA + inputs.rollerSupplyCurrentA;
+    return inputs.rackSupplyCurrentA
+        + inputs.rollerSupplyCurrentA
+        + inputs.rollerFollowerSupplyCurrentA;
   }
 
   public double getTotalPowerW() {
     return inputs.rackSupplyVoltageV * inputs.rackSupplyCurrentA
-        + inputs.rollerSupplyVoltageV * inputs.rollerSupplyCurrentA;
+        + inputs.rollerSupplyVoltageV * inputs.rollerSupplyCurrentA
+        + inputs.rollerFollowerSupplyVoltageV * inputs.rollerFollowerSupplyCurrentA;
   }
 
   @Override

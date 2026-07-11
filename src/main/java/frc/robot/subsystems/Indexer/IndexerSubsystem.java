@@ -51,12 +51,17 @@ public class IndexerSubsystem extends SubsystemBase {
   }
 
   public double getTotalSupplyCurrentA() {
-    return inputs.feederSupplyCurrentA + inputs.indexerSupplyCurrentA;
+    return inputs.feederSupplyCurrentA
+        + inputs.feederFollowerSupplyCurrentA
+        + inputs.indexerSupplyCurrentA
+        + inputs.indexerFollowerSupplyCurrentA;
   }
 
   public double getTotalPowerW() {
     return inputs.feederSupplyVoltageV * inputs.feederSupplyCurrentA
-        + inputs.indexerSupplyVoltageV * inputs.indexerSupplyCurrentA;
+        + inputs.feederFollowerSupplyVoltageV * inputs.feederFollowerSupplyCurrentA
+        + inputs.indexerSupplyVoltageV * inputs.indexerSupplyCurrentA
+        + inputs.indexerFollowerSupplyVoltageV * inputs.indexerFollowerSupplyCurrentA;
   }
 
   @Override

@@ -151,7 +151,7 @@ public class HybridPassCommand extends Command {
     hood.setIdle();
     superStructure.setIntakeMode(IntakeMode.INTAKE);
     shooter.setVelocityRps(33.3);
-    drive.releaseAutoAimCurrentLimits();
+    superStructure.restoreChassisMode();
     superStructure.setShootPhase(ShootPhase.HEATUP);
     if (!interrupted) {
       superStructure.claimDriveMode(DriveMode.MANUAL);

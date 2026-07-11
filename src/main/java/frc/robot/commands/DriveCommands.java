@@ -41,10 +41,10 @@ public class DriveCommands {
 
   public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
     Translation2d input = new Translation2d(x, y);
-    if (input.getNorm() < DriveConstants.DEADBAND) {
+    if (input.getNorm() < DriveConstants.Deadband) {
       return new Translation2d();
     } else {
-      double norm = MathUtil.applyDeadband(input.getNorm(), DriveConstants.DEADBAND);
+      double norm = MathUtil.applyDeadband(input.getNorm(), DriveConstants.Deadband);
       return input.times(1.0 / input.getNorm()).times(Math.pow(norm, 2.0));
     }
   }

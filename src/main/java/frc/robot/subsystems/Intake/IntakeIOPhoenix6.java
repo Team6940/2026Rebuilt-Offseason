@@ -104,5 +104,12 @@ public class IntakeIOPhoenix6 implements IntakeIO {
     inputs.rollerVelocityRps = rollerLeader.getVelocity().getValueAsDouble();
     inputs.rollerSupplyCurrentA = rollerLeader.getSupplyCurrent().getValueAsDouble();
     inputs.rollerSupplyVoltageV = rollerLeader.getSupplyVoltage().getValueAsDouble();
+
+    inputs.rollerFollowerConnected =
+        BaseStatusSignal.refreshAll(
+                rollerFollower.getSupplyCurrent(), rollerFollower.getSupplyVoltage())
+            .isOK();
+    inputs.rollerFollowerSupplyCurrentA = rollerFollower.getSupplyCurrent().getValueAsDouble();
+    inputs.rollerFollowerSupplyVoltageV = rollerFollower.getSupplyVoltage().getValueAsDouble();
   }
 }

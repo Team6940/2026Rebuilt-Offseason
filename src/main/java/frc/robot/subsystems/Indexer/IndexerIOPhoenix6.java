@@ -121,5 +121,19 @@ public class IndexerIOPhoenix6 implements IndexerIO {
     inputs.indexerVelocityRps = indexerLeader.getVelocity().getValueAsDouble();
     inputs.indexerSupplyCurrentA = indexerLeader.getSupplyCurrent().getValueAsDouble();
     inputs.indexerSupplyVoltageV = indexerLeader.getSupplyVoltage().getValueAsDouble();
+
+    inputs.feederFollowerConnected =
+        BaseStatusSignal.refreshAll(
+                feederFollower.getSupplyCurrent(), feederFollower.getSupplyVoltage())
+            .isOK();
+    inputs.feederFollowerSupplyCurrentA = feederFollower.getSupplyCurrent().getValueAsDouble();
+    inputs.feederFollowerSupplyVoltageV = feederFollower.getSupplyVoltage().getValueAsDouble();
+
+    inputs.indexerFollowerConnected =
+        BaseStatusSignal.refreshAll(
+                indexerFollower.getSupplyCurrent(), indexerFollower.getSupplyVoltage())
+            .isOK();
+    inputs.indexerFollowerSupplyCurrentA = indexerFollower.getSupplyCurrent().getValueAsDouble();
+    inputs.indexerFollowerSupplyVoltageV = indexerFollower.getSupplyVoltage().getValueAsDouble();
   }
 }

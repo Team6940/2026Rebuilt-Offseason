@@ -17,11 +17,12 @@ import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.leds.LEDDefaultCommand;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Halo.LEDController;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Power.PowerMonitor;
-import frc.robot.subsystems.leds.LEDController;
+
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -74,6 +75,16 @@ public class SuperStructure extends SubsystemBase {
     MID
   }
 
+  /** Chassis current-limit profile. */
+  public enum ChassisMode {
+    /** TunerConstants defaults (drive 60A supply/60A stator, steer 50A supply/50A stator). */
+    NORMAL,
+    /** Reduced drive current to free battery for shooter. */
+    SHOOTING,
+    /** No current limits at all. */
+    ATTACK
+  }
+
   private final LoggedNetworkNumber manualShootVelocityRps =
       new LoggedNetworkNumber("SmartDashboard/ShootVelocity", 0.0);
   private final LoggedNetworkNumber manualHoodDegs =
@@ -83,6 +94,8 @@ public class SuperStructure extends SubsystemBase {
   private ControlMode controlMode = ControlMode.SCORE;
   private ShootPhase shootPhase = ShootPhase.OFF;
   private IntakeMode intakeMode = IntakeMode.OFF;
+  private ChassisMode chassisMode = ChassisMode.NORMAL;
+  private ChassisMode previousChassisMode = ChassisMode.NORMAL;
 
   public LEDController getLEDs() {
     return LEDController.getInstance();
@@ -176,6 +189,29 @@ public class SuperStructure extends SubsystemBase {
     return intakeMode;
   }
 
+  /** Switches chassis current-limit profile. Saves previous mode when entering SHOOTING. */
+  public void setChassisMode(ChassisMode mode) {
+    if (chassisMode == mode) {
+      return;
+    }
+    if (mode == ChassisMode.SHOOTING) {
+      previousChassisMode = chassisMode;
+    }
+    chassisMode = mode;
+    getDrive().applyChassisModeLimits(mode);
+  }
+
+  /** Restores the mode that was active before SHOOTING. */
+  public void restoreChassisMode() {
+    ChassisMode restore = previousChassisMode;
+    chassisMode = restore;
+    getDrive().applyChassisModeLimits(restore);
+  }
+
+  public ChassisMode getChassisMode() {
+    return chassisMode;
+  }
+
   public Command getFieldCentricDriveCommand(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
     CommandSwerveDrivetrain drive = getDrive();
@@ -244,6 +280,7 @@ public class SuperStructure extends SubsystemBase {
     Logger.recordOutput("SuperStructure/ControlMode", controlMode);
     Logger.recordOutput("SuperStructure/ShootPhase", shootPhase);
     Logger.recordOutput("SuperStructure/IntakeMode", intakeMode);
+    Logger.recordOutput("SuperStructure/ChassisMode", chassisMode.name());
     Logger.recordOutput("SuperStructure/ManualShootVelocityRps", manualShootVelocityRps.get());
     Logger.recordOutput("SuperStructure/ManualHoodDegs", manualHoodDegs.get());
   }

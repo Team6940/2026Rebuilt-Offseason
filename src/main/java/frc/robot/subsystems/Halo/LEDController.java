@@ -112,7 +112,6 @@ public class LEDController extends SubsystemBase {
     Logger.recordOutput("LED/ShootPhase", shootPhase.name());
     Logger.recordOutput("LED/IsDisabled", DriverStation.isDisabled());
     Logger.recordOutput("LED/LayerCount", layers.size());
-    logLedBuffer();
     publishColorForElastic();
   }
 
@@ -273,17 +272,6 @@ public class LEDController extends SubsystemBase {
 
     attackBandOffset += 0.3;
     if (attackBandOffset > halfLength) attackBandOffset = 0;
-  }
-
-  private void logLedBuffer() {
-    int len = buffer.getLength();
-    double[] rgb = new double[len * 3];
-    for (int i = 0; i < len; i++) {
-      rgb[i * 3] = buffer.getLED(i).red;
-      rgb[i * 3 + 1] = buffer.getLED(i).green;
-      rgb[i * 3 + 2] = buffer.getLED(i).blue;
-    }
-    Logger.recordOutput("LED/Buffer", rgb);
   }
 
   private void publishColorForElastic() {

@@ -31,6 +31,7 @@ import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.GamePeriodReminder;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
@@ -61,6 +62,7 @@ public class RobotContainer {
   private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
+  private final GamePeriodReminder gamePeriodReminder = GamePeriodReminder.getInstance();
   private Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
   // Controller
   public static final ImprovedCommandXboxController driverController =

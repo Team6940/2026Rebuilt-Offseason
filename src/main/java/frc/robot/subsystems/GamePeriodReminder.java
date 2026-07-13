@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class GamePeriodReminder extends SubsystemBase {
   private static final int NUM_LEDS = 5;
-  private static final double YELLOW_THRESHOLD = 10.0;
+  private static final double YELLOW_THRESHOLD = 15.0;
   private static final double RED_COUNTDOWN_THRESHOLD = 5.0;
   private static final double TOTAL_MATCH_TIME = 150.0;
 
@@ -41,7 +41,7 @@ public class GamePeriodReminder extends SubsystemBase {
       boolean ourHubActive = isOurHubActive(matchTime);
       double secondsRemainingInShift = getSecondsRemainingInShift(matchTime);
 
-      if (!ourHubActive) {
+      if (!ourHubActive && secondsRemainingInShift > YELLOW_THRESHOLD) {
         state = "INACTIVE";
         for (int i = 0; i < NUM_LEDS; i++) {
           colors[i] = "#000000";

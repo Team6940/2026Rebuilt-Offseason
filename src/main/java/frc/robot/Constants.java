@@ -806,10 +806,9 @@ public final class Constants {
   public static class Settings {
     public static class LED {
       public static final int LEDLength = 35;
-      public static final int[] GyroBuffer = {};
-      public static final int[] ChassisLeft = {0, 4};
-      public static final int[] ShooterMid = {4, 27};
-      public static final int[] ChassisRight = {30, 34};
+      public static final int[] ChassisLeft = {0, 5};
+      public static final int[] ShooterMid = {6, 28};
+      public static final int[] ChassisRight = {29, 34};
       public static final Color AttackModeColor = new Color("#267ce4");
     }
 

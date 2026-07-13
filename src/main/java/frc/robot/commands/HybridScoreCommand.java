@@ -79,42 +79,47 @@ public class HybridScoreCommand extends Command {
   public void execute() {
     applyOperatorAdjustments();
 
-    ShotPlan plan = computeShotPlan();
+    // ShotPlan planMove = computeShotPlanMove();
+    ShotPlan planFix = computeShotPlanFix();
 
-    double finalHoodDegs = plan.hoodDegs + hoodCompDegs;
-    double finalShooterRps = plan.shooterRps + rpsOffset;
-    Rotation2d finalHeading = plan.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
+    // double finalHoodDegsMoving = planMove.hoodDegs + hoodCompDegs;
+    // double finalShooterRpsMoving = planMove.shooterRps + rpsOffset;
+    // Rotation2d finalHeadingMove = planMove.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
+
+    double finalHoodDegsFix = planFix.hoodDegs + hoodCompDegs;
+    double finalShooterRpsFix = planFix.shooterRps + rpsOffset;
+    Rotation2d finalHeadingFix = planFix.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
 
     if (superStructure.getShootPhase() == ShootPhase.SHOOT) {
       shootHeadingFineTuneDegs =
           ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
       if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
-        finalHeading =
-            finalHeading.plus(
+        finalHeadingFix =
+            finalHeadingFix.plus(
                 Rotation2d.fromDegrees(shootHeadingFineTuneDegs * AimHeadingCompRangeDegs));
       }
     }
 
-    boolean ready = isReady(finalHoodDegs, finalShooterRps, finalHeading);
+    boolean ready = isReady(finalHoodDegsFix, finalShooterRpsFix, finalHeadingFix);
     boolean fire = driverController.getButton(shootButton);
 
-    hood.setAutoSetpoint(finalHoodDegs);
-    shooter.setVelocityRps(finalShooterRps);
-
-    Rotation2d aimHeading = finalHeading;
+    Rotation2d aimHeadingFix = finalHeadingFix;
     Translation2d driverInput =
         new Translation2d(-driverController.getLeftX(), -driverController.getLeftY());
+
+    hood.setAutoSetpoint(finalHoodDegsFix);
+    shooter.setVelocityRps(finalShooterRpsFix);
     switch (superStructure.getShootPhase()) {
       case AIM -> {
         drive.driveAutoAimWithSpeedLimit(
-            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeading);
+            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeadingFix);
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
       }
       case READY -> {
         drive.driveAutoAimWithSpeedLimit(
-            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeading);
+            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeadingFix);
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {
@@ -125,11 +130,11 @@ public class HybridScoreCommand extends Command {
         drive.driveAutoAimWithSpeedLimitorLocked(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            aimHeading,
+            aimHeadingFix,
             Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
             driverInput.getNorm() > DriverTranslationFineTuneDeadband);
 
-        runShootSequence(finalHoodDegs, ready, fire);
+        runShootSequence(finalHoodDegsFix, ready, fire);
         if (!fire) {
           transitionTo(ready ? ShootPhase.READY : ShootPhase.AIM);
         }
@@ -137,7 +142,7 @@ public class HybridScoreCommand extends Command {
       default -> transitionTo(ShootPhase.AIM);
     }
 
-    log(plan, finalHoodDegs, finalShooterRps, finalHeading, ready, fire);
+    log(planFix, finalHoodDegsFix, finalShooterRpsFix, finalHeadingFix, ready, fire);
     applyOperatorForcedFeed();
   }
 
@@ -163,9 +168,15 @@ public class HybridScoreCommand extends Command {
     return false;
   }
 
-  private ShotPlan computeShotPlan() {
+  // private ShotPlan computeShotPlanMove() {
+  //   var shooterPos = drive.getShooterWorldPosition();
+  //   return ProjectileCalculator.planScore(
+  //       shooterPos, CommandSwerveDrivetrain.getAllianceHubCenter(), drive.getFieldVelocity());
+  // }
+
+  private ShotPlan computeShotPlanFix() {
     var shooterPos = drive.getShooterWorldPosition();
-    return ProjectileCalculator.planScore(
+    return ProjectileCalculator.planFixScore(
         shooterPos, CommandSwerveDrivetrain.getAllianceHubCenter(), drive.getFieldVelocity());
   }
 

@@ -94,22 +94,22 @@ public final class Constants {
     /* Rollers */
     public static final double RollerRatio = 35. / 20.;
     public static final InvertedValue RollerInverted = InvertedValue.Clockwise_Positive;
-    public static final double RollerSupplyCurrentLimit = 20.0;
+    public static final double RollerSupplyCurrentLimit = 40.0;
     public static final double RollerkP = 0.1;
     public static final double RollerkI = 0.0;
     public static final double RollerkD = 0.0;
     public static final double RollerkV = 0.213;
     public static final double RollerkS = 0.353;
     public static final double RollerVelocityToleranceRps = 0.5;
-    public static final double IntakingRps = 40.0;
-    public static final double IntakeEmergencyOutRps = 60.0;
+    public static final double IntakingRps = 47.0;
+    public static final double IntakeEmergencyOutRps = 57.0;
     public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Opposed;
 
     /* Rack */
     public static final double RackRatio = 48. / 14.;
     public static final InvertedValue RackInverted = InvertedValue.Clockwise_Positive;
-    public static final double RackSupplyCurrentLimit = 20.0;
-    public static final double RackStatorCurrentLimit = 40.0;
+    public static final double RackSupplyCurrentLimit = 40.0;
+    public static final double RackStatorCurrentLimit = 80.0;
     public static final double RackkP = 20.;
     public static final double RackkI = 0.0;
     public static final double RackkD = 0.0;
@@ -624,7 +624,7 @@ public final class Constants {
   /** Tuning for hybrid shoot commands ({@link frc.robot.commands.HybridScoreCommand}). */
   public static final class HybridShootConstants {
     // --- Ready gate (AIM to READY) ---
-    public static final double HeadingToleranceDegs = 1.5;
+    public static final double HeadingToleranceDegs = 15.;
     public static final double HoodToleranceDegs = 1.5;
     public static final double ShooterToleranceRpsLower = 3.;
     public static final double ShooterToleranceRpsHigher = 2.;
@@ -638,7 +638,7 @@ public final class Constants {
     public static final double DriverTranslationFineTuneDeadband = 0.3;
 
     // --- SHOOT: indexer feed, then intake retract timing ---
-    public static final double FeedDurationSec = 0.6;
+    public static final double FeedDurationSec = 0.3;
     public static final double PostRetractWaitSec = 0.4;
 
     // --- Operator RPS offset steps (B / A / X / Y) ---
@@ -669,6 +669,9 @@ public final class Constants {
     public static final MotorAlignmentValue FeederFollowerAlignment = MotorAlignmentValue.Aligned;
     public static final double FeedRps = 75.0;
     public static final double IndexerRps = 60.0;
+    public static final double FeederJamCurrentThresholdA = 80.0;
+    public static final double FeederJamDebounceSec = 0.2;
+    public static final double FeederJamReverseDurationSec = 0.5;
   }
 
   /** Maple-sim field sim tuning for OverTheBumper intake, hopper, and full-width dumper shooter. */

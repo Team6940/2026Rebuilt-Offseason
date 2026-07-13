@@ -1,5 +1,7 @@
 package frc.robot.subsystems.Indexer;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IndexerConstants;
@@ -20,6 +22,12 @@ public class IndexerSubsystem extends SubsystemBase {
   private final IndexerIOInputsAutoLogged inputs = new IndexerIOInputsAutoLogged();
 
   private boolean feeding = false;
+  private double requestedFeederRps = 0.0;
+  private double requestedIndexerRps = 0.0;
+  private boolean feederReversing = false;
+  private double feederReverseEndTimestamp = 0.0;
+  private final Debouncer feederJamDebouncer =
+      new Debouncer(IndexerConstants.FeederJamDebounceSec, Debouncer.DebounceType.kRising);
 
   private IndexerSubsystem() {
     if (Constants.currentMode == Constants.Mode.REAL) {
@@ -42,17 +50,20 @@ public class IndexerSubsystem extends SubsystemBase {
   }
 
   public void setVelocities(double feederRps, double indexerRps) {
-    io.setFeederRps(feederRps);
-    io.setIndexerRps(indexerRps);
+    requestedFeederRps = feederRps;
+    requestedIndexerRps = indexerRps;
   }
 
   public boolean isFeeding() {
     return feeding;
   }
 
+  public double getFeederSupplyCurrentA() {
+    return inputs.feederSupplyCurrentA + inputs.feederFollowerSupplyCurrentA;
+  }
+
   public double getTotalSupplyCurrentA() {
-    return inputs.feederSupplyCurrentA
-        + inputs.feederFollowerSupplyCurrentA
+    return getFeederSupplyCurrentA()
         + inputs.indexerSupplyCurrentA
         + inputs.indexerFollowerSupplyCurrentA;
   }
@@ -64,11 +75,42 @@ public class IndexerSubsystem extends SubsystemBase {
         + inputs.indexerFollowerSupplyVoltageV * inputs.indexerFollowerSupplyCurrentA;
   }
 
+  private void applyVelocities() {
+    double now = Timer.getFPGATimestamp();
+
+    if (feederReversing) {
+      if (now >= feederReverseEndTimestamp) {
+        feederReversing = false;
+      } else {
+        io.setFeederRps(-IndexerConstants.FeedRps);
+        io.setIndexerRps(requestedIndexerRps);
+        return;
+      }
+    }
+
+    boolean feederJamInput =
+        requestedFeederRps > 0.0
+            && getFeederSupplyCurrentA() > IndexerConstants.FeederJamCurrentThresholdA;
+    if (feederJamDebouncer.calculate(feederJamInput)) {
+      feederReversing = true;
+      feederReverseEndTimestamp = now + IndexerConstants.FeederJamReverseDurationSec;
+      io.setFeederRps(-IndexerConstants.FeedRps);
+      io.setIndexerRps(requestedIndexerRps);
+      return;
+    }
+
+    io.setFeederRps(requestedFeederRps);
+    io.setIndexerRps(requestedIndexerRps);
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputs);
+    applyVelocities();
     Logger.processInputs("Indexer", inputs);
     Logger.recordOutput("Indexer/Feeding", feeding);
+    Logger.recordOutput("Indexer/FeederReversing", feederReversing);
+    Logger.recordOutput("Indexer/FeederSupplyCurrentA", getFeederSupplyCurrentA());
     Logger.recordOutput("Indexer/IndexerVelocityRPS", inputs.indexerVelocityRps);
     Logger.recordOutput("Indexer/FeederVelocityRPS", inputs.feederVelocityRps);
     Logger.recordOutput("Indexer/TotalSupplyCurrentA", getTotalSupplyCurrentA());

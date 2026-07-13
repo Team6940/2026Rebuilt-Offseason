@@ -69,7 +69,9 @@ public final class ProjectileCalculator {
     return towardTarget.plus(Rotation2d.kPi);
   }
 
-  /** Hub shot: motion solver compensates for chassis velocity while aiming at alliance hub center. */
+  /**
+   * Hub shot: motion solver compensates for chassis velocity while aiming at alliance hub center.
+   */
   public static ShotPlan planScore(
       Translation2d shooterPosition, Translation2d hubCenter, Translation2d fieldVelocity) {
     ShotSolution sol = solve(shooterPosition, hubCenter, fieldVelocity, ShotProfile.SCORE);
@@ -81,6 +83,20 @@ public final class ProjectileCalculator {
         sol.hoodAngleDeg(),
         sol.shooterRps(),
         sol.virtualTarget());
+  }
+
+  public static ShotPlan planFixScore(
+      Translation2d shooterPosition, Translation2d hubCenter, Translation2d fieldVelocity) {
+    double distanceMeters = shooterPosition.getDistance(hubCenter);
+
+    return new ShotPlan(
+        false,
+        hubCenter,
+        distanceMeters,
+        chassisHeadingForShooter(hubCenter.minus(shooterPosition).getAngle()),
+        getHoodTargetDegs(distanceMeters),
+        getShooterTargetVelocity(distanceMeters),
+        hubCenter);
   }
 
   /**
@@ -150,9 +166,7 @@ public final class ProjectileCalculator {
       double hoodAngleDeg,
       double flightTimeSecs) {}
 
-  /**
-   * Motion solver: finds virtual target so the note meets the real target after robot motion.
-   */
+  /** Motion solver: finds virtual target so the note meets the real target after robot motion. */
   public static ShotSolution solve(
       Translation2d shooterPosition,
       Translation2d realTarget,

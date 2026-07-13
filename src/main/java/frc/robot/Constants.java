@@ -805,11 +805,11 @@ public final class Constants {
 
   public static class Settings {
     public static class LED {
-      public static final int LEDLength = 32;
-      public static final int[] GyroBuffer = {0, 1};
-      public static final int[] ChassisLeft = {2, 5};
-      public static final int[] ShooterMid = {6, 27};
-      public static final int[] ChassisRight = {28, 31};
+      public static final int LEDLength = 35;
+      public static final int[] GyroBuffer = {};
+      public static final int[] ChassisLeft = {0, 4};
+      public static final int[] ShooterMid = {4, 27};
+      public static final int[] ChassisRight = {30, 34};
       public static final Color AttackModeColor = new Color("#267ce4");
     }
 

@@ -24,6 +24,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FieldSimulation;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
+import frc.robot.subsystems.GamePeriodReminder;
 import frc.robot.subsystems.Halo.LEDController;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
@@ -31,7 +32,6 @@ import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
-import frc.robot.subsystems.GamePeriodReminder;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
@@ -128,7 +128,7 @@ public class RobotContainer {
 
   private void testBindings() {
     drive.setDefaultCommand(
-        superStructure.getFieldCentricDriveCommand(
+        superStructure.getDefaultDriveCommand(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
             () -> -driverController.getRightX()));
@@ -162,7 +162,7 @@ public class RobotContainer {
             .and(driverController.a().negate());
 
     drive.setDefaultCommand(
-        superStructure.getFieldCentricDriveCommand(
+        superStructure.getDefaultDriveCommand(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
             () -> -driverController.getRightX()));
@@ -213,6 +213,10 @@ public class RobotContainer {
         .b()
         .onTrue(Commands.runOnce(superStructure::enableAttackMode, superStructure))
         .onFalse(Commands.runOnce(superStructure::disableAttackMode, superStructure));
+
+    driverController
+        .leftStick()
+        .onTrue(Commands.runOnce(() -> superStructure.toggleFieldCentricEnabled()));
   }
 
   /**

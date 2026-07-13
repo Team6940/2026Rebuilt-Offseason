@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.FieldCentric;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
@@ -8,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.commands.DriveDefaultCommand;
 import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.HeatupCommand;
 import frc.robot.commands.HybridPassCommand;
@@ -99,6 +101,7 @@ public class SuperStructure extends SubsystemBase {
   private ChassisMode previousChassisMode = ChassisMode.NORMAL;
   private boolean attackModeActive = false;
   private final Timer attackModeTimer = new Timer();
+  private boolean fieldCentricEnbaled = true;
 
   /** AIM-phase readiness flags for LED progress visualization. */
   private boolean atAngle = false;
@@ -136,9 +139,15 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public void resetAllModes() {
-    claimDriveMode(DriveMode.MANUAL);
-    setIntakeMode(IntakeMode.OFF);
-    setShootPhase(ShootPhase.OFF);
+    fieldCentricEnbaled = true;
+    driveMode = DriveMode.MANUAL;
+    controlMode = ControlMode.SCORE;
+    shootPhase = ShootPhase.OFF;
+    intakeMode = IntakeMode.OFF;
+    chassisMode = ChassisMode.NORMAL;
+    previousChassisMode = ChassisMode.NORMAL;
+    attackModeActive = false;
+    attackModeTimer.reset();
     CommandScheduler.getInstance().cancel(getIntake().getCurrentCommand());
   }
 
@@ -195,6 +204,14 @@ public class SuperStructure extends SubsystemBase {
 
   public IntakeMode getIntakeMode() {
     return intakeMode;
+  }
+
+  public boolean getFieldCentricEnbaled() {
+    return fieldCentricEnbaled;
+  }
+
+  public void toggleFieldCentricEnabled() {
+    fieldCentricEnbaled = fieldCentricEnbaled ? false : true;
   }
 
   /** Switches chassis current-limit profile. Saves previous mode when entering SHOOTING. */
@@ -271,11 +288,11 @@ public class SuperStructure extends SubsystemBase {
     return count;
   }
 
-  public Command getFieldCentricDriveCommand(
+  public Command getDefaultDriveCommand(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
     claimDriveMode(DriveMode.MANUAL);
     CommandSwerveDrivetrain drive = getDrive();
-    return Commands.run(() -> drive.driveFieldCentric(xSupplier, ySupplier, omegaSupplier), drive);
+    return new DriveDefaultCommand(drive, xSupplier, ySupplier, omegaSupplier);
   }
 
   /**
@@ -342,5 +359,6 @@ public class SuperStructure extends SubsystemBase {
     Logger.recordOutput("SuperStructure/AttackModeTimerSec", attackModeTimer.get());
     Logger.recordOutput("SuperStructure/ManualShootVelocityRps", manualShootVelocityRps.get());
     Logger.recordOutput("SuperStructure/ManualHoodDegs", manualHoodDegs.get());
+    Logger.recordOutput("SuperStructure/FieldCentricDrive", fieldCentricEnbaled);
   }
 }

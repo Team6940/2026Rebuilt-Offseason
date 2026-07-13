@@ -255,36 +255,45 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         new PIDController(DriveConstants.TrenchAnglekP, 0.0, DriveConstants.TrenchAnglekD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
-    SmartDashboard.putData("Swerve Drive", new Sendable() {
-      @Override
-      public void initSendable(SendableBuilder builder) {
-        builder.setSmartDashboardType("SwerveDrive");
-        var modules = getModules();
+    SmartDashboard.putData(
+        "Swerve Drive",
+        new Sendable() {
+          @Override
+          public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+            var modules = getModules();
 
-        builder.addDoubleProperty("Front Left Angle",
-            () -> modules[0].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Left Velocity",
-            () -> modules[0].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Front Left Angle", () -> modules[0].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Left Velocity",
+                () -> modules[0].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Front Right Angle",
-            () -> modules[1].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Right Velocity",
-            () -> modules[1].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Front Right Angle", () -> modules[1].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Right Velocity",
+                () -> modules[1].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Back Left Angle",
-            () -> modules[2].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Left Velocity",
-            () -> modules[2].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Back Left Angle", () -> modules[2].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Left Velocity",
+                () -> modules[2].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Back Right Angle",
-            () -> modules[3].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Right Velocity",
-            () -> modules[3].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Back Right Angle", () -> modules[3].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Right Velocity",
+                () -> modules[3].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Robot Angle",
-            () -> getRotation().getRadians(), null);
-      }
-    });
+            builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
+          }
+        });
     if (Utils.isSimulation() && Constants.currentMode != Constants.Mode.REPLAY) {
       startSimThread();
     }
@@ -331,36 +340,45 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         new PIDController(DriveConstants.TrenchAnglekP, 0.0, DriveConstants.TrenchAnglekD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
-    SmartDashboard.putData("Swerve Drive", new Sendable() {
-      @Override
-      public void initSendable(SendableBuilder builder) {
-        builder.setSmartDashboardType("SwerveDrive");
-        var modules = getModules();
+    SmartDashboard.putData(
+        "Swerve Drive",
+        new Sendable() {
+          @Override
+          public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+            var modules = getModules();
 
-        builder.addDoubleProperty("Front Left Angle",
-            () -> modules[0].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Left Velocity",
-            () -> modules[0].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Front Left Angle", () -> modules[0].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Left Velocity",
+                () -> modules[0].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Front Right Angle",
-            () -> modules[1].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Right Velocity",
-            () -> modules[1].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Front Right Angle", () -> modules[1].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Right Velocity",
+                () -> modules[1].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Back Left Angle",
-            () -> modules[2].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Left Velocity",
-            () -> modules[2].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Back Left Angle", () -> modules[2].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Left Velocity",
+                () -> modules[2].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Back Right Angle",
-            () -> modules[3].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Right Velocity",
-            () -> modules[3].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Back Right Angle", () -> modules[3].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Right Velocity",
+                () -> modules[3].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Robot Angle",
-            () -> getRotation().getRadians(), null);
-      }
-    });
+            builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
+          }
+        });
     if (Utils.isSimulation() && Constants.currentMode != Constants.Mode.REPLAY) {
       startSimThread();
     }
@@ -418,36 +436,45 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         new PIDController(DriveConstants.TrenchAnglekP, 0.0, DriveConstants.TrenchAnglekD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
-    SmartDashboard.putData("Swerve Drive", new Sendable() {
-      @Override
-      public void initSendable(SendableBuilder builder) {
-        builder.setSmartDashboardType("SwerveDrive");
-        var modules = getModules();
+    SmartDashboard.putData(
+        "Swerve Drive",
+        new Sendable() {
+          @Override
+          public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+            var modules = getModules();
 
-        builder.addDoubleProperty("Front Left Angle",
-            () -> modules[0].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Left Velocity",
-            () -> modules[0].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Front Left Angle", () -> modules[0].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Left Velocity",
+                () -> modules[0].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Front Right Angle",
-            () -> modules[1].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Right Velocity",
-            () -> modules[1].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Front Right Angle", () -> modules[1].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Right Velocity",
+                () -> modules[1].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Back Left Angle",
-            () -> modules[2].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Left Velocity",
-            () -> modules[2].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Back Left Angle", () -> modules[2].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Left Velocity",
+                () -> modules[2].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Back Right Angle",
-            () -> modules[3].getCurrentState().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Right Velocity",
-            () -> modules[3].getCurrentState().speedMetersPerSecond, null);
+            builder.addDoubleProperty(
+                "Back Right Angle", () -> modules[3].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Right Velocity",
+                () -> modules[3].getCurrentState().speedMetersPerSecond,
+                null);
 
-        builder.addDoubleProperty("Robot Angle",
-            () -> getRotation().getRadians(), null);
-      }
-    });
+            builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
+          }
+        });
     if (Utils.isSimulation() && Constants.currentMode != Constants.Mode.REPLAY) {
       startSimThread();
     }
@@ -673,6 +700,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     runVelocity(
         ChassisSpeeds.fromFieldRelativeSpeeds(
             speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+  }
+
+  public void driveRobotCentric(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+    Translation2d linearVelocityMagnitude =
+        getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.Deadband);
+    omega = Math.copySign(omega * omega, omega);
+    ChassisSpeeds speeds =
+        new ChassisSpeeds(
+            linearVelocityMagnitude.getX() * getMaxLinearSpeedMetersPerSec(),
+            linearVelocityMagnitude.getY() * getMaxLinearSpeedMetersPerSec(),
+            omega * getMaxAngularSpeedRadPerSec());
+    runVelocity(speeds);
   }
 
   public void driveFieldCentricWithMaxSpeed(

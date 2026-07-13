@@ -111,15 +111,19 @@ public class HybridScoreCommand extends Command {
     shooter.setVelocityRps(finalShooterRpsFix);
     switch (superStructure.getShootPhase()) {
       case AIM -> {
-        drive.driveAutoAimWithSpeedLimit(
-            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeadingFix);
+        drive.driveAutoAim(
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> aimHeadingFix);
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
       }
       case READY -> {
-        drive.driveAutoAimWithSpeedLimit(
-            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeadingFix);
+        drive.driveAutoAim(
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> aimHeadingFix);
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {

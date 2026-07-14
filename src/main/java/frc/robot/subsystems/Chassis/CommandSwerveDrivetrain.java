@@ -892,7 +892,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       boolean operatorTrimmingHeading,
       boolean driverTrimmingTranslation) {
     SuperStructure.getInstance().setChassisMode(SuperStructure.ChassisMode.SHOOTING);
-    if (operatorTrimmingHeading || driverTrimmingTranslation) {
+    if (operatorTrimmingHeading || driverTrimmingTranslation || !MathUtil.isNear(targetRotation.getDegrees(), getRotation().getDegrees(), 1.5)) {
       driveAutoAim(
           xSupplier, ySupplier, () -> targetRotation, getMaxLinearSpeedMetersPerSec() * 0.2);
     } else {

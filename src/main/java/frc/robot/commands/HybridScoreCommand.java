@@ -158,7 +158,7 @@ public class HybridScoreCommand extends Command {
       shootSequenceStartSec = 0.0;
     }
     hood.setIdle();
-    shooter.setVelocityRps(33.3);
+    shooter.setVelocityRps(40.);
     superStructure.restoreChassisMode();
     superStructure.setShootPhase(ShootPhase.HEATUP);
     superStructure.setIntakeMode(IntakeMode.INTAKE);

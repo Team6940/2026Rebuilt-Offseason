@@ -624,8 +624,8 @@ public final class Constants {
   /** Tuning for hybrid shoot commands ({@link frc.robot.commands.HybridScoreCommand}). */
   public static final class HybridShootConstants {
     // --- Ready gate (AIM to READY) ---
-    public static final double HeadingToleranceDegs = 15.;
-    public static final double HoodToleranceDegs = 1.5;
+    public static final double HeadingToleranceDegs = 23.;
+    public static final double HoodToleranceDegs = 3.;
     public static final double ShooterToleranceRpsLower = 3.;
     public static final double ShooterToleranceRpsHigher = 2.;
 
@@ -669,7 +669,7 @@ public final class Constants {
     public static final MotorAlignmentValue FeederFollowerAlignment = MotorAlignmentValue.Aligned;
     public static final double FeedRps = 75.0;
     public static final double IndexerRps = 60.0;
-    public static final double FeederJamCurrentThresholdA = 80.0;
+    public static final double FeederJamCurrentThresholdA = 75.0;
     public static final double FeederJamDebounceSec = 0.2;
     public static final double FeederJamReverseDurationSec = 0.5;
   }

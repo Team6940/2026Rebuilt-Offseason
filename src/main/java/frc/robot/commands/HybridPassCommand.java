@@ -150,7 +150,7 @@ public class HybridPassCommand extends Command {
     }
     hood.setIdle();
     superStructure.setIntakeMode(IntakeMode.INTAKE);
-    shooter.setVelocityRps(33.3);
+    shooter.setVelocityRps(40.);
     superStructure.restoreChassisMode();
     superStructure.setShootPhase(ShootPhase.HEATUP);
     if (!interrupted) {

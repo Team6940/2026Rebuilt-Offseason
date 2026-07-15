@@ -57,7 +57,6 @@ public class RightSingleSwipeToOppHub extends SequentialCommandGroup {
                             () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
     addCommands(Commands.waitSeconds(1.));
     addCommands(drive.followPPPath("RInt1OverMid-ROppHub"));
-    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
     addCommands(drive.followPPPath("ROppHub-RSh2"));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));

@@ -30,10 +30,11 @@ public class VisionIOLive implements VisionIO {
 
   private final NetworkTableEntry llLeftSnapshot =
       NetworkTableInstance.getDefault().getTable(RobotContainer.limelightBack).getEntry("snapshot");
-  private final NetworkTableEntry llRightSnapshot =
-      NetworkTableInstance.getDefault()
-          .getTable(RobotContainer.limelightRight)
-          .getEntry("snapshot");
+
+  // private final NetworkTableEntry llRightSnapshot =
+  //     NetworkTableInstance.getDefault()
+  //         .getTable(RobotContainer.limelightRight)
+  //         .getEntry("snapshot");
 
   public VisionIOLive() {
     photonFront = new PhotonCamera(RobotContainer.photonCameraFront);
@@ -53,18 +54,17 @@ public class VisionIOLive implements VisionIO {
 
   @Override
   public void updateInputs(
-      VisionCameraInputs limelightLeft,
-      VisionCameraInputs limelightRight,
+      VisionCameraInputs limelightBack,
       VisionCameraInputs photonFrontInputs,
       CommandSwerveDrivetrain drive,
       double fpgaNow) {
     llLeftSnapshot.setNumber(0);
-    llRightSnapshot.setNumber(0);
+    // llRightSnapshot.setNumber(0);
 
     updateLimelight(
-        limelightLeft, RobotContainer.limelightBack, "Left", llLeftSnapshot, drive, fpgaNow);
-    updateLimelight(
-        limelightRight, RobotContainer.limelightRight, "Right", llRightSnapshot, drive, fpgaNow);
+        limelightBack, RobotContainer.limelightBack, "Left", llLeftSnapshot, drive, fpgaNow);
+    // updateLimelight(
+    //     limelightRight, RobotContainer.limelightRight, "Right", llRightSnapshot, drive, fpgaNow);
     updatePhotonDriver(photonFrontInputs, photonFront);
   }
 

@@ -30,8 +30,8 @@ public class VisionSubsystem extends SubsystemBase {
   private final VisionIO visionIO;
   private final VisionCameraInputsAutoLogged limelightLeftInputs =
       new VisionCameraInputsAutoLogged();
-  private final VisionCameraInputsAutoLogged limelightRightInputs =
-      new VisionCameraInputsAutoLogged();
+  // private final VisionCameraInputsAutoLogged limelightRightInputs =
+  //     new VisionCameraInputsAutoLogged();
   private final VisionCameraInputsAutoLogged photonFrontInputs = new VisionCameraInputsAutoLogged();
 
   public static VisionSubsystem m_instance;
@@ -54,23 +54,21 @@ public class VisionSubsystem extends SubsystemBase {
     double fpgaNow = Timer.getFPGATimestamp();
 
     if (!Logger.hasReplaySource()) {
-      visionIO.updateInputs(
-          limelightLeftInputs, limelightRightInputs, photonFrontInputs, drive, fpgaNow);
+      visionIO.updateInputs(limelightLeftInputs, photonFrontInputs, drive, fpgaNow);
     }
 
     if (!Logger.hasReplaySource()) {
-      visionIO.updateInputs(
-          limelightLeftInputs, limelightRightInputs, photonFrontInputs, drive, fpgaNow);
+      visionIO.updateInputs(limelightLeftInputs, photonFrontInputs, drive, fpgaNow);
     }
 
     Logger.processInputs("Vision/LimelightLeft", limelightLeftInputs);
-    Logger.processInputs("Vision/LimelightRight", limelightRightInputs);
+    // Logger.processInputs("Vision/LimelightRight", limelightRightInputs);
     // Logger.processInputs("Vision/PhotonBack", photonBackInputs);
     Logger.processInputs("Vision/PhotonFront", photonFrontInputs);
 
     List<VisionMeasurement> accepted = new ArrayList<>(4);
     measurementFromInputs(limelightLeftInputs).ifPresent(accepted::add);
-    measurementFromInputs(limelightRightInputs).ifPresent(accepted::add);
+    // measurementFromInputs(limelightRightInputs).ifPresent(accepted::add);
     // measurementFromInputs(photonBackInputs).ifPresent(accepted::add);
 
     if (accepted.isEmpty()) {

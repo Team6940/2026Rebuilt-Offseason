@@ -50,7 +50,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 public class RobotContainer {
   // Subsystems
   public static final String limelightBack = "limelight-b";
-  public static final String limelightRight = "limelight-r";
+  // public static final String limelightRight = "limelight-r";
   public static final String photonCameraFront = "PhotonFront";
 
   // Create all Subsystems

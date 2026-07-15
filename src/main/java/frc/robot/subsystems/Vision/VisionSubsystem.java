@@ -57,12 +57,16 @@ public class VisionSubsystem extends SubsystemBase {
       visionIO.updateInputs(limelightLeftInputs, photonFrontInputs, drive, fpgaNow);
     }
 
+    if (!Logger.hasReplaySource()) {
+      visionIO.updateInputs(limelightLeftInputs, photonFrontInputs, drive, fpgaNow);
+    }
+
     Logger.processInputs("Vision/LimelightLeft", limelightLeftInputs);
     // Logger.processInputs("Vision/LimelightRight", limelightRightInputs);
     // Logger.processInputs("Vision/PhotonBack", photonBackInputs);
     Logger.processInputs("Vision/PhotonFront", photonFrontInputs);
 
-    List<VisionMeasurement> accepted = new ArrayList<>(2);
+    List<VisionMeasurement> accepted = new ArrayList<>(4);
     measurementFromInputs(limelightLeftInputs).ifPresent(accepted::add);
     // measurementFromInputs(limelightRightInputs).ifPresent(accepted::add);
     // measurementFromInputs(photonBackInputs).ifPresent(accepted::add);

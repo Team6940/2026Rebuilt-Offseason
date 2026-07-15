@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -61,6 +63,7 @@ public class RobotContainer {
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
   private final GamePeriodReminder gamePeriodReminder = GamePeriodReminder.getInstance();
+  private Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
   // Controller
   public static final ImprovedCommandXboxController driverController =
       new ImprovedCommandXboxController(0);
@@ -114,6 +117,7 @@ public class RobotContainer {
 
     configureButtonBindings();
     // testBindings();
+    drive.registerTelemetry(logger::telemeterize);
     CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
     CommandScheduler.getInstance()
         .schedule(

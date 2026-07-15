@@ -112,7 +112,6 @@ public class LEDController extends SubsystemBase {
     Logger.recordOutput("LED/ShootPhase", shootPhase.name());
     Logger.recordOutput("LED/IsDisabled", DriverStation.isDisabled());
     Logger.recordOutput("LED/LayerCount", layers.size());
-    publishColorForElastic();
   }
 
   // ==================== Pattern Declaration ====================
@@ -272,13 +271,5 @@ public class LEDController extends SubsystemBase {
 
     attackBandOffset += 0.3;
     if (attackBandOffset > halfLength) attackBandOffset = 0;
-  }
-
-  private void publishColorForElastic() {
-    int len = buffer.getLength();
-    for (int i = 0; i < len; i++) {
-      Color c = buffer.getLED(i);
-      SmartDashboard.putString("LED/LED" + i, c.toHexString());
-    }
   }
 }

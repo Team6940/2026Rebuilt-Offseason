@@ -85,12 +85,9 @@ public class GamePeriodReminder extends SubsystemBase {
     }
 
     String gameData = DriverStation.getGameSpecificMessage();
-    if (gameData == null || gameData.isEmpty()) return true;
+    if (gameData.isEmpty()) return true;
 
-    char firstChar = gameData.charAt(0);
-    if (firstChar != 'R' && firstChar != 'B') return true;
-
-    boolean redInactiveFirst = firstChar == 'R';
+    boolean redInactiveFirst = gameData.charAt(0) == 'R';
 
     boolean shift1Active;
     if (alliance.get() == edu.wpi.first.wpilibj.DriverStation.Alliance.Red) {

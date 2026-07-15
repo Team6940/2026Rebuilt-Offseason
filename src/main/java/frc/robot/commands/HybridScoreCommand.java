@@ -137,7 +137,7 @@ public class HybridScoreCommand extends Command {
             aimHeadingFix,
             Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
             driverInput.getNorm() > DriverTranslationFineTuneDeadband);
-        indexer.feed();
+
         runShootSequence(finalHoodDegsFix, ready, fire);
         if (!fire) {
           transitionTo(ready ? ShootPhase.READY : ShootPhase.AIM);
@@ -215,6 +215,14 @@ public class HybridScoreCommand extends Command {
     double now = Timer.getFPGATimestamp();
     switch (shootSequence) {
       case FEEDING -> {
+        if (Constants.currentMode == Constants.Mode.SIM
+            && fire
+            && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec
+            && ready) {
+          shooter.simulateLaunch(90. - finalHoodDegs);
+          lastSimVolleySec = now;
+        }
+        indexer.feed();
         if (now - shootSequenceStartSec >= FeedDurationSec) {
           superStructure.setIntakeMode(IntakeMode.RETRACTED);
           shootSequence = ShootSequence.RETRACT_WAIT;
@@ -222,6 +230,7 @@ public class HybridScoreCommand extends Command {
         }
       }
       case RETRACT_WAIT -> {
+        indexer.feed();
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
           shootSequence = ShootSequence.COMPLETE;
         }
@@ -263,6 +272,7 @@ public class HybridScoreCommand extends Command {
       double now = Timer.getFPGATimestamp();
       shootSequenceStartSec = now;
       lastSimVolleySec = now - FieldSimulationConstants.DumperVolleyPeriodSec;
+      indexer.feed();
     }
     superStructure.setShootPhase(next);
     Logger.recordOutput("Cmds/HybridScore/StateTransition", current + "->" + next);

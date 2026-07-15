@@ -138,15 +138,6 @@ public class HybridScoreCommand extends Command {
             Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
             driverInput.getNorm() > DriverTranslationFineTuneDeadband);
         indexer.feed();
-        double now = Timer.getFPGATimestamp();
-        if (Constants.currentMode == Constants.Mode.SIM
-            && fire
-            && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec
-            && ready) {
-          shooter.simulateLaunch(90. - finalHoodDegsFix);
-          lastSimVolleySec = now;
-        }
-        indexer.feed();
         runShootSequence(finalHoodDegsFix, ready, fire);
         if (!fire) {
           transitionTo(ready ? ShootPhase.READY : ShootPhase.AIM);

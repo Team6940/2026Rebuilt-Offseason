@@ -128,7 +128,7 @@ public class HybridPassCommand extends Command {
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
             () -> aimHeading);
-
+        indexer.feed();
         runShootSequence(finalHoodDegs, ready, fire);
         if (!fire) {
           transitionTo(ready ? ShootPhase.READY : ShootPhase.AIM);
@@ -253,7 +253,6 @@ public class HybridPassCommand extends Command {
       double now = Timer.getFPGATimestamp();
       shootSequenceStartSec = now;
       lastSimVolleySec = now - FieldSimulationConstants.DumperVolleyPeriodSec;
-      indexer.feed();
     }
     superStructure.setShootPhase(next);
     Logger.recordOutput("Cmds/HybridPass/StateTransition", current + "->" + next);

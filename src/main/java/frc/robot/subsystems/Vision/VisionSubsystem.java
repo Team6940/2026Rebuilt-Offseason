@@ -57,10 +57,6 @@ public class VisionSubsystem extends SubsystemBase {
       visionIO.updateInputs(limelightLeftInputs, photonFrontInputs, drive, fpgaNow);
     }
 
-    if (!Logger.hasReplaySource()) {
-      visionIO.updateInputs(limelightLeftInputs, photonFrontInputs, drive, fpgaNow);
-    }
-
     Logger.processInputs("Vision/LimelightLeft", limelightLeftInputs);
     // Logger.processInputs("Vision/LimelightRight", limelightRightInputs);
     // Logger.processInputs("Vision/PhotonBack", photonBackInputs);

@@ -31,7 +31,8 @@ public class HybridScoreCommand extends Command {
   private enum ShootSequence {
     FEEDING,
     RETRACT_WAIT,
-    COMPLETE
+    COMPLETE,
+    OUT
   }
 
   private final CommandSwerveDrivetrain drive;
@@ -224,15 +225,21 @@ public class HybridScoreCommand extends Command {
         }
         indexer.feed();
         if (now - shootSequenceStartSec >= FeedDurationSec) {
-          superStructure.setIntakeMode(IntakeMode.RETRACTED);
           shootSequence = ShootSequence.RETRACT_WAIT;
           shootSequenceStartSec = now;
         }
       }
       case RETRACT_WAIT -> {
         indexer.feed();
+        superStructure.setIntakeMode(IntakeMode.RETRACTED);
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
-          shootSequence = ShootSequence.COMPLETE;
+          shootSequence = ShootSequence.OUT;
+        }
+      } case OUT -> {
+        indexer.feed();
+        superStructure.setIntakeMode(IntakeMode.INTAKE);
+        if (now - shootSequenceStartSec >= PostOutWaitSec) {
+          shootSequence = ShootSequence.RETRACT_WAIT;
         }
       }
       default -> {}

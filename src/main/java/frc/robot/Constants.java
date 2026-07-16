@@ -641,8 +641,10 @@ public final class Constants {
     public static final double DriverTranslationFineTuneDeadband = 0.3;
 
     // --- SHOOT: indexer feed, then intake retract timing ---
-    public static final double FeedDurationSec = 0.3;
-    public static final double PostRetractWaitSec = 0.4;
+    public static final double FeedDurationSec = 0.45;
+    public static final double PostRetractWaitSec = 0.65;
+    public static final double PostOutWaitSec = 0.35;
+
 
     // --- Operator RPS offset steps (B / A / X / Y) ---
     public static final double RpsOffsetB = -1.0;
@@ -656,7 +658,7 @@ public final class Constants {
     public static final double IndexerRatio = 1.0;
     public static final InvertedValue FeederInverted = InvertedValue.Clockwise_Positive;
     public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
-    public static final double FeederSupplyCurrentLimit = 30.0;
+    public static final double FeederSupplyCurrentLimit = 120.0;
     public static final double IndexerSupplyCurrentLimit = 20.0;
     public static final double FeederkP = 0.1;
     public static final double FeederkI = 0.0;

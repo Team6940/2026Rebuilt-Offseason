@@ -206,14 +206,14 @@ public class HybridPassCommand extends Command {
           lastSimVolleySec = now;
         }
         if (now - shootSequenceStartSec >= FeedDurationSec) {
-          superStructure.setIntakeMode(IntakeMode.RETRACTED);
           shootSequence = ShootSequence.RETRACT_WAIT;
           shootSequenceStartSec = now;
         }
       }
       case RETRACT_WAIT -> {
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
-          shootSequence = ShootSequence.COMPLETE;
+          superStructure.setIntakeMode(IntakeMode.RETRACTED);
+          shootSequence = ShootSequence.FEEDING;
         }
       }
       default -> {}

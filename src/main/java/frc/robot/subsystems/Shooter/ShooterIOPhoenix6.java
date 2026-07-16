@@ -31,7 +31,7 @@ public class ShooterIOPhoenix6 implements ShooterIO {
 
   private void configureLeaderA(TalonFX motor) {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = ShooterConstants.ShooterRatio;
     config.Slot0.kP = ShooterConstants.kP;
     config.Slot0.kI = ShooterConstants.kI;
@@ -48,7 +48,7 @@ public class ShooterIOPhoenix6 implements ShooterIO {
 
   private void configureLeaderB(TalonFX motor) {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = ShooterConstants.ShooterRatio;
     config.Slot0.kP = ShooterConstants.kP;
     config.Slot0.kI = ShooterConstants.kI;
@@ -65,14 +65,14 @@ public class ShooterIOPhoenix6 implements ShooterIO {
 
   private void configureFollowerA(TalonFX motor) {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = ShooterConstants.AInverted;
     motor.getConfigurator().apply(config);
   }
 
   private void configureFollowerB(TalonFX motor) {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = ShooterConstants.BInverted;
     motor.getConfigurator().apply(config);
   }

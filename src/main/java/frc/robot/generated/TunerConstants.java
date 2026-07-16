@@ -98,7 +98,7 @@ public class TunerConstants {
   public static final Frequency kCANivoreUpdateFrequency = Hertz.of(120);
 
   /** Swerve odometry thread and CANivore swerve signal rate (Hz). */
-  public static final double kOdometryUpdateFrequencyHz = 200.0;
+  public static final double kOdometryUpdateFrequencyHz = 120.0;
 
   // Measured robot speed (m/s) at 12 V applied output;
   // This is NOT the desired max robot speed - see MaxSpeed in RobotContainer

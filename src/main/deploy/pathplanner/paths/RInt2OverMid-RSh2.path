@@ -51,11 +51,11 @@
     },
     {
       "waypointRelativePos": 1.027257240204429,
-      "rotationDegrees": -90.0
+      "rotationDegrees": -52.1696538185393
     },
     {
       "waypointRelativePos": 1.7935483870967743,
-      "rotationDegrees": -90.0
+      "rotationDegrees": -51.529651300054645
     }
   ],
   "constraintZones": [
@@ -88,7 +88,7 @@
     "rotation": -132.657
   },
   "reversed": false,
-  "folder": "RStep3",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": -117.5820292077971

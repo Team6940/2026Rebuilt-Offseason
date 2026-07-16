@@ -132,7 +132,7 @@ public final class Constants {
   }
 
   public final class DriveConstants {
-    public static final double Deadband = 0.05;
+    public static final double Deadband = 0.08;
 
     /** Maximum seconds AttackMode stays active per enable. */
     public static final double AttackModeTimeoutSec = 10.0;
@@ -142,10 +142,10 @@ public final class Constants {
     public static final double AngleMaxVelocity = 8.0;
     public static final double AngleMaxAcceleration = 20.0;
 
-    public static final double AutoAimAnglekP = 5.0;
+    public static final double AutoAimAnglekP = 9.0;
 
     public static final double AutoAimAnglekI = 0.0;
-    public static final double AutoAimAnglekD = 0.1;
+    public static final double AutoAimAnglekD = 0.35;
 
     /**
      * Drive motor supply limit (A) while {@code driveAutoAim} is active; frees battery for shooter.
@@ -624,7 +624,7 @@ public final class Constants {
   /** Tuning for hybrid shoot commands ({@link frc.robot.commands.HybridScoreCommand}). */
   public static final class HybridShootConstants {
     // --- Ready gate (AIM to READY) ---
-    public static final double HeadingToleranceDegs = 23.;
+    public static final double HeadingToleranceDegs = 14.;
     public static final double HoodToleranceDegs = 3.;
     public static final double ShooterToleranceRpsLower = 3.;
     public static final double ShooterToleranceRpsHigher = 2.;

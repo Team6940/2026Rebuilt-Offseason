@@ -57,7 +57,7 @@ public class RobotContainer {
   private final CommandSwerveDrivetrain drive;
   private final VisionSubsystem vision;
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
-  private final LEDController leds = LEDController.getInstance();
+//   private final LEDController leds = LEDController.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
@@ -112,7 +112,7 @@ public class RobotContainer {
 
     intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
     shooter.setDefaultCommand(superStructure.getHeatupCommand());
-    leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
+    // leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
     indexer.setDefaultCommand(superStructure.getIndexerDefaultCommand());
 
     configureButtonBindings();

@@ -86,10 +86,10 @@
     "rotation": -129.65752202740978
   },
   "reversed": false,
-  "folder": "RStep3",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -88.9271628633808
+    "rotation": -45.52370028294881
   },
   "useDefaultConstraints": true
 }

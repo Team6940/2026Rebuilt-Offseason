@@ -112,7 +112,7 @@ public class LEDController extends SubsystemBase {
     Logger.recordOutput("LED/ShootPhase", shootPhase.name());
     Logger.recordOutput("LED/IsDisabled", DriverStation.isDisabled());
     Logger.recordOutput("LED/LayerCount", layers.size());
-    publishColorForElastic();
+    // publishColorForElastic();
   }
 
   // ==================== Pattern Declaration ====================

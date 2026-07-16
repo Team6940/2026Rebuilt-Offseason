@@ -63,7 +63,7 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.LimelightHelpers;
-import frc.robot.subsystems.Vision.VisionSubsystem;
+// import frc.robot.subsystems.Vision.VisionSubsystem;
 import frc.robot.util.LocalADStarAK;
 import java.util.List;
 import java.util.Optional;
@@ -672,10 +672,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public static Translation2d getLinearVelocityMagnitudeFromJoysticks(double x, double y) {
     Translation2d input = new Translation2d(x, y);
-    if (input.getNorm() < DriveConstants.Deadband) {
+    if (input.getNorm() < DriveConstants.TranslationDeadband) {
       return new Translation2d();
     } else {
-      double norm = MathUtil.applyDeadband(input.getNorm(), DriveConstants.Deadband);
+      double norm = MathUtil.applyDeadband(input.getNorm(), DriveConstants.TranslationDeadband);
       return input.times(1.0 / input.getNorm()).times(Math.pow(norm, 2.0));
     }
   }
@@ -1480,7 +1480,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     LimelightHelpers.PoseEstimate mt2 =
         LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(RobotContainer.limelightBack);
     if (mt2 == null) {
-      DriverStation.reportWarning(RobotContainer.limelightBack + " Diconnected!", false);
+      DriverStation.reportWarning("Limelight Disconnected!", false);
+      Logger.recordOutput("Vision/Connected", false);
+      Logger.recordOutput("Vision/TagCount", 0);
+      Logger.recordOutput("Vision/AvgTagDist", 0.0);
+      Logger.recordOutput("Vision/AvgTagArea", 0.0);
+      Logger.recordOutput("Vision/RawPose", new Pose2d());
+      Logger.recordOutput("Vision/AcceptedPose", new Pose2d[] {});
+      Logger.recordOutput("Vision/RejectedPose", new Pose2d[] {});
+      Logger.recordOutput("Vision/GateOmegaOk", false);
+      Logger.recordOutput("Vision/GateHasTag", false);
+      Logger.recordOutput("Vision/GateDistOk", false);
+      Logger.recordOutput("Vision/GateVelOk", false);
+      Logger.recordOutput("Vision/Accepted", false);
       return;
     }
     var tagDistRobotM = mt2.avgTagDist;
@@ -1491,9 +1503,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       Logger.recordOutput("VisionFusion/Limelight/Accepted", false);
       return;
     }
+    // Raw measurement data — always logged regardless of acceptance
+    Logger.recordOutput("Vision/Connected", true);
+    Logger.recordOutput("Vision/TagCount", mt2.tagCount);
+    Logger.recordOutput("Vision/AvgTagDist", mt2.avgTagDist);
+    Logger.recordOutput("Vision/AvgTagArea", mt2.avgTagArea);
+    Logger.recordOutput("Vision/RawPose", mt2.pose);
     addVisionMeasurement(
         mt2.pose,
-        Utils.fpgaToCurrentTime(mt2.timestampSeconds),
+        mt2.timestampSeconds,
         VecBuilder.fill(
             PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
             PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),

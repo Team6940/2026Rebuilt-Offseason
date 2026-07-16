@@ -133,6 +133,8 @@ public final class Constants {
 
   public final class DriveConstants {
     public static final double Deadband = 0.08;
+    public static final double TranslationDeadband = 0.1;
+
 
     /** Maximum seconds AttackMode stays active per enable. */
     public static final double AttackModeTimeoutSec = 10.0;

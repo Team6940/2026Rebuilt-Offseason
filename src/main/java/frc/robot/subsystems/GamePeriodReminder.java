@@ -85,8 +85,9 @@ public class GamePeriodReminder extends SubsystemBase {
     }
 
     String gameData = DriverStation.getGameSpecificMessage();
+    if (gameData == null) return true;
     if (gameData.isEmpty()) return true;
-
+    if (gameData.charAt(0) != 'R' || gameData.charAt(0) != 'B' ) return true;
     boolean redInactiveFirst = gameData.charAt(0) == 'R';
 
     boolean shift1Active;

@@ -19,6 +19,7 @@ import frc.robot.commands.Autos.LeftDepotSingleSwipe;
 import frc.robot.commands.Autos.LeftDoubleSwipe;
 import frc.robot.commands.Autos.RightDoubleSwipe;
 import frc.robot.commands.Autos.RightDoubleSwipeOverMid;
+import frc.robot.commands.Autos.RightDoubleSwipeTrench;
 import frc.robot.commands.Autos.RightSingleSwipeToOppHub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
@@ -57,7 +58,7 @@ public class RobotContainer {
   private final CommandSwerveDrivetrain drive;
   // private final VisionSubsystem vision;
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
-//   private final LEDController leds = LEDController.getInstance();
+  //   private final LEDController leds = LEDController.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
@@ -92,6 +93,7 @@ public class RobotContainer {
     autoChooser.addOption("LeftDepotSingleSwipe", new LeftDepotSingleSwipe());
     autoChooser.addOption("RightDoubleSwipeOverMid", new RightDoubleSwipeOverMid());
     autoChooser.addOption("RightSingleSwipeToOppHub", new RightSingleSwipeToOppHub());
+    autoChooser.addOption("RightDoubleSwipeTrench", new RightDoubleSwipeTrench());
     autoChooser.addOption("LeftDepot", new LeftDepot());
 
     // Set up SysId routines

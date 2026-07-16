@@ -27,12 +27,20 @@ public class IntakeDefaultCommand extends Command {
   }
 
   private void runIntake() {
-    intake.setRollerRps(IntakeConstants.IntakingRps);
+    if(superStructure.getIntakeLowerRPSEnabled()) {
+      intake.setRollerRps(IntakeConstants.IntakingRpsLower);
+    } else {
+      intake.setRollerRps(IntakeConstants.IntakingRps);
+    }
     intake.setRackPosition(IntakeConstants.RackExtendedRotations);
   }
 
   private void runHybrid() {
-    intake.setRollerRps(IntakeConstants.IntakingRps);
+    if(superStructure.getIntakeLowerRPSEnabled()) {
+      intake.setRollerRps(IntakeConstants.IntakingRpsLower);
+    } else {
+      intake.setRollerRps(IntakeConstants.IntakingRps);
+    }
     intake.setRackPosition(IntakeConstants.RackExtendedRotations);
   }
 

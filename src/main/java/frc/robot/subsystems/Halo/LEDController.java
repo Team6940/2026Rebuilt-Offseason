@@ -77,42 +77,13 @@ public class LEDController extends SubsystemBase {
     this.chassisRightView =
         buffer.createView(Settings.LED.ChassisRight[0], Settings.LED.ChassisRight[1]);
 
-    Settings.LEDs.OFF.applyTo(buffer);
+    Settings.LEDs.DISABLED.applyTo(buffer);
+    led.setData(buffer);
   }
 
   @Override
   public void periodic() {
-    var ss = SuperStructure.getInstance();
-    ChassisMode chassisMode = ss.getChassisMode();
-    ShootPhase shootPhase = ss.getShootPhase();
-
-    if (DriverStation.isDisabled()) {
-      Settings.LEDs.DISABLED.breathe(Units.Seconds.of(2)).applyTo(buffer);
-    } else {
-      // 1. Push new layer on phase transition
-      applyPattern(shootPhase, ss);
-
-      // 2. Advance all layers, render bottom-up
-      applyAnimation();
-
-      // 3. Chassis sides — only when not in Shooting mode
-      if (chassisMode != ChassisMode.SHOOTING) {
-        LEDPattern chassisPattern = getChassisModePattern(chassisMode, shootPhase);
-        chassisPattern.applyTo(chassisLeftView);
-        chassisPattern.applyTo(chassisRightView);
-      }
-      // ATTACK: overlay rolling band
-      if (chassisMode == ChassisMode.ATTACKMODE) {
-        applyAttackBand();
-      }
-    }
-
-    led.setData(buffer);
-    Logger.recordOutput("LED/ChassisMode", chassisMode.name());
-    Logger.recordOutput("LED/ShootPhase", shootPhase.name());
-    Logger.recordOutput("LED/IsDisabled", DriverStation.isDisabled());
-    Logger.recordOutput("LED/LayerCount", layers.size());
-    // publishColorForElastic();
+    // The purple startup pattern is applied once in the constructor to keep loop time low.
   }
 
   // ==================== Pattern Declaration ====================

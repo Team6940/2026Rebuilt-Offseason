@@ -58,7 +58,7 @@ public class RobotContainer {
   private final CommandSwerveDrivetrain drive;
   // private final VisionSubsystem vision;
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
-  //   private final LEDController leds = LEDController.getInstance();
+  private final LEDController leds = LEDController.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
@@ -148,7 +148,7 @@ public class RobotContainer {
             .rightBumper()
             .or(driverController.rightTrigger().and(driverController.y().negate()));
     Trigger hybridPass = driverController.y().and(driverController.rightBumper().negate());
-    Trigger hybridManual = operatorController.povLeft();
+    Trigger hybridManual = operatorController.povDown();
     Trigger hybridTrenchDrive =
         driverController
             .a()
@@ -186,8 +186,11 @@ public class RobotContainer {
     hybridTrenchDrive.whileTrue(superStructure.getHybridTrenchCommand());
 
     operatorController
-        .povDown()
+        .povUp()
         .onTrue(Commands.runOnce(superStructure::resetAllModes, superStructure));
+    operatorController.povLeft().onTrue(Commands.runOnce(() -> superStructure.setIntakeLowerRPSEnabled(true)));
+    operatorController.povRight().onTrue(Commands.runOnce(() -> superStructure.setIntakeLowerRPSEnabled(false)));
+
 
     driverController.x().onTrue(Commands.runOnce(superStructure::stopDriveWithX, drive));
     driverController

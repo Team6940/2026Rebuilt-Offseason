@@ -102,6 +102,7 @@ public class SuperStructure extends SubsystemBase {
   private boolean attackModeActive = false;
   private final Timer attackModeTimer = new Timer();
   private boolean fieldCentricEnbaled = true;
+  private boolean intakelowerRPSEnabled = false;
 
   /** AIM-phase readiness flags for LED progress visualization. */
   private boolean atAngle = false;
@@ -212,6 +213,14 @@ public class SuperStructure extends SubsystemBase {
 
   public void toggleFieldCentricEnabled() {
     fieldCentricEnbaled = fieldCentricEnbaled ? false : true;
+  }
+
+  public boolean getIntakeLowerRPSEnabled() {
+    return intakelowerRPSEnabled;
+  }
+
+  public void setIntakeLowerRPSEnabled(boolean enabled) {
+    intakelowerRPSEnabled = enabled;
   }
 
   /** Switches chassis current-limit profile. Saves previous mode when entering SHOOTING. */

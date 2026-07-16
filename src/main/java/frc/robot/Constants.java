@@ -145,7 +145,7 @@ public final class Constants {
     public static final double AutoAimAnglekP = 5.0;
 
     public static final double AutoAimAnglekI = 0.0;
-    public static final double AutoAimAnglekD = 0.1;
+    public static final double AutoAimAnglekD = 0.3;
 
     /**
      * Drive motor supply limit (A) while {@code driveAutoAim} is active; frees battery for shooter.

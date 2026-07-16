@@ -26,6 +26,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.MathUsageId;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -44,6 +45,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -52,12 +54,16 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.PoseEstimatorConstants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.Constants.VisionFusion;
+import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.LimelightHelpers;
+import frc.robot.subsystems.Vision.VisionSubsystem;
 import frc.robot.util.LocalADStarAK;
 import java.util.List;
 import java.util.Optional;
@@ -563,6 +569,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   @Override
   public void periodic() {
+    updateOdometry();
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       DriverStation.getAlliance()
           .ifPresent(
@@ -892,7 +899,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       boolean operatorTrimmingHeading,
       boolean driverTrimmingTranslation) {
     SuperStructure.getInstance().setChassisMode(SuperStructure.ChassisMode.SHOOTING);
-    if (operatorTrimmingHeading || driverTrimmingTranslation || !MathUtil.isNear(targetRotation.getDegrees(), getRotation().getDegrees(), 1.5)) {
+    if (operatorTrimmingHeading
+        || driverTrimmingTranslation
+        || !MathUtil.isNear(targetRotation.getDegrees(), getRotation().getDegrees(), 1.5)) {
       driveAutoAim(
           xSupplier, ySupplier, () -> targetRotation, getMaxLinearSpeedMetersPerSec() * 0.2);
     } else {
@@ -1463,5 +1472,60 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Override
   public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
     return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
+  }
+
+  public void updateOdometry() {
+    LimelightHelpers.SetRobotOrientation(
+        RobotContainer.limelightBack, getPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+    LimelightHelpers.PoseEstimate mt2 =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(RobotContainer.limelightBack);
+    if (mt2 == null) {
+      DriverStation.reportWarning(RobotContainer.limelightBack + " Diconnected!", false);
+      return;
+    }
+    var tagDistRobotM = mt2.avgTagDist;
+    var fpgaNow = Timer.getFPGATimestamp();
+    var speeds = getChassisSpeeds();
+    if (this.shouldReject(
+        mt2.avgTagArea, mt2.tagCount, mt2.timestampSeconds, tagDistRobotM, fpgaNow, speeds)) {
+      Logger.recordOutput("VisionFusion/Limelight/Accepted", false);
+      return;
+    }
+    addVisionMeasurement(
+        mt2.pose,
+        Utils.fpgaToCurrentTime(mt2.timestampSeconds),
+        VecBuilder.fill(
+            PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
+            PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
+            100000000));
+    PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea);
+  }
+
+  private boolean shouldReject(
+      double ta,
+      int tagCount,
+      double measurementTimestampSeconds,
+      double tagDistanceMeters,
+      double fpgaNow,
+      ChassisSpeeds chassisSpeeds) {
+
+    if (ta < VisionFusion.REJECT_MIN_TA) {
+      return true;
+    }
+    if (tagCount <= 0) {
+      return true;
+    }
+    if (tagDistanceMeters > VisionFusion.REJECT_MAX_DISTANCE_METERS) {
+      return true;
+    }
+    if (fpgaNow - measurementTimestampSeconds > VisionFusion.REJECT_STALE_SECONDS) {
+      return true;
+    }
+    if (VisionFusion.REJECT_ON_HIGH_OMEGA
+        && Math.abs(chassisSpeeds.omegaRadiansPerSecond)
+            > VisionFusion.REJECT_MAX_OMEGA_RAD_PER_SEC) {
+      return true;
+    }
+    return false;
   }
 }

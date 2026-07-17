@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6729241071428569,
-        "y": 4.791934523809524
+        "x": 1.0438273525776836,
+        "y": 4.974428573004944
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6033381667198578,
-        "y": 5.110186552801825
+        "x": 0.9742414121546845,
+        "y": 5.292680601997245
       },
       "isLocked": false,
       "linkedName": "L-AftSh3"
@@ -157,13 +157,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 88.0238179435744
+    "rotation": 49.57405938425928
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "LStep2",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 167.105
+    "rotation": 163.7564186357914
   },
   "useDefaultConstraints": true
 }

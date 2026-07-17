@@ -49,11 +49,11 @@
     {
       "anchor": {
         "x": 2.4716716874117237,
-        "y": 1.3082619946151124
+        "y": 1.3079999999999998
       },
       "prevControl": {
         "x": 2.408575377383475,
-        "y": 0.8260881223516934
+        "y": 0.8258261277365815
       },
       "nextControl": null,
       "isLocked": false,
@@ -83,10 +83,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -129.65752202740978
+    "rotation": -134.36312019035103
   },
   "reversed": false,
-  "folder": null,
+  "folder": "RStep3",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -45.52370028294881

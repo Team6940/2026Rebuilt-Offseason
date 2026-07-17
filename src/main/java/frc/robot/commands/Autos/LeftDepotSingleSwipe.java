@@ -49,13 +49,13 @@ public class LeftDepotSingleSwipe extends SequentialCommandGroup {
     addCommands(drive.followPPPath("LDepot-LSh3"));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
-
+    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh3-LInt2b"));
     addCommands(drive.followPPPath("LInt2-LSh2"));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
-
+    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh2-LEndInt3"));
   }

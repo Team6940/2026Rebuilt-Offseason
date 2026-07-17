@@ -14,13 +14,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Ports.LED;
-import frc.robot.commands.Autos.LeftDepot;
-import frc.robot.commands.Autos.LeftDepotSingleSwipe;
-import frc.robot.commands.Autos.LeftDoubleSwipe;
-import frc.robot.commands.Autos.RightDoubleSwipe;
-import frc.robot.commands.Autos.RightDoubleSwipeOverMid;
-import frc.robot.commands.Autos.RightDoubleSwipeTrench;
-import frc.robot.commands.Autos.RightSingleSwipeToOppHub;
+import frc.robot.commands.Autos.*;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FieldSimulation;
@@ -88,13 +82,15 @@ public class RobotContainer {
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
-    autoChooser.addOption("LeftDoubleSwipe", new LeftDoubleSwipe());
+
     autoChooser.addOption("RightDoubleSwipe", new RightDoubleSwipe());
-    autoChooser.addOption("LeftDepotSingleSwipe", new LeftDepotSingleSwipe());
     autoChooser.addOption("RightDoubleSwipeOverMid", new RightDoubleSwipeOverMid());
-    autoChooser.addOption("RightSingleSwipeToOppHub", new RightSingleSwipeToOppHub());
     autoChooser.addOption("RightDoubleSwipeTrench", new RightDoubleSwipeTrench());
+    autoChooser.addOption("LeftDoubleSwipe", new LeftDoubleSwipe());
+    autoChooser.addOption("LeftDoubleSwipeOverMid", new LeftDoubleSwipeOverMid());
+    autoChooser.addOption("LeftDoubleSwipeTrench", new LeftDoubleSwipeTrench());
     autoChooser.addOption("LeftDepot", new LeftDepot());
+    autoChooser.addOption("LeftDepotSingleSwipe", new LeftDepotSingleSwipe());
 
     // Set up SysId routines
     // autoChooser.addOption(
@@ -188,9 +184,12 @@ public class RobotContainer {
     operatorController
         .povUp()
         .onTrue(Commands.runOnce(superStructure::resetAllModes, superStructure));
-    operatorController.povLeft().onTrue(Commands.runOnce(() -> superStructure.setIntakeLowerRPSEnabled(true)));
-    operatorController.povRight().onTrue(Commands.runOnce(() -> superStructure.setIntakeLowerRPSEnabled(false)));
-
+    operatorController
+        .povLeft()
+        .onTrue(Commands.runOnce(() -> superStructure.setIntakeLowerRPSEnabled(true)));
+    operatorController
+        .povRight()
+        .onTrue(Commands.runOnce(() -> superStructure.setIntakeLowerRPSEnabled(false)));
 
     driverController.x().onTrue(Commands.runOnce(superStructure::stopDriveWithX, drive));
     driverController

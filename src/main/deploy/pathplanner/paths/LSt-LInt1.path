@@ -91,7 +91,7 @@
     "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "LStep0",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -90.0

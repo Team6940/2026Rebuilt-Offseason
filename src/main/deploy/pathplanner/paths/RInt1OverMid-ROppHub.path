@@ -110,7 +110,7 @@
     "rotation": -45.3767689524804
   },
   "reversed": false,
-  "folder": null,
+  "folder": "RStep1",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 90.0

@@ -28,10 +28,15 @@ public class RightDoubleSwipeTrench extends SequentialCommandGroup {
         new InstantCommand(
             () -> {
               if (DriverStation.getAlliance().get() == Alliance.Blue) {
-                drive.resetPose(drive.generatePPPath("RSt-RInt1").getStartingHolonomicPose().get());
+                drive.resetPose(
+                    drive.generatePPPath("RSt-RInt1OverMid").getStartingHolonomicPose().get());
               } else {
                 drive.resetPose(
-                    drive.generatePPPath("RSt-RInt1").flipPath().getStartingHolonomicPose().get());
+                    drive
+                        .generatePPPath("RSt-RInt1OverMid")
+                        .flipPath()
+                        .getStartingHolonomicPose()
+                        .get());
               }
             }));
 
@@ -39,16 +44,16 @@ public class RightDoubleSwipeTrench extends SequentialCommandGroup {
     addCommands(
         superStructure.runOnce(
             () -> superStructure.setShootPhase(SuperStructure.ShootPhase.HEATUP)));
-    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
+    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(40.)));
     addCommands(
         drive
-            .followPPPath("RSt-RInt1")
+            .followPPPath("RSt-RInt1OverMid")
             .alongWith(
                 Commands.waitSeconds(0.3)
                     .andThen(
                         superStructure.runOnce(
                             () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
-    addCommands(drive.followPPPath("RInt1-RTrenchSh1"));
+    addCommands(drive.followPPPath("RInt1OverMid-RTrenchSh1"));
     addCommands(
         superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
 

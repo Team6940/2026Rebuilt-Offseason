@@ -46,8 +46,12 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.6123260437375752,
-      "rotationDegrees": -145.06517025923773
+      "waypointRelativePos": 0.3924583773784355,
+      "rotationDegrees": -136.84269685594967
+    },
+    {
+      "waypointRelativePos": 0.6859474101479915,
+      "rotationDegrees": -133.43524230736162
     },
     {
       "waypointRelativePos": 1.073558648111332,
@@ -74,7 +78,7 @@
     "rotation": -137.229
   },
   "reversed": false,
-  "folder": null,
+  "folder": "RStep1",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 90.0

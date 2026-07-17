@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4395200376157415,
-        "y": 6.212613570601852
+        "x": 2.8577494924081925,
+        "y": 5.5121020369879945
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2743034605146404,
-        "y": 7.153566992014197
+        "x": 2.6925329153070914,
+        "y": 6.453055458400339
       },
       "isLocked": false,
       "linkedName": "L-AftSh2"
@@ -50,10 +50,10 @@
     "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "LStep4",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 135.0
+    "rotation": 136.2624914586181
   },
   "useDefaultConstraints": true
 }

@@ -216,13 +216,6 @@ public class HybridScoreCommand extends Command {
     double now = Timer.getFPGATimestamp();
     switch (shootSequence) {
       case FEEDING -> {
-        if (Constants.currentMode == Constants.Mode.SIM
-            && fire
-            && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec
-            && ready) {
-          shooter.simulateLaunch(90. - finalHoodDegs);
-          lastSimVolleySec = now;
-        }
         indexer.feed();
         if (now - shootSequenceStartSec >= FeedDurationSec) {
           shootSequence = ShootSequence.RETRACT_WAIT;
@@ -235,7 +228,8 @@ public class HybridScoreCommand extends Command {
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
           shootSequence = ShootSequence.OUT;
         }
-      } case OUT -> {
+      }
+      case OUT -> {
         indexer.feed();
         superStructure.setIntakeMode(IntakeMode.INTAKE);
         if (now - shootSequenceStartSec >= PostOutWaitSec) {
@@ -243,6 +237,13 @@ public class HybridScoreCommand extends Command {
         }
       }
       default -> {}
+    }
+    if (Constants.currentMode == Constants.Mode.SIM
+        && fire
+        && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec
+        && ready) {
+      shooter.simulateLaunch(90. - finalHoodDegs);
+      lastSimVolleySec = now;
     }
   }
 

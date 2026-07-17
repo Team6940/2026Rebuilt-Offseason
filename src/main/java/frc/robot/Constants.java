@@ -630,7 +630,7 @@ public final class Constants {
     public static final double HeadingToleranceDegs = 14.;
     public static final double HoodToleranceDegs = 3.;
     public static final double ShooterToleranceRpsLower = 3.;
-    public static final double ShooterToleranceRpsHigher = 2.;
+    public static final double ShooterToleranceRpsHigher = 1.;
 
     // --- Operator trims (AIM / READY) ---
     public static final double AimHeadingCompRangeDegs = 10.0;

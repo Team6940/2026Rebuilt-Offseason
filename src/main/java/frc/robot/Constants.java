@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.generated.TunerConstants;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -135,7 +136,6 @@ public final class Constants {
   public final class DriveConstants {
     public static final double Deadband = 0.08;
     public static final double TranslationDeadband = 0.1;
-
 
     /** Maximum seconds AttackMode stays active per enable. */
     public static final double AttackModeTimeoutSec = 10.0;
@@ -645,7 +645,6 @@ public final class Constants {
     public static final double PostRetractWaitSec = 0.65;
     public static final double PostOutWaitSec = 0.35;
 
-
     // --- Operator RPS offset steps (B / A / X / Y) ---
     public static final double RpsOffsetB = -1.0;
     public static final double RpsOffsetA = -2.0;
@@ -660,11 +659,13 @@ public final class Constants {
     public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
     public static final double FeederSupplyCurrentLimit = 120.0;
     public static final double IndexerSupplyCurrentLimit = 20.0;
-    public static final double FeederkP = 0.1;
+    public static final double FeederkP = 12;
     public static final double FeederkI = 0.0;
     public static final double FeederkD = 0.0;
-    public static final double FeederkV = 0.12;
-    public static final double FeederkS = 0.31;
+    public static final double FeederkV = 0.04;
+    public static final double FeederkS = 4.5;
+    public static final boolean FeederStatorCurrentLimitEnable = true;
+    public static final double FeederStatorCurrentLimit = 120.;
     public static final double IndexerkP = 0.1;
     public static final double IndexerkI = 0.0;
     public static final double IndexerkD = 0.0;

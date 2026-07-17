@@ -83,7 +83,7 @@ public class IndexerSubsystem extends SubsystemBase {
         feederReversing = false;
       } else {
         io.setFeederRps(-IndexerConstants.FeedRps);
-        io.setIndexerRps(requestedIndexerRps);
+        io.setIndexerRps(-IndexerConstants.IndexerRps);
         return;
       }
     }
@@ -95,7 +95,7 @@ public class IndexerSubsystem extends SubsystemBase {
       feederReversing = true;
       feederReverseEndTimestamp = now + IndexerConstants.FeederJamReverseDurationSec;
       io.setFeederRps(-IndexerConstants.FeedRps);
-      io.setIndexerRps(requestedIndexerRps);
+      io.setIndexerRps(-IndexerConstants.IndexerRps);
       return;
     }
 

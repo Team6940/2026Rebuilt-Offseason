@@ -51,7 +51,7 @@ public class HybridScoreCommand extends Command {
   private double rpsOffset = 0.0;
   private double hoodCompDegs = 0.0;
   private double headingCompDegs = 0.0;
-  private double shootHeadingFineTuneDegs = 0.0;
+  private double shootHeadingFineTuneMagnitude = 0.0;
   private double lastSimVolleySec = 0.0;
 
   public HybridScoreCommand(CommandSwerveDrivetrain drive, Button shootButton) {
@@ -71,7 +71,7 @@ public class HybridScoreCommand extends Command {
     rpsOffset = 0.0;
     hoodCompDegs = 0.0;
     headingCompDegs = 0.0;
-    shootHeadingFineTuneDegs = 0.0;
+    shootHeadingFineTuneMagnitude = 0.0;
     lastSimVolleySec = 0.0;
     transitionTo(ShootPhase.AIM);
   }
@@ -90,16 +90,6 @@ public class HybridScoreCommand extends Command {
     double finalHoodDegsFix = planFix.hoodDegs + hoodCompDegs;
     double finalShooterRpsFix = planFix.shooterRps + rpsOffset;
     Rotation2d finalHeadingFix = planFix.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
-
-    if (superStructure.getShootPhase() == ShootPhase.SHOOT) {
-      shootHeadingFineTuneDegs =
-          ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
-      if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
-        finalHeadingFix =
-            finalHeadingFix.plus(
-                Rotation2d.fromDegrees(shootHeadingFineTuneDegs * AimHeadingCompRangeDegs));
-      }
-    }
 
     boolean ready = isReady(finalHoodDegsFix, finalShooterRpsFix, finalHeadingFix);
     boolean fire = driverController.getButton(shootButton);
@@ -136,7 +126,7 @@ public class HybridScoreCommand extends Command {
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
             aimHeadingFix,
-            Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
+            Math.abs(shootHeadingFineTuneMagnitude) > ShootHeadingFineTuneDeadband,
             driverInput.getNorm() > DriverTranslationFineTuneDeadband);
 
         runShootSequence(finalHoodDegsFix, ready, fire);
@@ -199,10 +189,12 @@ public class HybridScoreCommand extends Command {
       rpsOffset = RpsOffsetY;
     }
     hoodCompDegs =
-        ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY())
+        ImprovedCommandXboxController.applyInputCurve(
+                MathUtil.applyDeadband(-operatorController.getLeftY(), 0.2))
             * HoodCompRangeDegs;
     headingCompDegs =
-        ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX())
+        ImprovedCommandXboxController.applyInputCurve(
+                MathUtil.applyDeadband(-operatorController.getRightX(), 0.2))
             * AimHeadingCompRangeDegs;
   }
 

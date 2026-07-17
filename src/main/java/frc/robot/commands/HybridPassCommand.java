@@ -49,7 +49,7 @@ public class HybridPassCommand extends Command {
   private double rpsOffset = 0.0;
   private double hoodCompDegs = 0.0;
   private double headingCompDegs = 0.0;
-  private double shootHeadingFineTuneDegs = 0.0;
+  private double shootHeadingFineTuneMagnitude = 0.0;
   private double lastSimVolleySec = 0.0;
 
   public HybridPassCommand(CommandSwerveDrivetrain drive, Button shootButton) {
@@ -69,7 +69,7 @@ public class HybridPassCommand extends Command {
     rpsOffset = 0.0;
     hoodCompDegs = 0.0;
     headingCompDegs = 0.0;
-    shootHeadingFineTuneDegs = 0.0;
+    shootHeadingFineTuneMagnitude = 0.0;
     lastSimVolleySec = 0.0;
     transitionTo(ShootPhase.AIM);
   }
@@ -83,16 +83,6 @@ public class HybridPassCommand extends Command {
     double finalHoodDegs = plan.hoodDegs + hoodCompDegs;
     double finalShooterRps = plan.shooterRps + rpsOffset;
     Rotation2d finalHeading = plan.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
-
-    if (superStructure.getShootPhase() == ShootPhase.SHOOT) {
-      shootHeadingFineTuneDegs =
-          ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
-      if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
-        finalHeading =
-            finalHeading.plus(
-                Rotation2d.fromDegrees(shootHeadingFineTuneDegs * AimHeadingCompRangeDegs));
-      }
-    }
 
     boolean ready = isReady(finalHoodDegs, finalShooterRps, finalHeading);
     boolean fire = driverController.getButton(shootButton);
@@ -181,10 +171,12 @@ public class HybridPassCommand extends Command {
       rpsOffset = RpsOffsetY;
     }
     hoodCompDegs =
-        ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY())
+        ImprovedCommandXboxController.applyInputCurve(
+                MathUtil.applyDeadband(-operatorController.getLeftY(), 0.2))
             * HoodCompRangeDegs;
     headingCompDegs =
-        ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX())
+        ImprovedCommandXboxController.applyInputCurve(
+                MathUtil.applyDeadband(-operatorController.getRightX(), 0.2))
             * AimHeadingCompRangeDegs;
   }
 

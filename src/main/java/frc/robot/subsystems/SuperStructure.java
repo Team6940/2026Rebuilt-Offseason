@@ -89,9 +89,9 @@ public class SuperStructure extends SubsystemBase {
   }
 
   private final LoggedNetworkNumber manualShootVelocityRps =
-      new LoggedNetworkNumber("SmartDashboard/ShootVelocity", 0.0);
+      new LoggedNetworkNumber("SmartDashboard/ShootVelocity", 41.0);
   private final LoggedNetworkNumber manualHoodDegs =
-      new LoggedNetworkNumber("SmartDashboard/HoodDegs", 0.0);
+      new LoggedNetworkNumber("SmartDashboard/HoodDegs", 23.0);
 
   private DriveMode driveMode = DriveMode.MANUAL;
   private ControlMode controlMode = ControlMode.SCORE;

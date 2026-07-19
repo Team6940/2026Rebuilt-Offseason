@@ -139,12 +139,17 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // Drive priority (highest wins): AutoAim (Score/Pass/Manual) > HybridTrench > HybridIntake >
     // Manual
+
+    Trigger hybridPass = driverController.y().and(driverController.rightBumper().negate());
+    Trigger hybridManual = operatorController.povDown();
     Trigger hybridScore =
         driverController
             .rightBumper()
-            .or(driverController.rightTrigger().and(driverController.y().negate()));
-    Trigger hybridPass = driverController.y().and(driverController.rightBumper().negate());
-    Trigger hybridManual = operatorController.povDown();
+            .or(
+                driverController
+                    .rightTrigger()
+                    .and(driverController.y().negate())
+                    .and(hybridManual.negate()));
     Trigger hybridTrenchDrive =
         driverController
             .a()

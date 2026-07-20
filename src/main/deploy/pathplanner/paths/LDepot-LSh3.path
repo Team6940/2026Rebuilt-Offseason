@@ -8,7 +8,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.9151479830793642,
+        "x": 0.9151479830793641,
         "y": 5.936978248302097
       },
       "isLocked": false,
@@ -63,7 +63,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 163.7564186357914
+    "rotation": 163.75641863579142
   },
   "reversed": false,
   "folder": "LStep1",

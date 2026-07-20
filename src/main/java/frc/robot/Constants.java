@@ -542,9 +542,9 @@ public final class Constants {
       DistanceToShooterRps.put(3.4, 41.4);
       DistanceToShooterRps.put(3.6, 43.4);
       DistanceToShooterRps.put(4.1, 44.4);
-      DistanceToShooterRps.put(4.99, 46.9);
-      DistanceToShooterRps.put(5.2, 51.5);
-      DistanceToShooterRps.put(5.7, 53.5);
+      DistanceToShooterRps.put(4.99, 49.9);
+      DistanceToShooterRps.put(5.2, 53.5);
+      DistanceToShooterRps.put(5.7, 55.5);
 
       DistanceToHoodDegs.put(0.947, 17.842);
       DistanceToHoodDegs.put(1.32, 17.842);
@@ -674,7 +674,7 @@ public final class Constants {
     public static final MotorAlignmentValue IndexerFollowerAlignment = MotorAlignmentValue.Opposed;
     public static final MotorAlignmentValue FeederFollowerAlignment = MotorAlignmentValue.Aligned;
     public static final double FeedRps = 75.0;
-    public static final double IndexerRps = 60.0;
+    public static final double IndexerRps = 70.0;
     public static final double FeederJamCurrentThresholdA = 160.0;
     public static final double FeederJamDebounceSec = 0.2;
     public static final double FeederJamReverseDurationSec = 0.5;

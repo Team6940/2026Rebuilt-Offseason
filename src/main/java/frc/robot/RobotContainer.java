@@ -139,9 +139,12 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // Drive priority (highest wins): AutoAim (Score/Pass/Manual) > HybridTrench > HybridIntake >
     // Manual
-
-    Trigger hybridPass = driverController.y().and(driverController.rightBumper().negate());
     Trigger hybridManual = operatorController.povDown();
+    Trigger hybridPass =
+        driverController
+            .y()
+            .and(driverController.rightBumper().negate())
+            .and(hybridManual.negate());
     Trigger hybridScore =
         driverController
             .rightBumper()
@@ -172,7 +175,7 @@ public class RobotContainer {
 
     hybridScore.whileTrue(superStructure.getShootCommand(ControlMode.SCORE, Button.kRightTrigger));
     hybridPass.whileTrue(superStructure.getShootCommand(ControlMode.PASS, Button.kRightTrigger));
-    hybridManual.toggleOnTrue(
+    hybridManual.whileTrue(
         superStructure.getShootCommand(ControlMode.MANUAL, Button.kRightTrigger));
 
     operatorController.leftTrigger().onTrue(superStructure.getIntakeEmergencyOutCommand());

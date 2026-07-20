@@ -18,6 +18,7 @@ import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
@@ -66,6 +67,7 @@ public class HybridScoreCommand extends Command {
 
   @Override
   public void initialize() {
+    superStructure.setControlMode(ControlMode.SCORE);
     shootSequence = ShootSequence.FEEDING;
     shootSequenceStartSec = 0.0;
     rpsOffset = 0.0;
@@ -219,6 +221,7 @@ public class HybridScoreCommand extends Command {
         superStructure.setIntakeMode(IntakeMode.RETRACTED);
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
           shootSequence = ShootSequence.OUT;
+          shootSequenceStartSec = now;
         }
       }
       case OUT -> {
@@ -226,6 +229,7 @@ public class HybridScoreCommand extends Command {
         superStructure.setIntakeMode(IntakeMode.INTAKE);
         if (now - shootSequenceStartSec >= PostOutWaitSec) {
           shootSequence = ShootSequence.RETRACT_WAIT;
+          shootSequenceStartSec = now;
         }
       }
       default -> {}

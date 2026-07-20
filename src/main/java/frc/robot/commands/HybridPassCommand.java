@@ -17,6 +17,7 @@ import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
@@ -65,6 +66,7 @@ public class HybridPassCommand extends Command {
   @Override
   public void initialize() {
     shootSequence = ShootSequence.FEEDING;
+    superStructure.setControlMode(ControlMode.PASS);
     shootSequenceStartSec = 0.0;
     rpsOffset = 0.0;
     hoodCompDegs = 0.0;

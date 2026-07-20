@@ -131,10 +131,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /** Swerve request to apply during robot-centric path following and velocity control */
   private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds =
       new SwerveRequest.ApplyRobotSpeeds()
-          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity);
+          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity).withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
+  
+          private final SwerveRequest.ApplyRobotSpeeds m_driveApplyRobotSpeeds =
+      new SwerveRequest.ApplyRobotSpeeds()
+          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity).withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
 
   private final SwerveRequest.SwerveDriveBrake m_brakeRequest =
-      new SwerveRequest.SwerveDriveBrake();
+      new SwerveRequest.SwerveDriveBrake().withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity).withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);;
 
   private final Field2d field2d = new Field2d();
 
@@ -682,7 +686,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public void runVelocity(ChassisSpeeds speeds) {
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, kLoopPeriodSec);
-    setControl(m_pathApplyRobotSpeeds.withSpeeds(discreteSpeeds));
+    setControl(m_driveApplyRobotSpeeds.withSpeeds(discreteSpeeds));
     Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
   }
 

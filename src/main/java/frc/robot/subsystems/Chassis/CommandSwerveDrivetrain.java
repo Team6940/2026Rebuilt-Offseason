@@ -131,14 +131,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /** Swerve request to apply during robot-centric path following and velocity control */
   private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds =
       new SwerveRequest.ApplyRobotSpeeds()
-          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity).withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
-  
-          private final SwerveRequest.ApplyRobotSpeeds m_driveApplyRobotSpeeds =
+          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity)
+          .withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
+
+  private final SwerveRequest.ApplyRobotSpeeds m_driveApplyRobotSpeeds =
       new SwerveRequest.ApplyRobotSpeeds()
-          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity).withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
+          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity)
+          .withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
 
   private final SwerveRequest.SwerveDriveBrake m_brakeRequest =
-      new SwerveRequest.SwerveDriveBrake().withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity).withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);;
+      new SwerveRequest.SwerveDriveBrake()
+          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity)
+          .withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
+  ;
 
   private final Field2d field2d = new Field2d();
 
@@ -148,6 +153,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final ProfiledPIDController fieldCentricAngleController;
   private final PIDController autoAimAngleController;
   private final PIDController trenchAngleController;
+  private final PIDController hybridIntakeAngleController;
 
   private PathPlannerPath trenchPathAtlBlue;
   private PathPlannerPath trenchPathAtrBlue;
@@ -264,6 +270,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     trenchAngleController =
         new PIDController(DriveConstants.TrenchAnglekP, 0.0, DriveConstants.TrenchAnglekD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
+    hybridIntakeAngleController =
+        new PIDController(DriveConstants.IntakeAnglekP, 0.0, DriveConstants.IntakeAnglekD);
+    hybridIntakeAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
     SmartDashboard.putData(
         "Swerve Drive",
@@ -349,6 +358,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     trenchAngleController =
         new PIDController(DriveConstants.TrenchAnglekP, 0.0, DriveConstants.TrenchAnglekD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
+    hybridIntakeAngleController =
+        new PIDController(DriveConstants.IntakeAnglekP, 0.0, DriveConstants.IntakeAnglekD);
+    hybridIntakeAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
     SmartDashboard.putData(
         "Swerve Drive",
@@ -445,6 +457,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     trenchAngleController =
         new PIDController(DriveConstants.TrenchAnglekP, 0.0, DriveConstants.TrenchAnglekD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
+    hybridIntakeAngleController =
+        new PIDController(DriveConstants.IntakeAnglekP, 0.0, DriveConstants.IntakeAnglekD);
+    hybridIntakeAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
     SmartDashboard.putData(
         "Swerve Drive",
@@ -1113,9 +1128,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
     Rotation2d desiredFacing = getDesiredFacingHybridIntake(driverLinear, IntakeMode.HYBRID);
     boolean manualRotate = Math.abs(omegaInput) > DriveConstants.Deadband;
-    double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
-    double kLiner = MathUtil.clamp(Math.cos(trenchAngleController.getError()), 0., 1.);
-    driverLinear = driverLinear.times(kLiner);
+    double omega = manualRotate ? stickOmega : calculateHybridIntakeOmega(desiredFacing);
+    double kLiner = MathUtil.clamp(Math.cos(hybridIntakeAngleController.getError()), 0., 1.);
+    driverLinear = driverLinear.times(kLiner * 0.5 + 0.5);
     ChassisSpeeds speeds = new ChassisSpeeds(driverLinear.getX(), driverLinear.getY(), omega);
     boolean isFlipped =
         DriverStation.getAlliance().isPresent()
@@ -1405,6 +1420,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   private double calculateTrenchOmega(Rotation2d desiredFacing) {
     return trenchAngleController.calculate(getRotation().getRadians(), desiredFacing.getRadians());
+  }
+
+  private double calculateHybridIntakeOmega(Rotation2d desiredFacing) {
+    return hybridIntakeAngleController.calculate(
+        getRotation().getRadians(), desiredFacing.getRadians());
   }
 
   public double calculateOmega(Rotation2d desiredFacing) {

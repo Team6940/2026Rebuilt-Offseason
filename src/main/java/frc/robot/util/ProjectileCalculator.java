@@ -142,7 +142,7 @@ public final class ProjectileCalculator {
     boolean isBlue =
         DriverStation.getAlliance().isPresent()
             && DriverStation.getAlliance().get() == Alliance.Blue;
-    double passX = isBlue ? 1.5 : FieldConstants.fieldLength - 1.5;
+    double passX = isBlue ? 1.7 : FieldConstants.fieldLength - 1.7;
     double leftBumpCenterY =
         (FieldConstants.LinesHorizontal.leftBumpStart + FieldConstants.LinesHorizontal.leftBumpEnd)
                 / 2.0

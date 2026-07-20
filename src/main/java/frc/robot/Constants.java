@@ -204,6 +204,10 @@ public final class Constants {
     public static final double TrenchAnglekP = 5.0;
 
     public static final double TrenchAnglekD = 0.1;
+
+    public static final double IntakeAnglekP = 9.0;
+
+    public static final double IntakeAnglekD = 0.35;
   }
 
   public final class OperatorConstants {

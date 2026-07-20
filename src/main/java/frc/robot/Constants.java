@@ -538,10 +538,10 @@ public final class Constants {
       DistanceToShooterRps.put(1.32, 29.0);
       DistanceToShooterRps.put(1.88, 34.04);
       DistanceToShooterRps.put(2.1, 35.54);
-      DistanceToShooterRps.put(2.6, 36.2);
-      DistanceToShooterRps.put(3.4, 39.4);
-      DistanceToShooterRps.put(3.6, 41.4);
-      DistanceToShooterRps.put(4.1, 42.4);
+      DistanceToShooterRps.put(2.6, 38.2);
+      DistanceToShooterRps.put(3.4, 41.4);
+      DistanceToShooterRps.put(3.6, 43.4);
+      DistanceToShooterRps.put(4.1, 44.4);
       DistanceToShooterRps.put(4.99, 46.9);
       DistanceToShooterRps.put(5.2, 51.5);
       DistanceToShooterRps.put(5.7, 53.5);
@@ -641,7 +641,7 @@ public final class Constants {
     public static final double DriverTranslationFineTuneDeadband = 0.3;
 
     // --- SHOOT: indexer feed, then intake retract timing ---
-    public static final double FeedDurationSec = 0.45;
+    public static final double FeedDurationSec = 0.53;
     public static final double PostRetractWaitSec = 0.65;
     public static final double PostOutWaitSec = 0.35;
 
@@ -665,7 +665,7 @@ public final class Constants {
     public static final double FeederkV = 0.04;
     public static final double FeederkS = 4.5;
     public static final boolean FeederStatorCurrentLimitEnable = true;
-    public static final double FeederStatorCurrentLimit = 120.;
+    public static final double FeederStatorCurrentLimit = 60.;
     public static final double IndexerkP = 0.1;
     public static final double IndexerkI = 0.0;
     public static final double IndexerkD = 0.0;
@@ -675,7 +675,7 @@ public final class Constants {
     public static final MotorAlignmentValue FeederFollowerAlignment = MotorAlignmentValue.Aligned;
     public static final double FeedRps = 75.0;
     public static final double IndexerRps = 60.0;
-    public static final double FeederJamCurrentThresholdA = 75.0;
+    public static final double FeederJamCurrentThresholdA = 160.0;
     public static final double FeederJamDebounceSec = 0.2;
     public static final double FeederJamReverseDurationSec = 0.5;
   }

@@ -108,19 +108,19 @@ public class ManualShootCommand extends Command {
 
     switch (superStructure.getShootPhase()) {
       case AIM -> {
-        drive.driveAutoAim(
+        drive.driveFieldCentric(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> aimHeading);
+            () -> -driverController.getRightX());
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
       }
       case READY -> {
-        drive.driveAutoAim(
+        drive.driveFieldCentric(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> aimHeading);
+            () -> -driverController.getRightX());
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {
@@ -128,10 +128,10 @@ public class ManualShootCommand extends Command {
         }
       }
       case SHOOT -> {
-        drive.driveAutoAim(
+        drive.driveFieldCentric(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> aimHeading);
+            () -> -driverController.getRightX());
 
         runShootSequence(finalHoodDegs, ready, fire);
         if (!fire) {

@@ -20,6 +20,7 @@ public class RightDoubleSwipe extends SequentialCommandGroup {
   ShooterSubsystem shooter = ShooterSubsystem.getInstance();
 
   public RightDoubleSwipe() {
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.OFF)));
     addCommands(
         Commands.defer(
             () -> Commands.waitSeconds(RobotContainer.autoDelaySeconds.get()), Set.of()));

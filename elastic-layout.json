@@ -5,44 +5,226 @@
     {
       "name": "Teleoperated_DashBoard",
       "grid_layout": {
-        "layouts": [],
+        "layouts": [
+          {
+            "title": "SuperStructure",
+            "x": 2045.0,
+            "y": 260.0,
+            "width": 260.0,
+            "height": 585.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "AttackModeActive",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/SuperStructure/AttackModeActive",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "AttackModeTimerSec",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/SuperStructure/AttackModeTimerSec",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "ChassisMode",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/SuperStructure/ChassisMode",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "ControlMode",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/SuperStructure/ControlMode",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "DriveMode",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/SuperStructure/DriveMode",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "IntakeMode",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/SuperStructure/IntakeMode",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "ShootPhase",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/SuperStructure/ShootPhase",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Power",
+            "x": 2565.0,
+            "y": 260.0,
+            "width": 260.0,
+            "height": 585.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "HoodPowerW",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Power/Subsystems/HoodPowerW",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "IndexerPowerW",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Power/Subsystems/IndexerPowerW",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "IntakePowerW",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Power/Subsystems/IntakePowerW",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "ShooterPowerW",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Power/Subsystems/ShooterPowerW",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "TotalPowerW",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Power/Subsystems/TotalPowerW",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "TotalChassisPowerW",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 130.0,
+                "height": 130.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Drive/TotalChassisPowerW",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          }
+        ],
         "containers": [
           {
-            "title": "FMSInfo",
-            "x": 390.0,
-            "y": 445.0,
-            "width": 390.0,
-            "height": 165.0,
-            "type": "FMSInfo",
-            "properties": {
-              "topic": "/FMSInfo",
-              "period": 0.06
-            }
-          },
-          {
-            "title": "BatteryVoltage",
-            "x": 0.0,
-            "y": 445.0,
-            "width": 390.0,
-            "height": 165.0,
-            "type": "Voltage View",
-            "properties": {
-              "topic": "/AdvantageKit/SystemStats/BatteryVoltage",
-              "period": 0.06,
-              "data_type": "double",
-              "min_value": 4.0,
-              "max_value": 13.0,
-              "divisions": 5,
-              "inverted": false,
-              "orientation": "horizontal"
-            }
-          },
-          {
             "title": "Field",
-            "x": 780.0,
-            "y": 20.0,
-            "width": 715.0,
-            "height": 325.0,
+            "x": 1150.0,
+            "y": 0.0,
+            "width": 895.0,
+            "height": 410.0,
             "type": "Field",
             "properties": {
               "topic": "/SmartDashboard/Field",
@@ -61,9 +243,9 @@
           {
             "title": "PhotonFront",
             "x": 0.0,
-            "y": 65.0,
-            "width": 780.0,
-            "height": 380.0,
+            "y": 0.0,
+            "width": 1150.0,
+            "height": 760.0,
             "type": "Camera Stream",
             "properties": {
               "topic": "/CameraPublisher/photonvision_Port_1184_Output_MJPEG_Server",
@@ -74,9 +256,9 @@
           {
             "title": "GamePeriod 1",
             "x": 0.0,
-            "y": 610.0,
-            "width": 299.0,
-            "height": 250.0,
+            "y": 760.0,
+            "width": 430.0,
+            "height": 370.0,
             "type": "Single Color View",
             "properties": {
               "topic": "/SmartDashboard/GamePeriodReminder/LED0",
@@ -86,10 +268,10 @@
           },
           {
             "title": "GamePeriod 2",
-            "x": 299.0,
-            "y": 610.0,
-            "width": 299.0,
-            "height": 250.0,
+            "x": 430.0,
+            "y": 760.0,
+            "width": 415.0,
+            "height": 365.0,
             "type": "Single Color View",
             "properties": {
               "topic": "/SmartDashboard/GamePeriodReminder/LED1",
@@ -99,10 +281,10 @@
           },
           {
             "title": "GamePeriod 3",
-            "x": 598.0,
-            "y": 610.0,
-            "width": 299.0,
-            "height": 250.0,
+            "x": 845.0,
+            "y": 760.0,
+            "width": 395.0,
+            "height": 365.0,
             "type": "Single Color View",
             "properties": {
               "topic": "/SmartDashboard/GamePeriodReminder/LED2",
@@ -112,10 +294,10 @@
           },
           {
             "title": "GamePeriod 4",
-            "x": 897.0,
-            "y": 610.0,
-            "width": 299.0,
-            "height": 250.0,
+            "x": 1240.0,
+            "y": 760.0,
+            "width": 395.0,
+            "height": 365.0,
             "type": "Single Color View",
             "properties": {
               "topic": "/SmartDashboard/GamePeriodReminder/LED3",
@@ -125,10 +307,10 @@
           },
           {
             "title": "GamePeriod 5",
-            "x": 1196.0,
-            "y": 610.0,
-            "width": 299.0,
-            "height": 250.0,
+            "x": 1635.0,
+            "y": 760.0,
+            "width": 410.0,
+            "height": 365.0,
             "type": "Single Color View",
             "properties": {
               "topic": "/SmartDashboard/GamePeriodReminder/LED4",
@@ -138,10 +320,10 @@
           },
           {
             "title": "MatchTime",
-            "x": 1105.0,
-            "y": 345.0,
-            "width": 390.0,
-            "height": 265.0,
+            "x": 1480.0,
+            "y": 410.0,
+            "width": 565.0,
+            "height": 350.0,
             "type": "Match Time",
             "properties": {
               "topic": "/AdvantageKit/DriverStation/MatchTime",
@@ -154,10 +336,10 @@
           },
           {
             "title": "Velocity",
-            "x": 780.0,
-            "y": 345.0,
-            "width": 325.0,
-            "height": 265.0,
+            "x": 1150.0,
+            "y": 410.0,
+            "width": 330.0,
+            "height": 350.0,
             "type": "Radial Gauge",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/Drive/Velocity",
@@ -174,393 +356,191 @@
             }
           },
           {
-            "title": "ZoneA",
-            "x": 0.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "ShooterVelocityRps",
+            "x": 2045.0,
+            "y": 0.0,
+            "width": 520.0,
+            "height": 260.0,
+            "type": "Graph",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED0",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/AdvantageKit/RealOutputs/Shooter/VelocityRps",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 5.0,
+              "min_value": 0.0,
+              "max_value": 80.0,
+              "color": 4278238420,
+              "line_width": 3.0
             }
           },
           {
-            "title": "",
-            "x": 50.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "RollerVelocityRps",
+            "x": 2565.0,
+            "y": 0.0,
+            "width": 260.0,
+            "height": 260.0,
+            "type": "Graph",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED1",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/AdvantageKit/RealOutputs/Intake/RollerVelocityRps",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 5.0,
+              "color": 4278238420,
+              "line_width": 2.0
             }
           },
           {
-            "title": "",
-            "x": 100.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "Feeding",
+            "x": 3085.0,
+            "y": 5.0,
+            "width": 135.0,
+            "height": 255.0,
+            "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED2",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/AdvantageKit/RealOutputs/Indexer/Feeding",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           },
           {
-            "title": "",
-            "x": 150.0,
-            "y": -65.0,
-            "width": 65.0,
+            "title": "BatteryVoltage",
+            "x": 3315.0,
+            "y": 360.0,
+            "width": 770.0,
             "height": 130.0,
-            "type": "Single Color View",
+            "type": "Voltage View",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED3",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/AdvantageKit/SystemStats/BatteryVoltage",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 4.0,
+              "max_value": 13.0,
+              "divisions": 5,
+              "inverted": false,
+              "orientation": "horizontal"
             }
           },
           {
-            "title": "",
-            "x": 200.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "Field",
+            "x": 3315.0,
+            "y": 0.0,
+            "width": 770.0,
+            "height": 360.0,
+            "type": "Field",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED4",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/SmartDashboard/Field",
+              "period": 0.06,
+              "field_game": "Rebuilt (No Fuel)",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295,
+              "show_robot_outside_widget": true
             }
           },
           {
-            "title": "",
-            "x": 250.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "CommandScheduler",
+            "x": 2305.0,
+            "y": 260.0,
+            "width": 260.0,
+            "height": 585.0,
+            "type": "Scheduler",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED5",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/SmartDashboard/CommandScheduler",
+              "period": 0.06
             }
           },
           {
-            "title": "",
-            "x": 300.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "FeederVelocityRps",
+            "x": 2825.0,
+            "y": 0.0,
+            "width": 260.0,
+            "height": 260.0,
+            "type": "Graph",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED6",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/AdvantageKit/Indexer/FeederVelocityRps",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 5.0,
+              "color": 4278238420,
+              "line_width": 2.0
             }
           },
           {
-            "title": "",
-            "x": 350.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "FeederReversing",
+            "x": 3220.0,
+            "y": 5.0,
+            "width": 95.0,
+            "height": 255.0,
+            "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED7",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/AdvantageKit/RealOutputs/Indexer/FeederReversing",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           },
           {
-            "title": "ZoneB",
-            "x": 400.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "Swerve Drive",
+            "x": 2825.0,
+            "y": 260.0,
+            "width": 490.0,
+            "height": 395.0,
+            "type": "SwerveDrive",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED8",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/SmartDashboard/Swerve Drive",
+              "period": 0.06,
+              "show_robot_rotation": true,
+              "rotation_unit": "Radians"
             }
           },
           {
-            "title": "",
-            "x": 450.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "Auto Choices",
+            "x": 3715.0,
+            "y": 490.0,
+            "width": 370.0,
+            "height": 165.0,
+            "type": "ComboBox Chooser",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED9",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/SmartDashboard/Auto Choices",
+              "period": 0.06,
+              "sort_options": false
             }
           },
           {
-            "title": "",
-            "x": 500.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
+            "title": "FMSInfo",
+            "x": 3315.0,
+            "y": 490.0,
+            "width": 400.0,
+            "height": 165.0,
+            "type": "FMSInfo",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED10",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "/FMSInfo",
+              "period": 0.06
             }
           },
           {
-            "title": "",
-            "x": 550.0,
-            "y": -65.0,
-            "width": 65.0,
+            "title": "Auto Delay",
+            "x": 3715.0,
+            "y": 655.0,
+            "width": 370.0,
             "height": 130.0,
-            "type": "Single Color View",
+            "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/LED/LED11",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 600.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED12",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 650.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED13",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 700.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED14",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 750.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED15",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "ZoneC",
-            "x": 800.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED16",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 850.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED17",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 900.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED18",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 950.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED19",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 1000.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED20",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 1050.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED21",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 1100.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED22",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 1150.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED23",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "ZoneD",
-            "x": 1200.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED24",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 1250.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED25",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 1300.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED26",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 1350.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED27",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 1400.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED28",
-              "period": 0.060000000000000005,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "",
-            "x": 1450.0,
-            "y": -65.0,
-            "width": 65.0,
-            "height": 130.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/SmartDashboard/LED/LED29",
-              "period": 0.060000000000000005,
-              "data_type": "string"
+              "topic": "SmartDashboard/Auto Delay",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": true
             }
           }
         ]
@@ -573,9 +553,9 @@
           {
             "title": "SuperStructure",
             "x": 0.0,
-            "y": 260.0,
+            "y": 275.0,
             "width": 260.0,
-            "height": 585.0,
+            "height": 570.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -803,10 +783,10 @@
           },
           {
             "title": "Auto Choices",
-            "x": 1125.0,
-            "y": 325.0,
+            "x": 1660.0,
+            "y": 360.0,
             "width": 385.0,
-            "height": 115.0,
+            "height": 155.0,
             "type": "ComboBox Chooser",
             "properties": {
               "topic": "/SmartDashboard/Auto Choices",
@@ -816,10 +796,10 @@
           },
           {
             "title": "Field",
-            "x": 880.0,
+            "x": 1275.0,
             "y": 0.0,
-            "width": 630.0,
-            "height": 325.0,
+            "width": 770.0,
+            "height": 360.0,
             "type": "Field",
             "properties": {
               "topic": "/SmartDashboard/Field",
@@ -849,10 +829,10 @@
           },
           {
             "title": "Swerve Drive",
-            "x": 880.0,
-            "y": 325.0,
-            "width": 250.0,
-            "height": 250.0,
+            "x": 1785.0,
+            "y": 515.0,
+            "width": 260.0,
+            "height": 260.0,
             "type": "SwerveDrive",
             "properties": {
               "topic": "/SmartDashboard/Swerve Drive",
@@ -896,8 +876,8 @@
           },
           {
             "title": "FMSInfo",
-            "x": 1125.0,
-            "y": 440.0,
+            "x": 1275.0,
+            "y": 360.0,
             "width": 385.0,
             "height": 155.0,
             "type": "FMSInfo",
@@ -922,6 +902,19 @@
               "divisions": 5,
               "inverted": false,
               "orientation": "vertical"
+            }
+          },
+          {
+            "title": "PhotonFront",
+            "x": 2045.0,
+            "y": 0.0,
+            "width": 780.0,
+            "height": 380.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision_Port_1184_Output_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 3
             }
           }
         ]

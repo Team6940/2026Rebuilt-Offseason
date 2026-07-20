@@ -20,6 +20,7 @@ public class LeftDoubleSwipeTrench extends SequentialCommandGroup {
   ShooterSubsystem shooter = ShooterSubsystem.getInstance();
 
   public LeftDoubleSwipeTrench() {
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.OFF)));
     addCommands(
         Commands.defer(
             () -> Commands.waitSeconds(RobotContainer.autoDelaySeconds.get()), Set.of()));

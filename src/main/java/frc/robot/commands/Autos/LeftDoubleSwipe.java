@@ -20,6 +20,7 @@ public class LeftDoubleSwipe extends SequentialCommandGroup {
   SuperStructure superStructure = SuperStructure.getInstance();
 
   public LeftDoubleSwipe() {
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.OFF)));
     addCommands(
         Commands.defer(
             () -> Commands.waitSeconds(RobotContainer.autoDelaySeconds.get()), Set.of()));

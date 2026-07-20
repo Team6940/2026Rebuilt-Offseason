@@ -20,6 +20,7 @@ public class LeftDepot extends SequentialCommandGroup {
   SuperStructure superStructure = SuperStructure.getInstance();
 
   public LeftDepot() {
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.OFF)));
     addCommands(
         Commands.defer(
             () -> Commands.waitSeconds(RobotContainer.autoDelaySeconds.get()), Set.of()));

@@ -83,7 +83,7 @@ public class HybridPassCommand extends Command {
     ShotPlan plan = computeShotPlan();
 
     double finalHoodDegs = plan.hoodDegs + hoodCompDegs;
-    double finalShooterRps = plan.shooterRps + rpsOffset;
+    double finalShooterRps = 44.4;
     Rotation2d finalHeading = plan.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
 
     boolean ready = isReady(finalHoodDegs, finalShooterRps, finalHeading);
@@ -215,7 +215,7 @@ public class HybridPassCommand extends Command {
   }
 
   private boolean isReady(double hoodDegs, double shooterRps, Rotation2d heading) {
-    return isAtTargetAngle(heading) && isAtTargetHood(hoodDegs) && isAtTargetShooter(shooterRps);
+    return isAtTargetAngle(heading) && isAtTargetHood(hoodDegs) && true;
   }
 
   private boolean isAtTargetAngle(Rotation2d desired) {

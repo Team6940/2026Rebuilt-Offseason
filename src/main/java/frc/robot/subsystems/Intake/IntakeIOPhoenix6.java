@@ -63,6 +63,8 @@ public class IntakeIOPhoenix6 implements IntakeIO {
     config.Slot0.kS = IntakeConstants.RollerkS;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = IntakeConstants.RollerSupplyCurrentLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = IntakeConstants.RollerStatorCurrentLimit;
     config.MotorOutput.Inverted = IntakeConstants.RollerInverted;
     rollerLeader.getConfigurator().apply(config);
     TalonFXConfiguration followerConfig = new TalonFXConfiguration();

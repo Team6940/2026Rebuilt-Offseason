@@ -46,7 +46,9 @@ public class IndexerIOPhoenix6 implements IndexerIO {
         IndexerConstants.IndexerkD,
         IndexerConstants.IndexerkV,
         IndexerConstants.IndexerkS,
-        IndexerConstants.IndexerSupplyCurrentLimit);
+        IndexerConstants.IndexerSupplyCurrentLimit,
+        IndexerConstants.IndexerStatorCurrentLimitEnable,
+        IndexerConstants.IndexerStatorCurrentLimit);
     configureFollower(feederFollower, IndexerConstants.FeederInverted);
     configureFollower(indexerFollower, IndexerConstants.IndexerInverted);
     feederFollower.setControl(

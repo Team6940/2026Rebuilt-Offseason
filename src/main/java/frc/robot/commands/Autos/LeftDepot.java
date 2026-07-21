@@ -49,7 +49,7 @@ public class LeftDepot extends SequentialCommandGroup {
 
     addCommands(drive.followPPPath("LDepot-LSh3"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
   }

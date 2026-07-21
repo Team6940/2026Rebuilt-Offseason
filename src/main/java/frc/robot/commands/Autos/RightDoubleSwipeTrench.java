@@ -56,13 +56,13 @@ public class RightDoubleSwipeTrench extends SequentialCommandGroup {
                             () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
     addCommands(drive.followPPPath("RInt1OverMid-RTrenchSh1"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("RTrenchSh1-RInt2"));
     addCommands(drive.followPPPath("RInt2-RTrenchSh2"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("RTrenchSh2-REndInt3"));

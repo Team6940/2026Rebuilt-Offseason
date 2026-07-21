@@ -58,13 +58,13 @@ public class RightDoubleSwipeOverMid extends SequentialCommandGroup {
                             () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
     addCommands(drive.followPPPath("RInt1OverMid-RSh1"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
     addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("RSh1-RInt2"));
     addCommands(drive.followPPPath("RInt2-RSh2"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
     addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("RSh2-REndInt3"));

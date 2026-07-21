@@ -53,14 +53,14 @@ public class LeftDoubleSwipe extends SequentialCommandGroup {
             .alongWith(
                 superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE))));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
     addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh1-LInt2"));
     addCommands(drive.followPPPath("LInt2-LSh2"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
     addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh2-LEndInt3"));

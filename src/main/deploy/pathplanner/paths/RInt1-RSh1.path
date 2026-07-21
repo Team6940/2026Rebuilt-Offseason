@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 7.801559134818412,
-        "y": 3.41128660159716
+        "y": 3.411
       },
       "prevControl": null,
       "nextControl": {
         "x": 6.330452528837622,
-        "y": 3.5722448979591834
+        "y": 3.5719582963620233
       },
       "isLocked": false,
       "linkedName": "R-AftIntake1"
@@ -48,10 +48,6 @@
     {
       "waypointRelativePos": 0.3924583773784355,
       "rotationDegrees": -136.84269685594967
-    },
-    {
-      "waypointRelativePos": 0.6859474101479915,
-      "rotationDegrees": -133.43524230736162
     },
     {
       "waypointRelativePos": 1.073558648111332,

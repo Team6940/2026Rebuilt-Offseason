@@ -672,16 +672,16 @@ public final class Constants {
     public static final boolean FeederStatorCurrentLimitEnable = true;
     public static final double FeederStatorCurrentLimit = 60.;
     public static final boolean IndexerStatorCurrentLimitEnable = true;
-    public static final double IndexerStatorCurrentLimit = 60.;
-    public static final double IndexerkP = 0.65;
+    public static final double IndexerStatorCurrentLimit = 45.;
+    public static final double IndexerkP = 2.;
     public static final double IndexerkI = 0.0;
     public static final double IndexerkD = 0.0;
-    public static final double IndexerkV = 0.12;
-    public static final double IndexerkS = 0.5;
+    public static final double IndexerkV = 0.05;
+    public static final double IndexerkS = 15.;
     public static final MotorAlignmentValue IndexerFollowerAlignment = MotorAlignmentValue.Opposed;
     public static final MotorAlignmentValue FeederFollowerAlignment = MotorAlignmentValue.Aligned;
-    public static final double FeedRps = 46.0;
-    public static final double IndexerRps = 70.0;
+    public static final double FeedRps = 43.0;
+    public static final double IndexerRps = 67.0;
     public static final double FeederJamCurrentThresholdA = 160.0;
     public static final double FeederJamDebounceSec = 0.2;
     public static final double FeederJamReverseDurationSec = 0.5;
@@ -804,7 +804,7 @@ public final class Constants {
     public static final InterpolatingDoubleTreeMap tAtoDev = new InterpolatingDoubleTreeMap();
 
     static {
-      tAtoDev.put(0.17, 0.08);
+      tAtoDev.put(0.17, 0.1);
       tAtoDev.put(0.12, 0.20);
       tAtoDev.put(0.071, 0.35);
       tAtoDev.put(0.046, 0.4);

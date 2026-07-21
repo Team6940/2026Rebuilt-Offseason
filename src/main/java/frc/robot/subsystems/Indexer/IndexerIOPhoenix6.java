@@ -21,8 +21,9 @@ public class IndexerIOPhoenix6 implements IndexerIO {
       new TalonFX(MotorIDs.kIndexerLeaderMotorId, CANBus.roboRIO());
   protected final TalonFX indexerFollower =
       new TalonFX(MotorIDs.kIndexerFollowerMotorId, CANBus.roboRIO());
-  private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
-  private final VelocityTorqueCurrentFOC focRequest = new VelocityTorqueCurrentFOC(0.0);
+  // private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
+  private final VelocityTorqueCurrentFOC focRequestFeeder = new VelocityTorqueCurrentFOC(0.0);
+  private final VelocityTorqueCurrentFOC focRequestIndexer = new VelocityTorqueCurrentFOC(0.0);
 
   public IndexerIOPhoenix6() {
     configureVelocityMotor(
@@ -123,7 +124,7 @@ public class IndexerIOPhoenix6 implements IndexerIO {
       feederLeader.stopMotor();
       return;
     }
-    feederLeader.setControl(focRequest.withVelocity(rps));
+    feederLeader.setControl(focRequestFeeder.withVelocity(rps));
   }
 
   @Override
@@ -132,7 +133,7 @@ public class IndexerIOPhoenix6 implements IndexerIO {
       indexerLeader.stopMotor();
       return;
     }
-    indexerLeader.setControl(velocityRequest.withVelocity(rps));
+    indexerLeader.setControl(focRequestIndexer.withVelocity(rps));
   }
 
   @Override

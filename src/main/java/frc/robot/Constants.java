@@ -677,8 +677,8 @@ public final class Constants {
     public static final double IndexerkS = 0.325;
     public static final MotorAlignmentValue IndexerFollowerAlignment = MotorAlignmentValue.Opposed;
     public static final MotorAlignmentValue FeederFollowerAlignment = MotorAlignmentValue.Aligned;
-    public static final double FeedRps = 47.0;
-    public static final double IndexerRps = 80.0;
+    public static final double FeedRps = 46.0;
+    public static final double IndexerRps = 70.0;
     public static final double FeederJamCurrentThresholdA = 160.0;
     public static final double FeederJamDebounceSec = 0.2;
     public static final double FeederJamReverseDurationSec = 0.5;

@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.Indexer.IndexerSubsystem;
+import org.littletonrobotics.junction.Logger;
 
 public class GamePeriodReminder extends SubsystemBase {
   private static final int NUM_LEDS = 5;
@@ -10,7 +12,12 @@ public class GamePeriodReminder extends SubsystemBase {
   private static final double RED_COUNTDOWN_THRESHOLD = 5.0;
   private static final double TOTAL_MATCH_TIME = 150.0;
 
+  /** Match time remaining (s) at which endgame low-power current limits engage. */
+  public static final double ENDGAME_LOW_POWER_THRESHOLD_SEC = 50.0;
+
   private static GamePeriodReminder instance;
+
+  private boolean endgameLowPowerApplied = false;
 
   private GamePeriodReminder() {}
 
@@ -19,6 +26,26 @@ public class GamePeriodReminder extends SubsystemBase {
       instance = new GamePeriodReminder();
     }
     return instance;
+  }
+
+  /**
+   * Approximate match time remaining from the DS/FMS. During teleop this counts down; returns a
+   * negative value when unavailable.
+   */
+  public double getMatchTimeRemaining() {
+    return DriverStation.getMatchTime();
+  }
+
+  /**
+   * True during teleop when remaining match time is at or below {@link
+   * #ENDGAME_LOW_POWER_THRESHOLD_SEC}.
+   */
+  public boolean isEndgameLowPower() {
+    if (!DriverStation.isTeleopEnabled()) {
+      return false;
+    }
+    double matchTime = getMatchTimeRemaining();
+    return matchTime >= 0.0 && matchTime <= ENDGAME_LOW_POWER_THRESHOLD_SEC;
   }
 
   @Override
@@ -74,6 +101,32 @@ public class GamePeriodReminder extends SubsystemBase {
       SmartDashboard.putString("GamePeriodReminder/LED" + i, colors[i]);
     }
     SmartDashboard.putString("GamePeriodReminder/State", state);
+
+    updateEndgameLowPowerLimits();
+  }
+
+  /**
+   * On first entry into endgame: lower feeder/indexer stator limits, and re-apply chassis limits for
+   * the current {@link SuperStructure.ChassisMode} (so NORMAL/ATTACKMODE drop to Aim limits without
+   * disturbing SHOOTING mode state).
+   */
+  private void updateEndgameLowPowerLimits() {
+    boolean endgame = isEndgameLowPower();
+    Logger.recordOutput("GamePeriodReminder/MatchTimeRemaining", getMatchTimeRemaining());
+    Logger.recordOutput("GamePeriodReminder/EndgameLowPower", endgame);
+    Logger.recordOutput("GamePeriodReminder/EndgameLowPowerApplied", endgameLowPowerApplied);
+
+    if (!endgame || endgameLowPowerApplied) {
+      return;
+    }
+    endgameLowPowerApplied = true;
+
+    IndexerSubsystem.getInstance().applyStatorCurrentLimitLow();
+
+    // Re-apply limits for the active mode. Do not call setChassisMode — that would early-return
+    // when already NORMAL/ATTACKMODE, and must not rewrite previousChassisMode while SHOOTING.
+    SuperStructure superStructure = SuperStructure.getInstance();
+    superStructure.getDrive().applyChassisModeLimits(superStructure.getChassisMode());
   }
 
   private boolean isOurHubActive(double matchTime) {

@@ -25,5 +25,9 @@ public interface IndexerIO {
 
   public default void setIndexerRps(double rps) {}
 
+  /** Updates feeder/indexer leader stator current limits (A). */
+  public default void setStatorCurrentLimits(
+      double feederStatorLimitA, double indexerStatorLimitA) {}
+
   public default void updateInputs(IndexerIOInputs inputs) {}
 }

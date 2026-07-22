@@ -58,6 +58,13 @@ public class IndexerSubsystem extends SubsystemBase {
     return feeding;
   }
 
+  /** Endgame low-power: drop feeder/indexer stator limits to conserve battery. */
+  public void applyStatorCurrentLimitLow() {
+    io.setStatorCurrentLimits(
+        IndexerConstants.FeederStatorCurrentLimitLow,
+        IndexerConstants.IndexerStatorCurrentLimitLow);
+  }
+
   public double getFeederSupplyCurrentA() {
     return inputs.feederSupplyCurrentA + inputs.feederFollowerSupplyCurrentA;
   }

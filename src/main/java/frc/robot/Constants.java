@@ -671,9 +671,13 @@ public final class Constants {
     public static final double FeederkS = 4.5;
     public static final boolean FeederStatorCurrentLimitEnable = true;
     public static final double FeederStatorCurrentLimit = 60.;
+    /** Feeder stator limit (A) during endgame low-power (last 50s). */
+    public static final double FeederStatorCurrentLimitLow = 25.;
     public static final boolean IndexerStatorCurrentLimitEnable = true;
     public static final double IndexerStatorCurrentLimit = 45.;
-    public static final double IndexerkP = 2.;
+    /** Indexer stator limit (A) during endgame low-power (last 50s). */
+    public static final double IndexerStatorCurrentLimitLow = 25.;
+    public static final double IndexerkP = 14.;
     public static final double IndexerkI = 0.0;
     public static final double IndexerkD = 0.0;
     public static final double IndexerkV = 0.05;

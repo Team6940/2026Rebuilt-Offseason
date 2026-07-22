@@ -60,6 +60,7 @@ import frc.robot.Constants.VisionFusion;
 import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.subsystems.GamePeriodReminder;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.LimelightHelpers;
@@ -933,27 +934,46 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     driveAutoAim(xSupplier, ySupplier, () -> targetRotation, getMaxLinearSpeedMetersPerSec() * 0.2);
   }
 
-  /** Applies the current limits for the given {@link SuperStructure.ChassisMode}. */
+  /**
+   * Applies the current limits for the given {@link SuperStructure.ChassisMode}.
+   *
+   * <p>During endgame low-power (match time ≤ 50s), {@code NORMAL} and {@code ATTACKMODE} use the
+   * same Aim/SHOOTING limits. {@code SHOOTING} always uses Aim limits, so entering/leaving shoot
+   * during endgame does not raise chassis current.
+   */
   public void applyChassisModeLimits(SuperStructure.ChassisMode mode) {
+    boolean endgameLowPower = GamePeriodReminder.getInstance().isEndgameLowPower();
     switch (mode) {
       case NORMAL:
-        applyModuleCurrentLimits(
-            NORMAL_DRIVE_SUPPLY_CURRENT_LIMIT_A,
-            NORMAL_DRIVE_STATOR_CURRENT_LIMIT_A,
-            NORMAL_STEER_SUPPLY_CURRENT_LIMIT_A,
-            NORMAL_STEER_STATOR_CURRENT_LIMIT_A);
+        if (endgameLowPower) {
+          applyAimCurrentLimits();
+        } else {
+          applyModuleCurrentLimits(
+              NORMAL_DRIVE_SUPPLY_CURRENT_LIMIT_A,
+              NORMAL_DRIVE_STATOR_CURRENT_LIMIT_A,
+              NORMAL_STEER_SUPPLY_CURRENT_LIMIT_A,
+              NORMAL_STEER_STATOR_CURRENT_LIMIT_A);
+        }
         break;
       case SHOOTING:
-        applyModuleCurrentLimits(
-            DriveConstants.AutoAimDriveSupplyCurrentLimitAmps,
-            DriveConstants.AutoAimDriveStatorCurrentLimitAmps,
-            DriveConstants.AutoAimSteerSupplyCurrentLimitAmps,
-            DriveConstants.AutoAimSteerStatorCurrentLimitAmps);
+        applyAimCurrentLimits();
         break;
       case ATTACKMODE:
-        applyUnlimitedCurrentLimits();
+        if (endgameLowPower) {
+          applyAimCurrentLimits();
+        } else {
+          applyUnlimitedCurrentLimits();
+        }
         break;
     }
+  }
+
+  private void applyAimCurrentLimits() {
+    applyModuleCurrentLimits(
+        DriveConstants.AutoAimDriveSupplyCurrentLimitAmps,
+        DriveConstants.AutoAimDriveStatorCurrentLimitAmps,
+        DriveConstants.AutoAimSteerSupplyCurrentLimitAmps,
+        DriveConstants.AutoAimSteerStatorCurrentLimitAmps);
   }
 
   private void applyModuleCurrentLimits(

@@ -1,7 +1,10 @@
 package frc.robot.subsystems.Indexer;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
@@ -134,6 +137,24 @@ public class IndexerIOPhoenix6 implements IndexerIO {
       return;
     }
     indexerLeader.setControl(focRequestIndexer.withVelocity(rps));
+  }
+
+  @Override
+  public void setStatorCurrentLimits(double feederStatorLimitA, double indexerStatorLimitA) {
+    applyStatorCurrentLimit(
+        feederLeader, IndexerConstants.FeederSupplyCurrentLimit, feederStatorLimitA);
+    applyStatorCurrentLimit(
+        indexerLeader, IndexerConstants.IndexerSupplyCurrentLimit, indexerStatorLimitA);
+  }
+
+  private void applyStatorCurrentLimit(TalonFX motor, double supplyLimitA, double statorLimitA) {
+    CurrentLimitsConfigs limits =
+        new CurrentLimitsConfigs()
+            .withSupplyCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(Amps.of(supplyLimitA))
+            .withStatorCurrentLimitEnable(true)
+            .withStatorCurrentLimit(Amps.of(statorLimitA));
+    motor.getConfigurator().apply(limits);
   }
 
   @Override

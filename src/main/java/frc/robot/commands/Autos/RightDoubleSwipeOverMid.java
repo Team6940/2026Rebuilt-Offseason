@@ -1,3 +1,5 @@
+// not very useful
+
 package frc.robot.commands.Autos;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -20,6 +22,7 @@ public class RightDoubleSwipeOverMid extends SequentialCommandGroup {
   ShooterSubsystem shooter = ShooterSubsystem.getInstance();
 
   public RightDoubleSwipeOverMid() {
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.OFF)));
     addCommands(
         Commands.defer(
             () -> Commands.waitSeconds(RobotContainer.autoDelaySeconds.get()), Set.of()));
@@ -53,18 +56,16 @@ public class RightDoubleSwipeOverMid extends SequentialCommandGroup {
                     .andThen(
                         superStructure.runOnce(
                             () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
-    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
     addCommands(drive.followPPPath("RInt1OverMid-RSh1"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
-
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
+    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
-    addCommands(drive.followPPPath("RSh1-RInt2OverMid"));
-    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
-    addCommands(drive.followPPPath("RInt2OverMid-RSh2"));
+    addCommands(drive.followPPPath("RSh1-RInt2"));
+    addCommands(drive.followPPPath("RInt2-RSh2"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
-
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
+    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("RSh2-REndInt3"));
   }

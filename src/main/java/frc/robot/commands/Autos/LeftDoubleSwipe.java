@@ -20,6 +20,7 @@ public class LeftDoubleSwipe extends SequentialCommandGroup {
   SuperStructure superStructure = SuperStructure.getInstance();
 
   public LeftDoubleSwipe() {
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.OFF)));
     addCommands(
         Commands.defer(
             () -> Commands.waitSeconds(RobotContainer.autoDelaySeconds.get()), Set.of()));
@@ -46,18 +47,21 @@ public class LeftDoubleSwipe extends SequentialCommandGroup {
                     .andThen(
                         superStructure.runOnce(
                             () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
-    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
-    addCommands(drive.followPPPath("LInt1-LSh1"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
+        drive
+            .followPPPath("LInt1-LSh1")
+            .alongWith(
+                superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE))));
+    addCommands(
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
+    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh1-LInt2"));
-    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
     addCommands(drive.followPPPath("LInt2-LSh2"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
-
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
+    addCommands(shooter.runOnce(() -> shooter.setVelocityRps(33.3)));
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("LSh2-LEndInt3"));
   }

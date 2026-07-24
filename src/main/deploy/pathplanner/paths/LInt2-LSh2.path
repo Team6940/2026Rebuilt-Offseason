@@ -3,66 +3,42 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.862492983222916,
-        "y": 5.824658492475383
+        "x": 5.813260008386299,
+        "y": 5.490860257768361
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.424968944099379,
-        "y": 6.566069210292812
+        "x": 4.938330960893362,
+        "y": 5.510747208245057
       },
       "isLocked": false,
       "linkedName": "L-AftIntake2"
     },
     {
       "anchor": {
-        "x": 5.756198061342593,
-        "y": 5.549291087962963
+        "x": 2.8577494924081925,
+        "y": 5.5121020369879945
       },
       "prevControl": {
-        "x": 6.006198061342593,
-        "y": 5.549291087962963
-      },
-      "nextControl": {
-        "x": 4.9266541037867535,
-        "y": 5.549291087962963
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 2.65171875,
-        "y": 5.549291087962963
-      },
-      "prevControl": {
-        "x": 3.4379468642516335,
-        "y": 5.549291087962963
+        "x": 3.643977606659826,
+        "y": 5.5121020369879945
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "L-AftSh2"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -162.92607927803098
-    },
-    {
-      "waypointRelativePos": 1,
-      "rotationDegrees": 90.0
-    },
-    {
-      "waypointRelativePos": 1.686021505376345,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 0.8158529334038054,
+      "rotationDegrees": 48.37910148924202
     }
   ],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 1.0224122715946844,
-      "maxWaypointRelativePos": 1.8211430647840532,
+      "minWaypointRelativePos": 0.5,
+      "maxWaypointRelativePos": 0.9,
       "constraints": {
         "maxVelocity": 2.3,
         "maxAcceleration": 5.0,
@@ -85,13 +61,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 135.0
+    "rotation": 136.2624914586181
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "LStep3",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 108.10638788157743
+    "rotation": 49.57405938425928
   },
   "useDefaultConstraints": true
 }

@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.384729370008874,
-        "y": 3.82977817213842
+        "x": 6.743080357142857,
+        "y": 3.754412202380953
       },
       "isLocked": false,
       "linkedName": "R-AftIntake1OverMid"
@@ -46,16 +46,16 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -131.62825787388843
+      "waypointRelativePos": 0.41644562334217505,
+      "rotationDegrees": -177.45488237363764
     },
     {
-      "waypointRelativePos": 1,
-      "rotationDegrees": -91.0
+      "waypointRelativePos": 1.005162738496078,
+      "rotationDegrees": -41.856
     },
     {
-      "waypointRelativePos": 1.7088607594936762,
-      "rotationDegrees": -91.0
+      "waypointRelativePos": 1.7512776831345818,
+      "rotationDegrees": -41.856
     }
   ],
   "constraintZones": [
@@ -88,7 +88,7 @@
     "rotation": -137.229
   },
   "reversed": false,
-  "folder": "RightOverMid",
+  "folder": "RStep1",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 90.0

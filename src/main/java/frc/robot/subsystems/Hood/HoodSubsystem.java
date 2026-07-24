@@ -49,6 +49,14 @@ public class HoodSubsystem extends SubsystemBase {
     return inputs.hoodPositionDegs;
   }
 
+  public double getSupplyCurrentA() {
+    return inputs.supplyCurrentA;
+  }
+
+  public double getPowerW() {
+    return inputs.supplyVoltageV * inputs.supplyCurrentA;
+  }
+
   private void applyTarget() {
     targetPositionDegs = autoSetpointDegs;
     io.setPosition(targetPositionDegs);
@@ -66,5 +74,7 @@ public class HoodSubsystem extends SubsystemBase {
     Logger.recordOutput("Hood/TargetPositionDegs", targetPositionDegs);
     Logger.recordOutput("Hood/PositionDegs", inputs.hoodPositionDegs);
     Logger.recordOutput("Hood/AutoSetpointDegs", autoSetpointDegs);
+    Logger.recordOutput("Hood/SupplyCurrentA", getSupplyCurrentA());
+    Logger.recordOutput("Hood/PowerW", getPowerW());
   }
 }

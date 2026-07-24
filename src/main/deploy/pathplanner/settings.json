@@ -3,11 +3,16 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Left",
-    "Mid",
-    "Right07OppHub",
-    "Right",
-    "RightOverMid"
+    "LStep0",
+    "LStep1",
+    "LStep2",
+    "LStep3",
+    "LStep4",
+    "RStep0",
+    "RStep1",
+    "RStep2",
+    "RStep3",
+    "RStep4"
   ],
   "autoFolders": [],
   "defaultMaxVel": 5.0,

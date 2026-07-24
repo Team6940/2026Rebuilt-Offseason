@@ -1,16 +1,3 @@
-// Copyright 2021-2025 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -19,18 +6,22 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import frc.robot.Constants.Ports.LED;
+// import frc.robot.Constants.Ports.LED;
 import frc.robot.autos.AutoBuilder;
+import frc.robot.commands.Autos.*;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FieldSimulation;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
+import frc.robot.subsystems.GamePeriodReminder;
+// import frc.robot.subsystems.Halo.LEDController;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
@@ -41,8 +32,7 @@ import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
-import frc.robot.subsystems.Vision.VisionSubsystem;
-import frc.robot.subsystems.leds.LEDController;
+// import frc.robot.subsystems.Vision.VisionSubsystem;
 import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -55,20 +45,20 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
  */
 public class RobotContainer {
   // Subsystems
-  public static final String limelightLeft = "limelight-l";
-  public static final String limelightRight = "limelight-r";
-  public static final String photonCameraBack = "PhotonBack";
+  public static final String limelightBack = "limelight-b";
+  // public static final String limelightRight = "limelight-r";
   public static final String photonCameraFront = "PhotonFront";
 
   // Create all Subsystems
   private final CommandSwerveDrivetrain drive;
-  private final VisionSubsystem vision;
+  // private final VisionSubsystem vision;
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
-  private final LEDController leds = LEDController.getInstance();
+  // private final LEDController leds = LEDController.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IndexerSubsystem indexer = IndexerSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
+  private final GamePeriodReminder gamePeriodReminder = GamePeriodReminder.getInstance();
   private Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
   // Controller
   public static final ImprovedCommandXboxController driverController =
@@ -91,7 +81,7 @@ public class RobotContainer {
       FieldSimulation.initialize(drive, new Pose2d(0.7, 0.7, new Rotation2d()));
     }
 
-    vision = new VisionSubsystem(drive);
+    // vision = new VisionSubsystem(drive);
 
     // Set up auto routines
     autoBuilder = new AutoBuilder();
@@ -114,7 +104,8 @@ public class RobotContainer {
 
     intake.setDefaultCommand(superStructure.getIntakeDefaultCommand());
     shooter.setDefaultCommand(superStructure.getHeatupCommand());
-    leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
+    // leds.setDefaultCommand(superStructure.getLEDDefaultCommand());
+    indexer.setDefaultCommand(superStructure.getIndexerDefaultCommand());
 
     configureButtonBindings();
     // testBindings();
@@ -123,11 +114,13 @@ public class RobotContainer {
     CommandScheduler.getInstance()
         .schedule(
             Commands.runOnce(drive::warmupHybridTrenchControlLoop, drive).ignoringDisable(true));
+
+    SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());
   }
 
   private void testBindings() {
     drive.setDefaultCommand(
-        superStructure.getFieldCentricDriveCommand(
+        superStructure.getDefaultDriveCommand(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
             () -> -driverController.getRightX()));
@@ -140,9 +133,20 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // Drive priority (highest wins): AutoAim (Score/Pass/Manual) > HybridTrench > HybridIntake >
     // Manual
-    Trigger hybridScore = driverController.rightBumper().or(driverController.rightTrigger().and(driverController.y().negate()));
-    Trigger hybridPass = driverController.y().and(driverController.rightBumper().negate());
-    Trigger hybridManual = operatorController.povLeft();
+    Trigger hybridManual = operatorController.povDown();
+    Trigger hybridPass =
+        driverController
+            .y()
+            .and(driverController.rightBumper().negate())
+            .and(hybridManual.negate());
+    Trigger hybridScore =
+        driverController
+            .rightBumper()
+            .or(
+                driverController
+                    .rightTrigger()
+                    .and(driverController.y().negate())
+                    .and(hybridManual.negate()));
     Trigger hybridTrenchDrive =
         driverController
             .a()
@@ -158,14 +162,14 @@ public class RobotContainer {
             .and(driverController.a().negate());
 
     drive.setDefaultCommand(
-        superStructure.getFieldCentricDriveCommand(
+        superStructure.getDefaultDriveCommand(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
             () -> -driverController.getRightX()));
 
     hybridScore.whileTrue(superStructure.getShootCommand(ControlMode.SCORE, Button.kRightTrigger));
     hybridPass.whileTrue(superStructure.getShootCommand(ControlMode.PASS, Button.kRightTrigger));
-    hybridManual.toggleOnTrue(
+    hybridManual.whileTrue(
         superStructure.getShootCommand(ControlMode.MANUAL, Button.kRightTrigger));
 
     operatorController.leftTrigger().onTrue(superStructure.getIntakeEmergencyOutCommand());
@@ -180,12 +184,18 @@ public class RobotContainer {
     hybridTrenchDrive.whileTrue(superStructure.getHybridTrenchCommand());
 
     operatorController
-        .povDown()
+        .povUp()
         .onTrue(Commands.runOnce(superStructure::resetAllModes, superStructure));
+    operatorController
+        .povLeft()
+        .onTrue(Commands.runOnce(() -> superStructure.setIntakeLowerRPSEnabled(true)));
+    operatorController
+        .povRight()
+        .onTrue(Commands.runOnce(() -> superStructure.setIntakeLowerRPSEnabled(false)));
 
     driverController.x().onTrue(Commands.runOnce(superStructure::stopDriveWithX, drive));
     driverController
-        .b()
+        .povLeft()
         .onTrue(Commands.runOnce(superStructure::resetRobotHeading, drive).ignoringDisable(true));
 
     hybridIntakeDrive.whileTrue(
@@ -204,6 +214,15 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(
                 () -> superStructure.setIntakeMode(IntakeMode.REVERSE), superStructure));
+
+    driverController
+        .b()
+        .onTrue(Commands.runOnce(superStructure::enableAttackMode, superStructure))
+        .onFalse(Commands.runOnce(superStructure::disableAttackMode, superStructure));
+
+    driverController
+        .leftStick()
+        .onTrue(Commands.runOnce(() -> superStructure.toggleFieldCentricEnabled()));
   }
 
   /**

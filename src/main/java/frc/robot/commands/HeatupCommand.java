@@ -22,7 +22,7 @@ public class HeatupCommand extends Command {
     if (superStructure.getShootPhase() == ShootPhase.OFF) {
       shooter.stop();
     } else if (superStructure.getShootPhase() == ShootPhase.HEATUP) {
-      shooter.setVelocityRps(33.);
+      shooter.setVelocityRps(40.);
     }
   }
 

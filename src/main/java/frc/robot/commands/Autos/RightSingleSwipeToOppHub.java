@@ -1,3 +1,5 @@
+// not very useful
+
 package frc.robot.commands.Autos;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -20,6 +22,7 @@ public class RightSingleSwipeToOppHub extends SequentialCommandGroup {
   ShooterSubsystem shooter = ShooterSubsystem.getInstance();
 
   public RightSingleSwipeToOppHub() {
+    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.OFF)));
     addCommands(
         Commands.defer(
             () -> Commands.waitSeconds(RobotContainer.autoDelaySeconds.get()), Set.of()));
@@ -55,10 +58,9 @@ public class RightSingleSwipeToOppHub extends SequentialCommandGroup {
                             () -> superStructure.setIntakeMode(IntakeMode.INTAKE)))));
     addCommands(Commands.waitSeconds(1.));
     addCommands(drive.followPPPath("RInt1OverMid-ROppHub"));
-    addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.MID)));
     addCommands(drive.followPPPath("ROppHub-RSh2"));
     addCommands(
-        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.));
+        superStructure.getShootCommand(ControlMode.SCORE, Button.kAutoButton).withTimeout(2.5));
 
     addCommands(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     addCommands(drive.followPPPath("RSh2-REndInt3"));

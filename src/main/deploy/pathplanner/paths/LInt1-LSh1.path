@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.054764862466726,
-        "y": 3.8378260869565217
+        "x": 7.05505732477048,
+        "y": 4.378981340483757
       },
       "isLocked": false,
       "linkedName": "L-AftIntake1"
@@ -20,12 +20,12 @@
         "y": 5.417348307291666
       },
       "prevControl": {
-        "x": 6.542677424472401,
-        "y": 5.375702647814623
+        "x": 6.579947916666666,
+        "y": 5.4053125
       },
       "nextControl": {
-        "x": 5.30140699404762,
-        "y": 5.4509895833333335
+        "x": 5.300464495676333,
+        "y": 5.426585901472663
       },
       "isLocked": false,
       "linkedName": null
@@ -46,16 +46,16 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.6101265822784804,
-      "rotationDegrees": 134.91129562247326
+      "waypointRelativePos": 0.49098176532769555,
+      "rotationDegrees": 144.28865322051803
     },
     {
-      "waypointRelativePos": 1.0537634408602163,
-      "rotationDegrees": 91.0
+      "waypointRelativePos": 1.0579216354344123,
+      "rotationDegrees": 51.803
     },
     {
-      "waypointRelativePos": 1.6279569892473125,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 1.6320272572402044,
+      "rotationDegrees": 51.803
     }
   ],
   "constraintZones": [
@@ -88,7 +88,7 @@
     "rotation": 135.0
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "LStep1",
   "idealStartingState": {
     "velocity": 0.0,
     "rotation": -90.0

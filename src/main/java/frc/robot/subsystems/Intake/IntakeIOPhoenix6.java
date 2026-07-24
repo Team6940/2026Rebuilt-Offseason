@@ -63,6 +63,7 @@ public class IntakeIOPhoenix6 implements IntakeIO {
     config.Slot0.kS = IntakeConstants.RollerkS;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = IntakeConstants.RollerSupplyCurrentLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = false;
     config.MotorOutput.Inverted = IntakeConstants.RollerInverted;
     rollerLeader.getConfigurator().apply(config);
     TalonFXConfiguration followerConfig = new TalonFXConfiguration();
@@ -87,10 +88,29 @@ public class IntakeIOPhoenix6 implements IntakeIO {
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    inputs.rackConnected = BaseStatusSignal.refreshAll(rackMotor.getPosition()).isOK();
+    inputs.rackConnected =
+        BaseStatusSignal.refreshAll(
+                rackMotor.getPosition(), rackMotor.getSupplyCurrent(), rackMotor.getSupplyVoltage())
+            .isOK();
     inputs.rackPositionRotations = rackMotor.getPosition().getValueAsDouble();
+    inputs.rackSupplyCurrentA = rackMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.rackSupplyVoltageV = rackMotor.getSupplyVoltage().getValueAsDouble();
 
-    inputs.rollerConnected = BaseStatusSignal.refreshAll(rollerLeader.getVelocity()).isOK();
+    inputs.rollerConnected =
+        BaseStatusSignal.refreshAll(
+                rollerLeader.getVelocity(),
+                rollerLeader.getSupplyCurrent(),
+                rollerLeader.getSupplyVoltage())
+            .isOK();
     inputs.rollerVelocityRps = rollerLeader.getVelocity().getValueAsDouble();
+    inputs.rollerSupplyCurrentA = rollerLeader.getSupplyCurrent().getValueAsDouble();
+    inputs.rollerSupplyVoltageV = rollerLeader.getSupplyVoltage().getValueAsDouble();
+
+    inputs.rollerFollowerConnected =
+        BaseStatusSignal.refreshAll(
+                rollerFollower.getSupplyCurrent(), rollerFollower.getSupplyVoltage())
+            .isOK();
+    inputs.rollerFollowerSupplyCurrentA = rollerFollower.getSupplyCurrent().getValueAsDouble();
+    inputs.rollerFollowerSupplyVoltageV = rollerFollower.getSupplyVoltage().getValueAsDouble();
   }
 }

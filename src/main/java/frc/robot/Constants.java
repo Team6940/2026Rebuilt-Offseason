@@ -1,16 +1,3 @@
-// Copyright 2021-2025 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -30,6 +17,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.generated.TunerConstants;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -107,22 +95,23 @@ public final class Constants {
     /* Rollers */
     public static final double RollerRatio = 35. / 20.;
     public static final InvertedValue RollerInverted = InvertedValue.Clockwise_Positive;
-    public static final double RollerSupplyCurrentLimit = 20.0;
+    public static final double RollerSupplyCurrentLimit = 40.0;
     public static final double RollerkP = 0.1;
     public static final double RollerkI = 0.0;
     public static final double RollerkD = 0.0;
     public static final double RollerkV = 0.213;
     public static final double RollerkS = 0.353;
     public static final double RollerVelocityToleranceRps = 0.5;
-    public static final double IntakingRps = 25.0;
-    public static final double IntakeEmergencyOutRps = 60.0;
+    public static final double IntakingRps = 45.0;
+    public static final double IntakeEmergencyOutRps = 57.0;
+    public static final double IntakingRpsLower = 20.0;
     public static final MotorAlignmentValue RollerFollowerAlignment = MotorAlignmentValue.Opposed;
 
     /* Rack */
     public static final double RackRatio = 48. / 14.;
     public static final InvertedValue RackInverted = InvertedValue.Clockwise_Positive;
-    public static final double RackSupplyCurrentLimit = 20.0;
-    public static final double RackStatorCurrentLimit = 40.0;
+    public static final double RackSupplyCurrentLimit = 40.0;
+    public static final double RackStatorCurrentLimit = 80.0;
     public static final double RackkP = 20.;
     public static final double RackkI = 0.0;
     public static final double RackkD = 0.0;
@@ -145,78 +134,91 @@ public final class Constants {
   }
 
   public final class DriveConstants {
-    public static final double DEADBAND = 0.05;
-    public static final double ANGLE_KP = 5.0;
-    public static final double ANGLE_KD = 0.4;
-    public static final double ANGLE_MAX_VELOCITY = 8.0;
-    public static final double ANGLE_MAX_ACCELERATION = 20.0;
+    public static final double Deadband = 0.08;
+    public static final double TranslationDeadband = 0.1;
 
-    public static final double AUTO_AIM_ANGLE_KP = 5.0;
+    /** Maximum seconds AttackMode stays active per enable. */
+    public static final double AttackModeTimeoutSec = 10.0;
 
-    public static final double AUTO_AIM_ANGLE_KI = 0.0;
-    public static final double AUTO_AIM_ANGLE_KD = 0.1;
+    public static final double AnglekP = 5.0;
+    public static final double AnglekD = 0.4;
+    public static final double AngleMaxVelocity = 8.0;
+    public static final double AngleMaxAcceleration = 20.0;
+
+    public static final double AutoAimAnglekP = 9.0;
+
+    public static final double AutoAimAnglekI = 0.0;
+    public static final double AutoAimAnglekD = 0.35;
 
     /**
      * Drive motor supply limit (A) while {@code driveAutoAim} is active; frees battery for shooter.
      */
-    public static final double AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS = 40.0;
+    public static final double AutoAimDriveSupplyCurrentLimitAmps = 20.0;
+
+    public static final double AutoAimDriveStatorCurrentLimitAmps = 40.0;
 
     /** Steer motor stator limit (A) while {@code driveAutoAim} is active. */
-    public static final double AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS = 45.0;
+    public static final double AutoAimSteerSupplyCurrentLimitAmps = 25.0;
 
-    public static final double MOVE_TO_X_KP = 5.;
-    public static final double MOVE_TO_Y_KP = 5.;
-    public static final double MOVE_TO_THETA_KP = 5.;
-    public static final double MOVE_TO_X_KD = 0.4;
-    public static final double MOVE_TO_Y_KD = 0.4;
-    public static final double MOVE_TO_THETA_KD = 0.4;
-    public static final double MOVE_TO_POSITION_TOLERANCE_METERS = 0.05;
-    public static final double MOVE_TO_ANGLE_TOLERANCE_DEGREES = 3.;
+    public static final double AutoAimSteerStatorCurrentLimitAmps = 45.0;
 
-    public static final double PP_TRANSLATION_KP = 5.;
-    public static final double PP_TRANSLATION_KD = 0.4;
-    public static final double PP_ROTATION_KP = 5.;
-    public static final double PP_ROTATION_KD = 0.4;
+    public static final double MoveToXkP = 5.;
+    public static final double MoveToYkP = 5.;
+    public static final double MoveToThetakP = 5.;
+    public static final double MoveToXkD = 0.4;
+    public static final double MoveToYkD = 0.4;
+    public static final double MoveToThetakD = 0.4;
+    public static final double MoveToPositionToleranceMeters = 0.05;
+    public static final double MoveToAngleToleranceDegrees = 3.;
+
+    public static final double PathPlannerTranslationkP = 5.;
+    public static final double PathPlannerTranslationkD = 0.4;
+    public static final double PathPlannerRotationkP = 5.;
+    public static final double PathPlannerRotationkD = 0.4;
 
     /** Pure-pursuit-style lookahead distance along the trench centerline (m). */
-    public static final double TRENCH_LOOKAHEAD_METERS = 0.6;
+    public static final double TrenchLookAheadMeters = 0.6;
 
     /** Field-relative driver speed (m/s) required to set path traversal direction. */
-    public static final double TRENCH_DRIVER_INTENT_THRESHOLD = 0.08;
+    public static final double TrenchDriveIntentThreshold = 0.08;
 
     /** Epsilon (m) for finite-difference path tangent at the nearest point. */
-    public static final double TRENCH_TANGENT_EPSILON = 0.05;
+    public static final double TrenchTangentEpsilon = 0.05;
 
     /** Maximum fraction of max linear speed applied as trench guidance assist. */
-    public static final double TRENCH_MAX_ASSIST = 0.65;
+    public static final double TrenchMaxAssist = 0.65;
 
     /** Minimum driver–guidance alignment (dot product) before assist ramps up. */
-    public static final double TRENCH_MIN_ALIGNMENT = -0.2;
+    public static final double TrenchMinAlignment = -0.2;
 
     /** Cross-track distance (m) at which path adhesion reaches zero. */
-    public static final double TRENCH_MAX_CROSS_TRACK_METERS = 1.0;
+    public static final double TrenchMaxCrossTrackMeters = 1.0;
 
     /** Exponent on blended adhesion (0.5 = sqrt); boosts assist when near/on the path. */
-    public static final double TRENCH_BLEND_EXPONENT = 0.5;
+    public static final double TrenchBlendExponent = 0.5;
 
     /** Degrees: new square edge must beat current edge by this much to switch. */
-    public static final double EDGE_SNAP_HYSTERESIS_DEG = 20.0;
+    public static final double EdgeSnapHysteresisDeg = 20.0;
 
     /** Trench heading hold. */
-    public static final double TRENCH_ANGLE_KP = 5.0;
+    public static final double TrenchAnglekP = 5.0;
 
-    public static final double TRENCH_ANGLE_KD = 0.1;
+    public static final double TrenchAnglekD = 0.1;
+
+    public static final double IntakeAnglekP = 9.0;
+
+    public static final double IntakeAnglekD = 0.35;
   }
 
   public final class OperatorConstants {
     /** Joystick deadband applied before scaling operator inputs. */
-    public static final double DEADBAND = 0.05;
+    public static final double DeadBand = 0.05;
 
     /**
      * Power exponent for the input curve. Values > 1 give finer control near center and bolder
      * response near full deflection. 2.0 = quadratic (recommended starting point).
      */
-    public static final double INPUT_POWER = 2.0;
+    public static final double InputPower = 2.0;
   }
 
   public static final class FieldConstants {
@@ -538,13 +540,15 @@ public final class Constants {
     static {
       DistanceToShooterRps.put(0.947, 27.9);
       DistanceToShooterRps.put(1.32, 29.0);
-      DistanceToShooterRps.put(1.88, 33.04);
-      DistanceToShooterRps.put(2.6, 34.8);
-      DistanceToShooterRps.put(3.4, 40.4);
-      DistanceToShooterRps.put(4.1, 42.4);
-      DistanceToShooterRps.put(4.99, 48.9);
-      DistanceToShooterRps.put(5.2, 51.5);
-      DistanceToShooterRps.put(5.7, 53.5);
+      DistanceToShooterRps.put(1.88, 34.04);
+      DistanceToShooterRps.put(2.1, 35.54);
+      DistanceToShooterRps.put(2.6, 38.2);
+      DistanceToShooterRps.put(3.4, 41.4);
+      DistanceToShooterRps.put(3.6, 43.4);
+      DistanceToShooterRps.put(4.1, 44.4);
+      DistanceToShooterRps.put(4.99, 49.9);
+      DistanceToShooterRps.put(5.2, 53.5);
+      DistanceToShooterRps.put(5.7, 55.5);
 
       DistanceToHoodDegs.put(0.947, 17.842);
       DistanceToHoodDegs.put(1.32, 17.842);
@@ -552,7 +556,7 @@ public final class Constants {
       DistanceToHoodDegs.put(2.6, 21.0);
       DistanceToHoodDegs.put(3.4, 23.3);
       DistanceToHoodDegs.put(4.1, 26.5);
-      DistanceToHoodDegs.put(4.99, 35.5);
+      DistanceToHoodDegs.put(4.99, 30.5);
       DistanceToHoodDegs.put(5.2, 38.5);
       DistanceToShooterRps.put(5.7, 41.);
 
@@ -569,8 +573,8 @@ public final class Constants {
       PassDistanceToShooterRps.put(4.1, 31.4);
       PassDistanceToShooterRps.put(4.99, 34.9);
       PassDistanceToShooterRps.put(6.0, 37.5);
-      PassDistanceToShooterRps.put(7.0, 41.5);
-      PassDistanceToShooterRps.put(13.0, 60.);
+      PassDistanceToShooterRps.put(7.0, 54.5);
+      PassDistanceToShooterRps.put(13.0, 54.);
 
       PassDistanceToHoodDegs.put(1.05, 17.842);
       PassDistanceToHoodDegs.put(1.32, 17.842);
@@ -594,7 +598,7 @@ public final class Constants {
     public static final double kP = 8.;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
-    public static final double kV = 0.13;
+    public static final double kV = 0.11;
     public static final double kS = 9;
     public static final double SupplyCurrentLimit = 60.0;
     public static final double StatorCurrentLimit = 60.0;
@@ -610,7 +614,7 @@ public final class Constants {
     public static final double HoodRatio = 31. / 20. * 40. / 14. * 14.;
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double SupplyCurrentLimit = 40.0;
-    public static final double kP = 20.0;
+    public static final double kP = 70.0;
     public static final double kI = 0.0;
     public static final double kD = 0.2;
     public static final double kV = 0.0;
@@ -627,10 +631,10 @@ public final class Constants {
   /** Tuning for hybrid shoot commands ({@link frc.robot.commands.HybridScoreCommand}). */
   public static final class HybridShootConstants {
     // --- Ready gate (AIM to READY) ---
-    public static final double HeadingToleranceDegs = 3.0;
-    public static final double HoodToleranceDegs = 1.5;
-    public static final double ShooterToleranceRpsLower = 5.;
-    public static final double ShooterToleranceRpsHigher = 2.;
+    public static final double HeadingToleranceDegs = 14.;
+    public static final double HoodToleranceDegs = 3.;
+    public static final double ShooterToleranceRpsLower = 3.;
+    public static final double ShooterToleranceRpsHigher = 1.;
 
     // --- Operator trims (AIM / READY) ---
     public static final double AimHeadingCompRangeDegs = 10.0;
@@ -641,8 +645,9 @@ public final class Constants {
     public static final double DriverTranslationFineTuneDeadband = 0.3;
 
     // --- SHOOT: indexer feed, then intake retract timing ---
-    public static final double FeedDurationSec = 0.6;
-    public static final double PostRetractWaitSec = 0.4;
+    public static final double FeedDurationSec = 0.53;
+    public static final double PostRetractWaitSec = 0.65;
+    public static final double PostOutWaitSec = 0.35;
 
     // --- Operator RPS offset steps (B / A / X / Y) ---
     public static final double RpsOffsetB = -1.0;
@@ -656,22 +661,37 @@ public final class Constants {
     public static final double IndexerRatio = 1.0;
     public static final InvertedValue FeederInverted = InvertedValue.Clockwise_Positive;
     public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
-    public static final double FeederSupplyCurrentLimit = 30.0;
+    public static final double FeederSupplyCurrentLimit = 20;
     public static final double IndexerSupplyCurrentLimit = 20.0;
-    public static final double FeederkP = 0.1;
+    public static final double FeederkP = 12;
     public static final double FeederkI = 0.0;
     public static final double FeederkD = 0.0;
-    public static final double FeederkV = 0.12;
-    public static final double FeederkS = 0.31;
-    public static final double IndexerkP = 0.1;
+    public static final double FeederkV = 0.04;
+    public static final double FeederkS = 4.5;
+    public static final boolean FeederStatorCurrentLimitEnable = true;
+    public static final double FeederStatorCurrentLimit = 40.;
+
+    /** Feeder stator limit (A) during endgame low-power (last 50s). */
+    public static final double FeederStatorCurrentLimitLow = 25.;
+
+    public static final boolean IndexerStatorCurrentLimitEnable = true;
+    public static final double IndexerStatorCurrentLimit = 45.;
+
+    /** Indexer stator limit (A) during endgame low-power (last 50s). */
+    public static final double IndexerStatorCurrentLimitLow = 25.;
+
+    public static final double IndexerkP = 10.;
     public static final double IndexerkI = 0.0;
     public static final double IndexerkD = 0.0;
-    public static final double IndexerkV = 0.12;
-    public static final double IndexerkS = 0.325;
+    public static final double IndexerkV = 0.05;
+    public static final double IndexerkS = 15.;
     public static final MotorAlignmentValue IndexerFollowerAlignment = MotorAlignmentValue.Opposed;
     public static final MotorAlignmentValue FeederFollowerAlignment = MotorAlignmentValue.Aligned;
-    public static final double FeedRps = 75.0;
-    public static final double IndexerRps = 60.0;
+    public static final double FeedRps = 43.0;
+    public static final double IndexerRps = 67.0;
+    public static final double FeederJamCurrentThresholdA = 160.0;
+    public static final double FeederJamDebounceSec = 0.2;
+    public static final double FeederJamReverseDurationSec = 0.5;
   }
 
   /** Maple-sim field sim tuning for OverTheBumper intake, hopper, and full-width dumper shooter. */
@@ -749,7 +769,7 @@ public final class Constants {
     /**
      * Reject when estimated tag distance to robot exceeds this (meters). Tune per camera mounting.
      */
-    public static final double REJECT_MAX_DISTANCE_METERS = 5.0;
+    public static final double REJECT_MAX_DISTANCE_METERS = 4.0;
 
     public static final double REJECT_STALE_SECONDS = 0.5;
     public static final double REJECT_MAX_OMEGA_RAD_PER_SEC = 4.0 * Math.PI;
@@ -791,7 +811,7 @@ public final class Constants {
     public static final InterpolatingDoubleTreeMap tAtoDev = new InterpolatingDoubleTreeMap();
 
     static {
-      tAtoDev.put(0.17, 0.08);
+      tAtoDev.put(0.17, 0.1);
       tAtoDev.put(0.12, 0.20);
       tAtoDev.put(0.071, 0.35);
       tAtoDev.put(0.046, 0.4);
@@ -802,27 +822,30 @@ public final class Constants {
 
   public static class Ports {
     public static class LED {
-      public static final int LED_PWM_PORT = 8;
+      public static final int LEDPWMPort = 8;
     }
   }
 
   public static class Settings {
     public static class LED {
-      public static final int LED_LENGTH = 35;
-      public static final int[] GYRO_BUFFER = {0, 1};
-      public static final int[] SHOOTER_BUFFER = {2, 34};
+      public static final int LEDLength = 35;
+      public static final int[] ChassisLeft = {0, 5};
+      public static final int[] ShooterMid = {6, 28};
+      public static final int[] ChassisRight = {29, 34};
+      public static final Color AttackModeColor = new Color("#267ce4");
     }
 
     public interface LEDs {
 
       // TODO: Get actual length of led, along with length of individual sections
-      int LED_LENGTH = Settings.LED.LED_LENGTH;
+      int LED_LENGTH = Settings.LED.LEDLength;
       // LED Pattern
 
       LEDPattern DISABLED = LEDPattern.solid(Color.kPurple);
 
-      LEDPattern HYBRID_TRENCH = LEDPattern.solid(Color.kGreen);
-      LEDPattern HYBRID_INTAKE_DRIVE = LEDPattern.solid(Color.kBlue);
+      LEDPattern CHASSIS_NORMAL = LEDPattern.solid(Color.kWhite);
+      LEDPattern CHASSIS_SHOOTING = LEDPattern.solid(Color.kRed);
+      LEDPattern CHASSIS_ATTACKMODE = LEDPattern.solid(Settings.LED.AttackModeColor);
       LEDPattern MANUAL = LEDPattern.solid(Color.kPurple);
       LEDPattern SHOOT = LEDPattern.solid(Color.kRed);
       LEDPattern READY = LEDPattern.solid(Color.kGreen);

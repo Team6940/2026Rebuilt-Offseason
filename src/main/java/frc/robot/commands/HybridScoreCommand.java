@@ -18,6 +18,7 @@ import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
@@ -31,7 +32,8 @@ public class HybridScoreCommand extends Command {
   private enum ShootSequence {
     FEEDING,
     RETRACT_WAIT,
-    COMPLETE
+    COMPLETE,
+    OUT
   }
 
   private final CommandSwerveDrivetrain drive;
@@ -50,7 +52,7 @@ public class HybridScoreCommand extends Command {
   private double rpsOffset = 0.0;
   private double hoodCompDegs = 0.0;
   private double headingCompDegs = 0.0;
-  private double shootHeadingFineTuneDegs = 0.0;
+  private double shootHeadingFineTuneMagnitude = 0.0;
   private double lastSimVolleySec = 0.0;
 
   public HybridScoreCommand(CommandSwerveDrivetrain drive, Button shootButton) {
@@ -65,12 +67,13 @@ public class HybridScoreCommand extends Command {
 
   @Override
   public void initialize() {
+    superStructure.setControlMode(ControlMode.SCORE);
     shootSequence = ShootSequence.FEEDING;
     shootSequenceStartSec = 0.0;
     rpsOffset = 0.0;
     hoodCompDegs = 0.0;
     headingCompDegs = 0.0;
-    shootHeadingFineTuneDegs = 0.0;
+    shootHeadingFineTuneMagnitude = 0.0;
     lastSimVolleySec = 0.0;
     transitionTo(ShootPhase.AIM);
   }
@@ -79,42 +82,41 @@ public class HybridScoreCommand extends Command {
   public void execute() {
     applyOperatorAdjustments();
 
-    ShotPlan plan = computeShotPlan();
+    // ShotPlan planMove = computeShotPlanMove();
+    ShotPlan planFix = computeShotPlanFix();
 
-    double finalHoodDegs = plan.hoodDegs + hoodCompDegs;
-    double finalShooterRps = plan.shooterRps + rpsOffset;
-    Rotation2d finalHeading = plan.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
+    // double finalHoodDegsMoving = planMove.hoodDegs + hoodCompDegs;
+    // double finalShooterRpsMoving = planMove.shooterRps + rpsOffset;
+    // Rotation2d finalHeadingMove = planMove.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
 
-    if (superStructure.getShootPhase() == ShootPhase.SHOOT) {
-      shootHeadingFineTuneDegs =
-          ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX());
-      if (Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband) {
-        finalHeading =
-            finalHeading.plus(
-                Rotation2d.fromDegrees(shootHeadingFineTuneDegs * AimHeadingCompRangeDegs));
-      }
-    }
+    double finalHoodDegsFix = planFix.hoodDegs + hoodCompDegs;
+    double finalShooterRpsFix = planFix.shooterRps + rpsOffset;
+    Rotation2d finalHeadingFix = planFix.heading.plus(Rotation2d.fromDegrees(headingCompDegs));
 
-    boolean ready = isReady(finalHoodDegs, finalShooterRps, finalHeading);
+    boolean ready = isReady(finalHoodDegsFix, finalShooterRpsFix, finalHeadingFix);
     boolean fire = driverController.getButton(shootButton);
 
-    hood.setAutoSetpoint(finalHoodDegs);
-    shooter.setVelocityRps(finalShooterRps);
-
-    Rotation2d aimHeading = finalHeading;
+    Rotation2d aimHeadingFix = finalHeadingFix;
     Translation2d driverInput =
         new Translation2d(-driverController.getLeftX(), -driverController.getLeftY());
+
+    hood.setAutoSetpoint(finalHoodDegsFix);
+    shooter.setVelocityRps(finalShooterRpsFix);
     switch (superStructure.getShootPhase()) {
       case AIM -> {
-        drive.driveAutoAimWithSpeedLimit(
-            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeading);
+        drive.driveAutoAim(
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> aimHeadingFix);
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
       }
       case READY -> {
-        drive.driveAutoAimWithSpeedLimit(
-            () -> -driverController.getLeftY(), () -> -driverController.getLeftX(), aimHeading);
+        drive.driveAutoAim(
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> aimHeadingFix);
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {
@@ -125,11 +127,11 @@ public class HybridScoreCommand extends Command {
         drive.driveAutoAimWithSpeedLimitorLocked(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            aimHeading,
-            Math.abs(shootHeadingFineTuneDegs) > ShootHeadingFineTuneDeadband,
+            aimHeadingFix,
+            Math.abs(shootHeadingFineTuneMagnitude) > ShootHeadingFineTuneDeadband,
             driverInput.getNorm() > DriverTranslationFineTuneDeadband);
 
-        runShootSequence(finalHoodDegs, ready, fire);
+        runShootSequence(finalHoodDegsFix, ready, fire);
         if (!fire) {
           transitionTo(ready ? ShootPhase.READY : ShootPhase.AIM);
         }
@@ -137,7 +139,7 @@ public class HybridScoreCommand extends Command {
       default -> transitionTo(ShootPhase.AIM);
     }
 
-    log(plan, finalHoodDegs, finalShooterRps, finalHeading, ready, fire);
+    log(planFix, finalHoodDegsFix, finalShooterRpsFix, finalHeadingFix, ready, fire);
     applyOperatorForcedFeed();
   }
 
@@ -149,8 +151,8 @@ public class HybridScoreCommand extends Command {
       shootSequenceStartSec = 0.0;
     }
     hood.setIdle();
-    shooter.setVelocityRps(33.3);
-    drive.releaseAutoAimCurrentLimits();
+    shooter.setVelocityRps(40.);
+    superStructure.restoreChassisMode();
     superStructure.setShootPhase(ShootPhase.HEATUP);
     superStructure.setIntakeMode(IntakeMode.INTAKE);
     if (!interrupted) {
@@ -163,9 +165,15 @@ public class HybridScoreCommand extends Command {
     return false;
   }
 
-  private ShotPlan computeShotPlan() {
+  // private ShotPlan computeShotPlanMove() {
+  //   var shooterPos = drive.getShooterWorldPosition();
+  //   return ProjectileCalculator.planScore(
+  //       shooterPos, CommandSwerveDrivetrain.getAllianceHubCenter(), drive.getFieldVelocity());
+  // }
+
+  private ShotPlan computeShotPlanFix() {
     var shooterPos = drive.getShooterWorldPosition();
-    return ProjectileCalculator.planScore(
+    return ProjectileCalculator.planFixScore(
         shooterPos, CommandSwerveDrivetrain.getAllianceHubCenter(), drive.getFieldVelocity());
   }
 
@@ -183,10 +191,12 @@ public class HybridScoreCommand extends Command {
       rpsOffset = RpsOffsetY;
     }
     hoodCompDegs =
-        ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY())
+        ImprovedCommandXboxController.applyInputCurve(
+                MathUtil.applyDeadband(-operatorController.getLeftY(), 0.2))
             * HoodCompRangeDegs;
     headingCompDegs =
-        ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX())
+        ImprovedCommandXboxController.applyInputCurve(
+                MathUtil.applyDeadband(-operatorController.getRightX(), 0.2))
             * AimHeadingCompRangeDegs;
   }
 
@@ -200,27 +210,36 @@ public class HybridScoreCommand extends Command {
     double now = Timer.getFPGATimestamp();
     switch (shootSequence) {
       case FEEDING -> {
-        if (Constants.currentMode == Constants.Mode.SIM
-            && fire
-            && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec
-            && ready) {
-          shooter.simulateLaunch(90. - finalHoodDegs);
-          lastSimVolleySec = now;
-        }
         indexer.feed();
         if (now - shootSequenceStartSec >= FeedDurationSec) {
-          superStructure.setIntakeMode(IntakeMode.RETRACTED);
           shootSequence = ShootSequence.RETRACT_WAIT;
           shootSequenceStartSec = now;
         }
       }
       case RETRACT_WAIT -> {
         indexer.feed();
+        superStructure.setIntakeMode(IntakeMode.RETRACTED);
         if (now - shootSequenceStartSec >= PostRetractWaitSec) {
-          shootSequence = ShootSequence.COMPLETE;
+          shootSequence = ShootSequence.OUT;
+          shootSequenceStartSec = now;
+        }
+      }
+      case OUT -> {
+        indexer.feed();
+        superStructure.setIntakeMode(IntakeMode.INTAKE);
+        if (now - shootSequenceStartSec >= PostOutWaitSec) {
+          shootSequence = ShootSequence.RETRACT_WAIT;
+          shootSequenceStartSec = now;
         }
       }
       default -> {}
+    }
+    if (Constants.currentMode == Constants.Mode.SIM
+        && fire
+        && now - lastSimVolleySec >= FieldSimulationConstants.DumperVolleyPeriodSec
+        && ready) {
+      shooter.simulateLaunch(90. - finalHoodDegs);
+      lastSimVolleySec = now;
     }
   }
 
@@ -284,6 +303,10 @@ public class HybridScoreCommand extends Command {
     Logger.recordOutput("Cmds/HybridScore/AtAngle", isAtTargetAngle(finalHeading));
     Logger.recordOutput("Cmds/HybridScore/AtHood", isAtTargetHood(finalHoodDegs));
     Logger.recordOutput("Cmds/HybridScore/AtShooter", isAtTargetShooter(finalShooterRps));
+    superStructure.setAimReadiness(
+        isAtTargetAngle(finalHeading),
+        isAtTargetHood(finalHoodDegs),
+        isAtTargetShooter(finalShooterRps));
     if (plan.virtualTarget != null) {
       Logger.recordOutput(
           "Cmds/HybridScore/VirtualTarget", new Pose2d(plan.virtualTarget, Rotation2d.kZero));

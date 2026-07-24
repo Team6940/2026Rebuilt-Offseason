@@ -39,6 +39,12 @@ Main.java → Robot.java (LoggedRobot) → RobotContainer.java → SuperStructur
 
 **Command packages:** `commands/` (hybrid scoring, intake, drive commands), `commands/Autos/`, `commands/leds/`
 
+**Autonomous system:** `autos/` contains `AutoBuilder.java` (dynamic per-step path chooser on SmartDashboard) and `AutoSegment.java`. Specific auto routines live in `commands/Autos/`. `reference/autos/` has reference implementations (not compiled into the robot).
+
+**IO abstraction pattern:** Each subsystem has an `*IO` interface and two implementations:
+- `*IOPhoenix6.java` — real hardware (CTRE Phoenix 6)
+- `*IOSim.java` — maple-sim physics simulation
+
 **Library code:** `Library/` contains vendored utilities from other teams (95, 503, 1323, 1678, 1706, 2910, 3476, 6940)
 
 **Simulation:** `simulation/FieldSimulation.java` — maple-sim field sim with fuel physics. Only runs in SIM mode.
@@ -61,7 +67,7 @@ NT telemetry publishing is controlled by `Constants.enableNtTelemetry` — set `
 
 Button bindings in `RobotContainer.configureButtonBindings()` define the full driver/operator interface. Priority system for drive modes (highest wins): **AutoAim (Score/Pass/Manual) > HybridTrench > HybridIntake > Manual**.
 
-Shoot phases: `OFF → HEATUP → AIM → READY → SHOOT`. Control modes: `SCORE`, `PASS`, `MANUAL`. Intake modes: `INTAKE`, `REVERSE`, `HYBRID`.
+Shoot phases: `OFF → HEATUP → AIM → READY → SHOOT`. Control modes: `SCORE`, `PASS`, `MANUAL`. Intake modes: `INTAKE`, `HYBRID`, `RETRACTED`, `OFF`, `REVERSE`, `MID`.
 
 ## Testing
 
@@ -69,7 +75,7 @@ Tests go in `src/test/java/frc/robot/`. JUnit 5 with auto-detection enabled. Cur
 
 ## Gotchas
 
-- **Subsystem singletons:** Intake, Hood, Indexer, Shooter, LEDs, and SuperStructure all use `getInstance()` — don't create duplicate instances.
+- **Subsystem singletons:** CommandSwerveDrivetrain, Intake, Hood, Indexer, Shooter, LEDs, and SuperStructure all use `getInstance()` — don't create duplicate instances.
 - **Vendor deps:** JSON files in `vendordeps/` are NOT Gradle dependencies — they're consumed by GradleRIO to pull Maven artifacts. Don't put `implementation` lines for vendor libs in `build.gradle`.
 - **Phoenix 6 swerve:** `Robot.java` constructor validates that all modules use `TalonFX_Integrated` for both drive and steer motors. Using other motor types will throw at startup.
 - **Field layout:** AprilTag positions are loaded from `src/main/deploy/pathplanner/field2026/2026-official-andymark.json` — not the default WPILib layout. Don't replace with standard `2026-field.json`.

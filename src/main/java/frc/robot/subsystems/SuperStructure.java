@@ -1,25 +1,31 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.FieldCentric;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.commands.DriveDefaultCommand;
 import frc.robot.commands.DriveHybridTrenchCommand;
 import frc.robot.commands.HeatupCommand;
 import frc.robot.commands.HybridPassCommand;
 import frc.robot.commands.HybridScoreCommand;
-import frc.robot.commands.IntakeEmergencyOutCommand;
+import frc.robot.commands.IndexerDefaultCommand;
 import frc.robot.commands.IntakeDefaultCommand;
+import frc.robot.commands.IntakeEmergencyOutCommand;
 import frc.robot.commands.IntakeHybridCommand;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.leds.LEDDefaultCommand;
 import frc.robot.subsystems.Chassis.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Halo.LEDController;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
-import frc.robot.subsystems.leds.LEDController;
+import frc.robot.subsystems.Power.PowerMonitor;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -72,21 +78,46 @@ public class SuperStructure extends SubsystemBase {
     MID
   }
 
+  /** Chassis current-limit profile. */
+  public enum ChassisMode {
+    /** TunerConstants defaults (drive 60A supply/60A stator, steer 50A supply/50A stator). */
+    NORMAL,
+    /** Reduced drive current to free battery for shooter. */
+    SHOOTING,
+    /** No current limits at all. */
+    ATTACKMODE
+  }
+
   private final LoggedNetworkNumber manualShootVelocityRps =
-      new LoggedNetworkNumber("SmartDashboard/ShootVelocity", 0.0);
+      new LoggedNetworkNumber("SmartDashboard/ShootVelocity", 41.0);
   private final LoggedNetworkNumber manualHoodDegs =
-      new LoggedNetworkNumber("SmartDashboard/HoodDegs", 0.0);
+      new LoggedNetworkNumber("SmartDashboard/HoodDegs", 23.0);
 
   private DriveMode driveMode = DriveMode.MANUAL;
   private ControlMode controlMode = ControlMode.SCORE;
   private ShootPhase shootPhase = ShootPhase.OFF;
   private IntakeMode intakeMode = IntakeMode.OFF;
+  private ChassisMode chassisMode = ChassisMode.NORMAL;
+  private ChassisMode previousChassisMode = ChassisMode.NORMAL;
+  private boolean attackModeActive = false;
+  private final Timer attackModeTimer = new Timer();
+  private boolean fieldCentricEnbaled = true;
+  private boolean intakelowerRPSEnabled = false;
+
+  /** AIM-phase readiness flags for LED progress visualization. */
+  private boolean atAngle = false;
+
+  private boolean atHood = false;
+  private boolean atShooter = false;
 
   public LEDController getLEDs() {
     return LEDController.getInstance();
   }
 
-  private SuperStructure() {}
+  private SuperStructure() {
+    // Ensure PowerMonitor is instantiated and scheduled
+    PowerMonitor.getInstance();
+  }
 
   public CommandSwerveDrivetrain getDrive() {
     return CommandSwerveDrivetrain.getInstance();
@@ -109,9 +140,15 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public void resetAllModes() {
-    claimDriveMode(DriveMode.MANUAL);
-    setIntakeMode(IntakeMode.OFF);
-    setShootPhase(ShootPhase.OFF);
+    fieldCentricEnbaled = true;
+    driveMode = DriveMode.MANUAL;
+    controlMode = ControlMode.SCORE;
+    shootPhase = ShootPhase.OFF;
+    intakeMode = IntakeMode.OFF;
+    chassisMode = ChassisMode.NORMAL;
+    previousChassisMode = ChassisMode.NORMAL;
+    attackModeActive = false;
+    attackModeTimer.reset();
     CommandScheduler.getInstance().cancel(getIntake().getCurrentCommand());
   }
 
@@ -121,7 +158,6 @@ public class SuperStructure extends SubsystemBase {
 
   public void setShootPhase(ShootPhase phase) {
     shootPhase = phase;
-    getLEDs().updateFromSuperStructure();
   }
 
   public void setIntakeMode(IntakeMode mode) {
@@ -171,11 +207,101 @@ public class SuperStructure extends SubsystemBase {
     return intakeMode;
   }
 
-  public Command getFieldCentricDriveCommand(
+  public boolean getFieldCentricEnbaled() {
+    return fieldCentricEnbaled;
+  }
+
+  public void toggleFieldCentricEnabled() {
+    fieldCentricEnbaled = fieldCentricEnbaled ? false : true;
+  }
+
+  public boolean getIntakeLowerRPSEnabled() {
+    return intakelowerRPSEnabled;
+  }
+
+  public void setIntakeLowerRPSEnabled(boolean enabled) {
+    intakelowerRPSEnabled = enabled;
+  }
+
+  /** Switches chassis current-limit profile. Saves previous mode when entering SHOOTING. */
+  public void setChassisMode(ChassisMode mode) {
+    if (chassisMode == mode) {
+      return;
+    }
+    if (mode == ChassisMode.SHOOTING) {
+      previousChassisMode = chassisMode;
+    }
+    chassisMode = mode;
+    getDrive().applyChassisModeLimits(mode);
+  }
+
+  /** Restores the mode that was active before SHOOTING. */
+  public void restoreChassisMode() {
+    ChassisMode restore = previousChassisMode;
+    chassisMode = restore;
+    getDrive().applyChassisModeLimits(restore);
+  }
+
+  public ChassisMode getChassisMode() {
+    return chassisMode;
+  }
+
+  public void enableAttackMode() {
+    if (attackModeActive) {
+      return;
+    }
+    attackModeActive = true;
+    attackModeTimer.reset();
+    attackModeTimer.start();
+    setChassisMode(ChassisMode.ATTACKMODE);
+  }
+
+  public void disableAttackMode() {
+    if (!attackModeActive) {
+      return;
+    }
+    attackModeActive = false;
+    attackModeTimer.stop();
+    attackModeTimer.reset();
+    setChassisMode(ChassisMode.NORMAL);
+  }
+
+  public boolean isAttackModeActive() {
+    return attackModeActive;
+  }
+
+  public void setAimReadiness(boolean atAngle, boolean atHood, boolean atShooter) {
+    this.atAngle = atAngle;
+    this.atHood = atHood;
+    this.atShooter = atShooter;
+  }
+
+  public boolean isAtAngle() {
+    return atAngle;
+  }
+
+  public boolean isAtHood() {
+    return atHood;
+  }
+
+  public boolean isAtShooter() {
+    return atShooter;
+  }
+
+  /** Returns 0-3 count of ready subsystems. */
+  public int getAimReadyCount() {
+    int count = 0;
+    if (atAngle) count++;
+    if (atHood) count++;
+    if (atShooter) count++;
+    return count;
+  }
+
+  public Command getDefaultDriveCommand(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+    claimDriveMode(DriveMode.MANUAL);
     CommandSwerveDrivetrain drive = getDrive();
-    return Commands.run(() -> drive.driveFieldCentric(xSupplier, ySupplier, omegaSupplier), drive)
-        .beforeStarting(Commands.runOnce(() -> claimDriveMode(DriveMode.MANUAL), this));
+    return new DriveDefaultCommand(drive, xSupplier, ySupplier, omegaSupplier);
   }
 
   /**
@@ -183,19 +309,13 @@ public class SuperStructure extends SubsystemBase {
    * command.
    */
   public Command getShootCommand(ControlMode mode, Button shootButton) {
-    Command shoot =
-        switch (mode) {
-          case SCORE -> new HybridScoreCommand(getDrive(), shootButton);
-          case PASS -> new HybridPassCommand(getDrive(), shootButton);
-          case MANUAL -> new ManualShootCommand(getDrive(), shootButton);
-        };
-    return shoot.beforeStarting(
-        Commands.runOnce(
-            () -> {
-              setControlMode(mode);
-              claimDriveMode(DriveMode.AUTO_AIM);
-            },
-            this));
+    setControlMode(mode);
+    claimDriveMode(DriveMode.AUTO_AIM);
+    return switch (mode) {
+      case SCORE -> new HybridScoreCommand(getDrive(), shootButton);
+      case PASS -> new HybridPassCommand(getDrive(), shootButton);
+      case MANUAL -> new ManualShootCommand(getDrive(), shootButton);
+    };
   }
 
   public HeatupCommand getHeatupCommand() {
@@ -203,8 +323,8 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getHybridTrenchCommand() {
-    return new DriveHybridTrenchCommand(getDrive())
-        .beforeStarting(Commands.runOnce(() -> claimDriveMode(DriveMode.HYBRID_TRENCH), this));
+    claimDriveMode(DriveMode.HYBRID_TRENCH);
+    return new DriveHybridTrenchCommand(getDrive());
   }
 
   public Command getHybridIntakeCommand(
@@ -212,9 +332,8 @@ public class SuperStructure extends SubsystemBase {
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
-    return new IntakeHybridCommand(getDrive(), controller, xSupplier, ySupplier, omegaSupplier)
-        .beforeStarting(
-            Commands.runOnce(() -> claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE), this));
+    claimDriveMode(DriveMode.HYBRID_INTAKE_DRIVE);
+    return new IntakeHybridCommand(getDrive(), controller, xSupplier, ySupplier, omegaSupplier);
   }
 
   public IntakeDefaultCommand getIntakeDefaultCommand() {
@@ -229,13 +348,26 @@ public class SuperStructure extends SubsystemBase {
     return new LEDDefaultCommand(getLEDs());
   }
 
+  public IndexerDefaultCommand getIndexerDefaultCommand() {
+    return new IndexerDefaultCommand();
+  }
+
   @Override
   public void periodic() {
+    if (attackModeActive
+        && attackModeTimer.hasElapsed(Constants.DriveConstants.AttackModeTimeoutSec)) {
+      disableAttackMode();
+    }
+
     Logger.recordOutput("SuperStructure/DriveMode", driveMode);
     Logger.recordOutput("SuperStructure/ControlMode", controlMode);
     Logger.recordOutput("SuperStructure/ShootPhase", shootPhase);
     Logger.recordOutput("SuperStructure/IntakeMode", intakeMode);
+    Logger.recordOutput("SuperStructure/ChassisMode", chassisMode.name());
+    Logger.recordOutput("SuperStructure/AttackModeActive", attackModeActive);
+    Logger.recordOutput("SuperStructure/AttackModeTimerSec", attackModeTimer.get());
     Logger.recordOutput("SuperStructure/ManualShootVelocityRps", manualShootVelocityRps.get());
     Logger.recordOutput("SuperStructure/ManualHoodDegs", manualHoodDegs.get());
+    Logger.recordOutput("SuperStructure/FieldCentricDrive", fieldCentricEnbaled);
   }
 }

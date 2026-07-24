@@ -17,6 +17,7 @@ import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.DriveMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
@@ -69,6 +70,7 @@ public class ManualShootCommand extends Command {
   @Override
   public void initialize() {
     shootSequence = ShootSequence.FEEDING;
+    superStructure.setControlMode(ControlMode.MANUAL);
     shootSequenceStartSec = 0.0;
     rpsOffset = 0.0;
     hoodCompDegs = 0.0;
@@ -108,19 +110,19 @@ public class ManualShootCommand extends Command {
 
     switch (superStructure.getShootPhase()) {
       case AIM -> {
-        drive.driveAutoAim(
+        drive.driveFieldCentric(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> aimHeading);
+            () -> -driverController.getRightX());
         if (ready) {
           transitionTo(ShootPhase.READY);
         }
       }
       case READY -> {
-        drive.driveAutoAim(
+        drive.driveFieldCentric(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> aimHeading);
+            () -> -driverController.getRightX());
         if (!ready) {
           transitionTo(ShootPhase.AIM);
         } else if (fire) {
@@ -128,10 +130,10 @@ public class ManualShootCommand extends Command {
         }
       }
       case SHOOT -> {
-        drive.driveAutoAim(
+        drive.driveFieldCentric(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> aimHeading);
+            () -> -driverController.getRightX());
 
         runShootSequence(finalHoodDegs, ready, fire);
         if (!fire) {
@@ -154,8 +156,9 @@ public class ManualShootCommand extends Command {
     }
     hood.setIdle();
     shooter.stop();
-    drive.releaseAutoAimCurrentLimits();
+    superStructure.restoreChassisMode();
     superStructure.setShootPhase(ShootPhase.HEATUP);
+    superStructure.setControlMode(ControlMode.SCORE);
     if (!interrupted) {
       superStructure.claimDriveMode(DriveMode.MANUAL);
     }
@@ -228,7 +231,7 @@ public class ManualShootCommand extends Command {
   }
 
   private boolean isReady(double hoodDegs, double shooterRps, Rotation2d heading) {
-    return isAtTargetAngle(heading) && isAtTargetHood(hoodDegs) && isAtTargetShooter(shooterRps);
+    return true && isAtTargetHood(hoodDegs) && isAtTargetShooter(shooterRps);
   }
 
   private boolean isAtTargetAngle(Rotation2d desired) {
@@ -287,6 +290,10 @@ public class ManualShootCommand extends Command {
     Logger.recordOutput("Cmds/MaunalShoot/AtAngle", isAtTargetAngle(finalHeading));
     Logger.recordOutput("Cmds/MaunalShoot/AtHood", isAtTargetHood(finalHoodDegs));
     Logger.recordOutput("Cmds/MaunalShoot/AtShooter", isAtTargetShooter(finalShooterRps));
+    superStructure.setAimReadiness(
+        isAtTargetAngle(finalHeading),
+        isAtTargetHood(finalHoodDegs),
+        isAtTargetShooter(finalShooterRps));
     if (plan.virtualTarget != null) {
       Logger.recordOutput(
           "Cmds/MaunalShoot/VirtualTarget", new Pose2d(plan.virtualTarget, Rotation2d.kZero));

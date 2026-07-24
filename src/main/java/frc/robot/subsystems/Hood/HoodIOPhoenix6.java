@@ -46,7 +46,12 @@ public class HoodIOPhoenix6 implements HoodIO {
 
   @Override
   public void updateInputs(HoodIOInputs inputs) {
-    inputs.motorConnected = BaseStatusSignal.refreshAll(motor.getPosition()).isOK();
+    inputs.motorConnected =
+        BaseStatusSignal.refreshAll(
+                motor.getPosition(), motor.getSupplyCurrent(), motor.getSupplyVoltage())
+            .isOK();
     inputs.hoodPositionDegs = motor.getPosition().getValueAsDouble() * 360.0;
+    inputs.supplyCurrentA = motor.getSupplyCurrent().getValueAsDouble();
+    inputs.supplyVoltageV = motor.getSupplyVoltage().getValueAsDouble();
   }
 }

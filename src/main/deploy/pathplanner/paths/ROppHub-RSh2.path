@@ -3,41 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.072919254658385,
-        "y": 2.7755013309671686
+        "x": 6.048745901639344,
+        "y": 2.5901065573770485
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.227888198757764,
-        "y": 2.7513575865128654
+        "x": 5.203714845738723,
+        "y": 2.5659628129227454
       },
       "isLocked": false,
       "linkedName": "R-AftOppHub"
     },
     {
       "anchor": {
-        "x": 3.513682342502218,
-        "y": 2.7755013309671686
+        "x": 3.5471393442622947,
+        "y": 2.5901065573770485
       },
       "prevControl": {
-        "x": 4.319350741161706,
-        "y": 2.789888266657518
+        "x": 4.352807742921783,
+        "y": 2.604493493067398
       },
       "nextControl": {
-        "x": 3.062999112688553,
-        "y": 2.7674534161490665
+        "x": 3.09645611444863,
+        "y": 2.5820586425589465
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.684747116237799,
-        "y": 2.397249334516415
+        "x": 2.763927601959746,
+        "y": 2.4532858293608752
       },
       "prevControl": {
-        "x": 3.1273824312333627,
-        "y": 2.799645075421472
+        "x": 3.1517704918032785,
+        "y": 2.4894672131147537
       },
       "nextControl": null,
       "isLocked": false,
@@ -47,7 +47,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 1.0253164556962024,
-      "rotationDegrees": -89.43916275546889
+      "rotationDegrees": -42.62273286390598
     }
   ],
   "constraintZones": [],
@@ -66,10 +66,10 @@
     "rotation": -132.657
   },
   "reversed": false,
-  "folder": "Right07OppHub",
+  "folder": "RStep2",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": -45.3767689524804
   },
   "useDefaultConstraints": true
 }

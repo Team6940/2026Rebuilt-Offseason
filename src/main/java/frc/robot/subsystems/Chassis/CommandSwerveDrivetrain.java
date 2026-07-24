@@ -1,5 +1,3 @@
-// Must Regenerate
-
 package frc.robot.subsystems.Chassis;
 
 import static edu.wpi.first.units.Units.Amps;
@@ -7,6 +5,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -27,6 +26,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.MathUsageId;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -39,10 +39,13 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -51,12 +54,17 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.PoseEstimatorConstants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.Constants.VisionFusion;
+import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.subsystems.GamePeriodReminder;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Vision.LimelightHelpers;
+// import frc.robot.subsystems.Vision.VisionSubsystem;
 import frc.robot.util.LocalADStarAK;
 import java.util.List;
 import java.util.Optional;
@@ -124,10 +132,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /** Swerve request to apply during robot-centric path following and velocity control */
   private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds =
       new SwerveRequest.ApplyRobotSpeeds()
-          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity);
+          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity)
+          .withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
+
+  private final SwerveRequest.ApplyRobotSpeeds m_driveApplyRobotSpeeds =
+      new SwerveRequest.ApplyRobotSpeeds()
+          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity)
+          .withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
 
   private final SwerveRequest.SwerveDriveBrake m_brakeRequest =
-      new SwerveRequest.SwerveDriveBrake();
+      new SwerveRequest.SwerveDriveBrake()
+          .withDriveRequestType(com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType.Velocity)
+          .withSteerRequestType(com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType.Position);
+  ;
 
   private final Field2d field2d = new Field2d();
 
@@ -137,6 +154,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final ProfiledPIDController fieldCentricAngleController;
   private final PIDController autoAimAngleController;
   private final PIDController trenchAngleController;
+  private final PIDController hybridIntakeAngleController;
 
   private PathPlannerPath trenchPathAtlBlue;
   private PathPlannerPath trenchPathAtrBlue;
@@ -146,10 +164,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private double trenchTraversalSign = 1.0;
   private boolean hybridTrenchControlWarmedUp = false;
 
-  private static final double DEFAULT_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS = 70.0;
-  private static final double DEFAULT_STEER_STATOR_CURRENT_LIMIT_AMPS = 60.0;
-
-  private boolean autoAimCurrentLimitsActive = false;
+  private static final double NORMAL_DRIVE_SUPPLY_CURRENT_LIMIT_A = 60.0;
+  private static final double NORMAL_DRIVE_STATOR_CURRENT_LIMIT_A = 60.0;
+  private static final double NORMAL_STEER_SUPPLY_CURRENT_LIMIT_A = 50.0;
+  private static final double NORMAL_STEER_STATOR_CURRENT_LIMIT_A = 50.0;
 
   /* Swerve requests to apply during SysId characterization */
   private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
@@ -238,22 +256,64 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     initializeAutoMoveToPoseControllers();
     fieldCentricAngleController =
         new ProfiledPIDController(
-            DriveConstants.ANGLE_KP,
+            DriveConstants.AnglekP,
             0.0,
-            DriveConstants.ANGLE_KD,
+            DriveConstants.AnglekD,
             new TrapezoidProfile.Constraints(
-                DriveConstants.ANGLE_MAX_VELOCITY, DriveConstants.ANGLE_MAX_ACCELERATION));
+                DriveConstants.AngleMaxVelocity, DriveConstants.AngleMaxAcceleration));
     fieldCentricAngleController.enableContinuousInput(-Math.PI, Math.PI);
     autoAimAngleController =
         new PIDController(
-            DriveConstants.AUTO_AIM_ANGLE_KP,
-            DriveConstants.AUTO_AIM_ANGLE_KI,
-            DriveConstants.AUTO_AIM_ANGLE_KD);
+            DriveConstants.AutoAimAnglekP,
+            DriveConstants.AutoAimAnglekI,
+            DriveConstants.AutoAimAnglekD);
     autoAimAngleController.enableContinuousInput(-Math.PI, Math.PI);
     trenchAngleController =
-        new PIDController(DriveConstants.TRENCH_ANGLE_KP, 0.0, DriveConstants.TRENCH_ANGLE_KD);
+        new PIDController(DriveConstants.TrenchAnglekP, 0.0, DriveConstants.TrenchAnglekD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
+    hybridIntakeAngleController =
+        new PIDController(DriveConstants.IntakeAnglekP, 0.0, DriveConstants.IntakeAnglekD);
+    hybridIntakeAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
+    SmartDashboard.putData(
+        "Swerve Drive",
+        new Sendable() {
+          @Override
+          public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+            var modules = getModules();
+
+            builder.addDoubleProperty(
+                "Front Left Angle", () -> modules[0].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Left Velocity",
+                () -> modules[0].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Front Right Angle", () -> modules[1].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Right Velocity",
+                () -> modules[1].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Back Left Angle", () -> modules[2].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Left Velocity",
+                () -> modules[2].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Back Right Angle", () -> modules[3].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Right Velocity",
+                () -> modules[3].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
+          }
+        });
     if (Utils.isSimulation() && Constants.currentMode != Constants.Mode.REPLAY) {
       startSimThread();
     }
@@ -284,22 +344,64 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     initializeAutoMoveToPoseControllers();
     fieldCentricAngleController =
         new ProfiledPIDController(
-            DriveConstants.ANGLE_KP,
+            DriveConstants.AnglekP,
             0.0,
-            DriveConstants.ANGLE_KD,
+            DriveConstants.AnglekD,
             new TrapezoidProfile.Constraints(
-                DriveConstants.ANGLE_MAX_VELOCITY, DriveConstants.ANGLE_MAX_ACCELERATION));
+                DriveConstants.AngleMaxVelocity, DriveConstants.AngleMaxAcceleration));
     fieldCentricAngleController.enableContinuousInput(-Math.PI, Math.PI);
     autoAimAngleController =
         new PIDController(
-            DriveConstants.AUTO_AIM_ANGLE_KP,
-            DriveConstants.AUTO_AIM_ANGLE_KI,
-            DriveConstants.AUTO_AIM_ANGLE_KD);
+            DriveConstants.AutoAimAnglekP,
+            DriveConstants.AutoAimAnglekI,
+            DriveConstants.AutoAimAnglekD);
     autoAimAngleController.enableContinuousInput(-Math.PI, Math.PI);
     trenchAngleController =
-        new PIDController(DriveConstants.TRENCH_ANGLE_KP, 0.0, DriveConstants.TRENCH_ANGLE_KD);
+        new PIDController(DriveConstants.TrenchAnglekP, 0.0, DriveConstants.TrenchAnglekD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
+    hybridIntakeAngleController =
+        new PIDController(DriveConstants.IntakeAnglekP, 0.0, DriveConstants.IntakeAnglekD);
+    hybridIntakeAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
+    SmartDashboard.putData(
+        "Swerve Drive",
+        new Sendable() {
+          @Override
+          public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+            var modules = getModules();
+
+            builder.addDoubleProperty(
+                "Front Left Angle", () -> modules[0].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Left Velocity",
+                () -> modules[0].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Front Right Angle", () -> modules[1].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Right Velocity",
+                () -> modules[1].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Back Left Angle", () -> modules[2].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Left Velocity",
+                () -> modules[2].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Back Right Angle", () -> modules[3].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Right Velocity",
+                () -> modules[3].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
+          }
+        });
     if (Utils.isSimulation() && Constants.currentMode != Constants.Mode.REPLAY) {
       startSimThread();
     }
@@ -341,22 +443,64 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     initializeAutoMoveToPoseControllers();
     fieldCentricAngleController =
         new ProfiledPIDController(
-            DriveConstants.ANGLE_KP,
+            DriveConstants.AnglekP,
             0.0,
-            DriveConstants.ANGLE_KD,
+            DriveConstants.AnglekD,
             new TrapezoidProfile.Constraints(
-                DriveConstants.ANGLE_MAX_VELOCITY, DriveConstants.ANGLE_MAX_ACCELERATION));
+                DriveConstants.AngleMaxVelocity, DriveConstants.AngleMaxAcceleration));
     fieldCentricAngleController.enableContinuousInput(-Math.PI, Math.PI);
     autoAimAngleController =
         new PIDController(
-            DriveConstants.AUTO_AIM_ANGLE_KP,
-            DriveConstants.AUTO_AIM_ANGLE_KI,
-            DriveConstants.AUTO_AIM_ANGLE_KD);
+            DriveConstants.AutoAimAnglekP,
+            DriveConstants.AutoAimAnglekI,
+            DriveConstants.AutoAimAnglekD);
     autoAimAngleController.enableContinuousInput(-Math.PI, Math.PI);
     trenchAngleController =
-        new PIDController(DriveConstants.TRENCH_ANGLE_KP, 0.0, DriveConstants.TRENCH_ANGLE_KD);
+        new PIDController(DriveConstants.TrenchAnglekP, 0.0, DriveConstants.TrenchAnglekD);
     trenchAngleController.enableContinuousInput(-Math.PI, Math.PI);
+    hybridIntakeAngleController =
+        new PIDController(DriveConstants.IntakeAnglekP, 0.0, DriveConstants.IntakeAnglekD);
+    hybridIntakeAngleController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Field", field2d);
+    SmartDashboard.putData(
+        "Swerve Drive",
+        new Sendable() {
+          @Override
+          public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+            var modules = getModules();
+
+            builder.addDoubleProperty(
+                "Front Left Angle", () -> modules[0].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Left Velocity",
+                () -> modules[0].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Front Right Angle", () -> modules[1].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Right Velocity",
+                () -> modules[1].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Back Left Angle", () -> modules[2].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Left Velocity",
+                () -> modules[2].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty(
+                "Back Right Angle", () -> modules[3].getCurrentState().angle.getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Right Velocity",
+                () -> modules[3].getCurrentState().speedMetersPerSecond,
+                null);
+
+            builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
+          }
+        });
     if (Utils.isSimulation() && Constants.currentMode != Constants.Mode.REPLAY) {
       startSimThread();
     }
@@ -365,17 +509,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   private void initializeAutoMoveToPoseControllers() {
-    xController.setPID(DriveConstants.MOVE_TO_X_KP, 0.0, DriveConstants.MOVE_TO_X_KD);
-    yController.setPID(DriveConstants.MOVE_TO_Y_KP, 0.0, DriveConstants.MOVE_TO_Y_KD);
-    thetaController.setPID(DriveConstants.MOVE_TO_THETA_KP, 0.0, DriveConstants.MOVE_TO_THETA_KD);
+    xController.setPID(DriveConstants.MoveToXkP, 0.0, DriveConstants.MoveToXkD);
+    yController.setPID(DriveConstants.MoveToYkP, 0.0, DriveConstants.MoveToYkD);
+    thetaController.setPID(DriveConstants.MoveToThetakP, 0.0, DriveConstants.MoveToThetakD);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     thetaController.setConstraints(
         new TrapezoidProfile.Constraints(
-            DriveConstants.ANGLE_MAX_VELOCITY, DriveConstants.ANGLE_MAX_ACCELERATION));
-    xController.setTolerance(DriveConstants.MOVE_TO_POSITION_TOLERANCE_METERS);
-    yController.setTolerance(DriveConstants.MOVE_TO_POSITION_TOLERANCE_METERS);
+            DriveConstants.AngleMaxVelocity, DriveConstants.AngleMaxAcceleration));
+    xController.setTolerance(DriveConstants.MoveToPositionToleranceMeters);
+    yController.setTolerance(DriveConstants.MoveToPositionToleranceMeters);
     thetaController.setTolerance(
-        Units.degreesToRadians(DriveConstants.MOVE_TO_ANGLE_TOLERANCE_DEGREES));
+        Units.degreesToRadians(DriveConstants.MoveToAngleToleranceDegrees));
   }
 
   private void configureAutoBuilder() {
@@ -391,8 +535,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
         new PPHolonomicDriveController(
             new PIDConstants(
-                DriveConstants.PP_TRANSLATION_KP, 0.0, DriveConstants.PP_TRANSLATION_KD),
-            new PIDConstants(DriveConstants.PP_ROTATION_KP, 0.0, DriveConstants.PP_ROTATION_KD)),
+                DriveConstants.PathPlannerTranslationkP,
+                0.0,
+                DriveConstants.PathPlannerTranslationkD),
+            new PIDConstants(
+                DriveConstants.PathPlannerRotationkP, 0.0, DriveConstants.PathPlannerRotationkD)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -442,6 +589,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   @Override
   public void periodic() {
+    updateOdometry();
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       DriverStation.getAlliance()
           .ifPresent(
@@ -470,6 +618,45 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     field2d.setRobotPose(getPose());
     Logger.recordOutput("Odometry/Robot", getPose());
     Logger.recordOutput("Drive/ChassisSpeeds", getChassisSpeeds());
+    Logger.recordOutput(
+        "Drive/Velocity",
+        Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond));
+
+    // Log per-module and total chassis power
+    double totalDriveCurrentA = 0;
+    double totalSteerCurrentA = 0;
+    double totalChassisPowerW = 0;
+    var modules = getModules();
+    // Refresh supply signals for all module motors
+    var driveSignals = new BaseStatusSignal[modules.length * 2];
+    var steerSignals = new BaseStatusSignal[modules.length * 2];
+    for (int i = 0; i < modules.length; i++) {
+      driveSignals[i * 2] = modules[i].getDriveMotor().getSupplyCurrent();
+      driveSignals[i * 2 + 1] = modules[i].getDriveMotor().getSupplyVoltage();
+      steerSignals[i * 2] = modules[i].getSteerMotor().getSupplyCurrent();
+      steerSignals[i * 2 + 1] = modules[i].getSteerMotor().getSupplyVoltage();
+    }
+    BaseStatusSignal.refreshAll(driveSignals);
+    BaseStatusSignal.refreshAll(steerSignals);
+    for (int i = 0; i < modules.length; i++) {
+      var driveMotor = modules[i].getDriveMotor();
+      var steerMotor = modules[i].getSteerMotor();
+      double driveCurrent = driveMotor.getSupplyCurrent().getValueAsDouble();
+      double driveVoltage = driveMotor.getSupplyVoltage().getValueAsDouble();
+      double steerCurrent = steerMotor.getSupplyCurrent().getValueAsDouble();
+      double steerVoltage = steerMotor.getSupplyVoltage().getValueAsDouble();
+      totalDriveCurrentA += driveCurrent;
+      totalSteerCurrentA += steerCurrent;
+      totalChassisPowerW += driveVoltage * driveCurrent + steerVoltage * steerCurrent;
+      Logger.recordOutput("Drive/Module" + i + "/DriveSupplyCurrentA", driveCurrent);
+      Logger.recordOutput("Drive/Module" + i + "/SteerSupplyCurrentA", steerCurrent);
+      Logger.recordOutput("Drive/Module" + i + "/DrivePowerW", driveVoltage * driveCurrent);
+      Logger.recordOutput("Drive/Module" + i + "/SteerPowerW", steerVoltage * steerCurrent);
+    }
+    Logger.recordOutput("Drive/TotalDriveCurrentA", totalDriveCurrentA);
+    Logger.recordOutput("Drive/TotalSteerCurrentA", totalSteerCurrentA);
+    Logger.recordOutput("Drive/TotalChassisCurrentA", totalDriveCurrentA + totalSteerCurrentA);
+    Logger.recordOutput("Drive/TotalChassisPowerW", totalChassisPowerW);
   }
 
   private void updateSwerveInputs() {
@@ -505,17 +692,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public static Translation2d getLinearVelocityMagnitudeFromJoysticks(double x, double y) {
     Translation2d input = new Translation2d(x, y);
-    if (input.getNorm() < DriveConstants.DEADBAND) {
+    if (input.getNorm() < DriveConstants.TranslationDeadband) {
       return new Translation2d();
     } else {
-      double norm = MathUtil.applyDeadband(input.getNorm(), DriveConstants.DEADBAND);
+      double norm = MathUtil.applyDeadband(input.getNorm(), DriveConstants.TranslationDeadband);
       return input.times(1.0 / input.getNorm()).times(Math.pow(norm, 2.0));
     }
   }
 
   public void runVelocity(ChassisSpeeds speeds) {
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, kLoopPeriodSec);
-    setControl(m_pathApplyRobotSpeeds.withSpeeds(discreteSpeeds));
+    setControl(m_driveApplyRobotSpeeds.withSpeeds(discreteSpeeds));
     Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
   }
 
@@ -527,7 +714,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
     Translation2d linearVelocityMagnitude =
         getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
+    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.Deadband);
     omega = Math.copySign(omega * omega, omega);
     ChassisSpeeds speeds =
         new ChassisSpeeds(
@@ -542,6 +729,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
   }
 
+  public void driveRobotCentric(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+    Translation2d linearVelocityMagnitude =
+        getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.Deadband);
+    omega = Math.copySign(omega * omega, omega);
+    ChassisSpeeds speeds =
+        new ChassisSpeeds(
+            linearVelocityMagnitude.getX() * getMaxLinearSpeedMetersPerSec(),
+            linearVelocityMagnitude.getY() * getMaxLinearSpeedMetersPerSec(),
+            omega * getMaxAngularSpeedRadPerSec());
+    runVelocity(speeds);
+  }
+
   public void driveFieldCentricWithMaxSpeed(
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
@@ -550,7 +751,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       double maxAngularSpeed) {
     Translation2d linearVelocityMagnitude =
         getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
+    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.Deadband);
     omega = Math.copySign(omega * omega, omega);
     ChassisSpeeds speeds =
         new ChassisSpeeds(
@@ -663,21 +864,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   // for accuracy
   public void driveAutoAim(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Rotation2d> targetRotation) {
-    driveAutoAim(
-        xSupplier,
-        ySupplier,
-        targetRotation,
-        DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
-        DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
-  }
-
-  public void driveAutoAim(
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      Supplier<Rotation2d> targetRotation,
-      double driveSupplyCurrentLimitAmps,
-      double steerStatorCurrentLimitAmps) {
-    ensureAutoAimCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
+    SuperStructure.getInstance().setChassisMode(SuperStructure.ChassisMode.SHOOTING);
     Translation2d linearVelocityMagnitude =
         getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
     Rotation2d desired = targetRotation.get();
@@ -701,23 +888,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       DoubleSupplier ySupplier,
       Supplier<Rotation2d> targetRotation,
       double maxLinearSpeedMetersPerSec) {
-    driveAutoAim(
-        xSupplier,
-        ySupplier,
-        targetRotation,
-        maxLinearSpeedMetersPerSec,
-        DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
-        DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
-  }
-
-  public void driveAutoAim(
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      Supplier<Rotation2d> targetRotation,
-      double maxLinearSpeedMetersPerSec,
-      double driveSupplyCurrentLimitAmps,
-      double steerStatorCurrentLimitAmps) {
-    ensureAutoAimCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
+    SuperStructure.getInstance().setChassisMode(SuperStructure.ChassisMode.SHOOTING);
     Translation2d linearVelocityMagnitude =
         getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
     Rotation2d desired = targetRotation.get();
@@ -747,33 +918,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       Rotation2d targetRotation,
       boolean operatorTrimmingHeading,
       boolean driverTrimmingTranslation) {
-    driveAutoAimWithSpeedLimitorLocked(
-        xSupplier,
-        ySupplier,
-        targetRotation,
-        operatorTrimmingHeading,
-        driverTrimmingTranslation,
-        DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
-        DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
-  }
-
-  public void driveAutoAimWithSpeedLimitorLocked(
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      Rotation2d targetRotation,
-      boolean operatorTrimmingHeading,
-      boolean driverTrimmingTranslation,
-      double driveSupplyCurrentLimitAmps,
-      double steerStatorCurrentLimitAmps) {
-    ensureAutoAimCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
-    if (operatorTrimmingHeading || driverTrimmingTranslation) {
+    SuperStructure.getInstance().setChassisMode(SuperStructure.ChassisMode.SHOOTING);
+    if (operatorTrimmingHeading
+        || driverTrimmingTranslation
+        || !MathUtil.isNear(targetRotation.getDegrees(), getRotation().getDegrees(), 1.5)) {
       driveAutoAim(
-          xSupplier,
-          ySupplier,
-          () -> targetRotation,
-          getMaxLinearSpeedMetersPerSec() * 0.2,
-          driveSupplyCurrentLimitAmps,
-          steerStatorCurrentLimitAmps);
+          xSupplier, ySupplier, () -> targetRotation, getMaxLinearSpeedMetersPerSec() * 0.2);
     } else {
       stopWithX();
     }
@@ -781,51 +931,82 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public void driveAutoAimWithSpeedLimit(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, Rotation2d targetRotation) {
-    driveAutoAim(
-        xSupplier,
-        ySupplier,
-        () -> targetRotation,
-        getMaxLinearSpeedMetersPerSec() * 0.2,
-        DriveConstants.AUTO_AIM_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS,
-        DriveConstants.AUTO_AIM_STEER_STATOR_CURRENT_LIMIT_AMPS);
+    driveAutoAim(xSupplier, ySupplier, () -> targetRotation, getMaxLinearSpeedMetersPerSec() * 0.2);
   }
 
-  /** Restores default module current limits after {@link #driveAutoAim} ends. */
-  public void releaseAutoAimCurrentLimits() {
-    if (!autoAimCurrentLimitsActive) {
-      return;
+  /**
+   * Applies the current limits for the given {@link SuperStructure.ChassisMode}.
+   *
+   * <p>During endgame low-power (match time ≤ 50s), {@code NORMAL} and {@code ATTACKMODE} use the
+   * same Aim/SHOOTING limits. {@code SHOOTING} always uses Aim limits, so entering/leaving shoot
+   * during endgame does not raise chassis current.
+   */
+  public void applyChassisModeLimits(SuperStructure.ChassisMode mode) {
+    boolean endgameLowPower = GamePeriodReminder.getInstance().isEndgameLowPower();
+    switch (mode) {
+      case NORMAL:
+        if (endgameLowPower) {
+          applyAimCurrentLimits();
+        } else {
+          applyModuleCurrentLimits(
+              NORMAL_DRIVE_SUPPLY_CURRENT_LIMIT_A,
+              NORMAL_DRIVE_STATOR_CURRENT_LIMIT_A,
+              NORMAL_STEER_SUPPLY_CURRENT_LIMIT_A,
+              NORMAL_STEER_STATOR_CURRENT_LIMIT_A);
+        }
+        break;
+      case SHOOTING:
+        applyAimCurrentLimits();
+        break;
+      case ATTACKMODE:
+        if (endgameLowPower) {
+          applyAimCurrentLimits();
+        } else {
+          applyUnlimitedCurrentLimits();
+        }
+        break;
     }
+  }
+
+  private void applyAimCurrentLimits() {
     applyModuleCurrentLimits(
-        DEFAULT_DRIVE_SUPPLY_CURRENT_LIMIT_AMPS, DEFAULT_STEER_STATOR_CURRENT_LIMIT_AMPS);
-    autoAimCurrentLimitsActive = false;
-    Logger.recordOutput("Drive/AutoAimCurrentLimitActive", false);
-  }
-
-  private void ensureAutoAimCurrentLimits(
-      double driveSupplyCurrentLimitAmps, double steerStatorCurrentLimitAmps) {
-    if (autoAimCurrentLimitsActive) {
-      return;
-    }
-    applyModuleCurrentLimits(driveSupplyCurrentLimitAmps, steerStatorCurrentLimitAmps);
-    autoAimCurrentLimitsActive = true;
-    Logger.recordOutput("Drive/AutoAimCurrentLimitActive", true);
-    Logger.recordOutput("Drive/AutoAimDriveSupplyCurrentLimitAmps", driveSupplyCurrentLimitAmps);
-    Logger.recordOutput("Drive/AutoAimSteerStatorCurrentLimitAmps", steerStatorCurrentLimitAmps);
+        DriveConstants.AutoAimDriveSupplyCurrentLimitAmps,
+        DriveConstants.AutoAimDriveStatorCurrentLimitAmps,
+        DriveConstants.AutoAimSteerSupplyCurrentLimitAmps,
+        DriveConstants.AutoAimSteerStatorCurrentLimitAmps);
   }
 
   private void applyModuleCurrentLimits(
-      double driveSupplyCurrentLimitAmps, double steerStatorCurrentLimitAmps) {
+      double driveSupplyCurrentLimitA,
+      double driveStatorCurrentLimitA,
+      double steerSupplyCurrentLimitA,
+      double steerStatorCurrentLimitA) {
     CurrentLimitsConfigs driveLimits =
         new CurrentLimitsConfigs()
-            .withSupplyCurrentLimit(Amps.of(driveSupplyCurrentLimitAmps))
-            .withSupplyCurrentLimitEnable(true);
+            .withSupplyCurrentLimit(Amps.of(driveSupplyCurrentLimitA))
+            .withSupplyCurrentLimitEnable(true)
+            .withStatorCurrentLimit(Amps.of(driveStatorCurrentLimitA))
+            .withStatorCurrentLimitEnable(true);
     CurrentLimitsConfigs steerLimits =
         new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(Amps.of(steerStatorCurrentLimitAmps))
+            .withSupplyCurrentLimit(Amps.of(steerSupplyCurrentLimitA))
+            .withSupplyCurrentLimitEnable(true)
+            .withStatorCurrentLimit(Amps.of(steerStatorCurrentLimitA))
             .withStatorCurrentLimitEnable(true);
     for (var module : getModules()) {
       module.getDriveMotor().getConfigurator().apply(driveLimits);
       module.getSteerMotor().getConfigurator().apply(steerLimits);
+    }
+  }
+
+  private void applyUnlimitedCurrentLimits() {
+    CurrentLimitsConfigs noLimits =
+        new CurrentLimitsConfigs()
+            .withSupplyCurrentLimitEnable(false)
+            .withStatorCurrentLimitEnable(false);
+    for (var module : getModules()) {
+      module.getDriveMotor().getConfigurator().apply(noLimits);
+      module.getSteerMotor().getConfigurator().apply(noLimits);
     }
   }
 
@@ -929,11 +1110,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     double xInput = xSupplier.getAsDouble();
     double yInput = ySupplier.getAsDouble();
     boolean driverHasInput =
-        MathUtil.applyDeadband(Math.hypot(xInput, yInput), DriveConstants.DEADBAND) > 0.0;
+        MathUtil.applyDeadband(Math.hypot(xInput, yInput), DriveConstants.Deadband) > 0.0;
     Translation2d driverLinear =
         getLinearVelocityMagnitudeFromJoysticks(xInput, yInput).times(maxLinearSpeed);
     double omegaInput =
-        MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
+        MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.Deadband);
     double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
     Pose2d robotPose = getPose();
     if (driverHasInput) {
@@ -946,7 +1127,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Rotation2d desiredFacing =
         getDesiredFacingHybridTrench(intakeMode, trenchTraversalSign, robotPose);
     logHybridTrench(trenchRef, desiredFacing, fieldLinear);
-    boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
+    boolean manualRotate = Math.abs(omegaInput) > DriveConstants.Deadband;
     double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
     ChassisSpeeds speeds = new ChassisSpeeds(fieldLinear.getX(), fieldLinear.getY(), omega);
     if (applySetpoints) {
@@ -967,13 +1148,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         getLinearVelocityMagnitudeFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble())
             .times(maxLinearSpeed);
     double omegaInput =
-        MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.DEADBAND);
+        MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DriveConstants.Deadband);
     double stickOmega = Math.copySign(omegaInput * omegaInput, omegaInput) * maxAngularSpeed;
     Rotation2d desiredFacing = getDesiredFacingHybridIntake(driverLinear, IntakeMode.HYBRID);
-    boolean manualRotate = Math.abs(omegaInput) > DriveConstants.DEADBAND;
-    double omega = manualRotate ? stickOmega : calculateTrenchOmega(desiredFacing);
-    double kLiner = MathUtil.clamp(Math.cos(trenchAngleController.getError()), 0., 1.);
-    driverLinear = driverLinear.times(kLiner);
+    boolean manualRotate = Math.abs(omegaInput) > DriveConstants.Deadband;
+    double omega = manualRotate ? stickOmega : calculateHybridIntakeOmega(desiredFacing);
+    double kLiner = MathUtil.clamp(Math.cos(hybridIntakeAngleController.getError()), 0., 1.);
+    driverLinear = driverLinear.times(kLiner * 0.5 + 0.5);
     ChassisSpeeds speeds = new ChassisSpeeds(driverLinear.getX(), driverLinear.getY(), omega);
     boolean isFlipped =
         DriverStation.getAlliance().isPresent()
@@ -1010,9 +1191,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     double pathLength = points.get(points.size() - 1).distanceAlongPath;
     double lookaheadDistance =
         MathUtil.clamp(
-            distanceAlong + traversalSign * DriveConstants.TRENCH_LOOKAHEAD_METERS,
-            0.0,
-            pathLength);
+            distanceAlong + traversalSign * DriveConstants.TrenchLookAheadMeters, 0.0, pathLength);
     Translation2d lookaheadPoint = sampleTranslationAtDistance(points, lookaheadDistance);
     return new HybridTrenchReference(
         lane,
@@ -1040,7 +1219,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     int nearestIndex = findNearestPointIndex(robotPose.getTranslation(), points);
     double distanceAlong = points.get(nearestIndex).distanceAlongPath;
     Translation2d tangent = pathTangentAtDistance(points, distanceAlong);
-    if (driverFieldLinear.getNorm() > DriveConstants.TRENCH_DRIVER_INTENT_THRESHOLD) {
+    if (driverFieldLinear.getNorm() > DriveConstants.TrenchDriveIntentThreshold) {
       Translation2d driverDir = driverFieldLinear.div(driverFieldLinear.getNorm());
       double alongTangent = driverDir.dot(tangent);
       if (alongTangent < -0.1) {
@@ -1071,7 +1250,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   private static Translation2d pathTangentAtDistance(List<PathPoint> points, double distanceAlong) {
     double pathLength = points.get(points.size() - 1).distanceAlongPath;
-    double eps = DriveConstants.TRENCH_TANGENT_EPSILON;
+    double eps = DriveConstants.TrenchTangentEpsilon;
     Translation2d ahead =
         sampleTranslationAtDistance(points, Math.min(distanceAlong + eps, pathLength));
     Translation2d behind = sampleTranslationAtDistance(points, Math.max(distanceAlong - eps, 0.0));
@@ -1159,7 +1338,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       return guidance.div(guidanceNorm).times(maxLinearSpeed);
     }
     double driverNorm = driverVelocity.getNorm();
-    if (driverNorm < DriveConstants.TRENCH_DRIVER_INTENT_THRESHOLD) {
+    if (driverNorm < DriveConstants.TrenchDriveIntentThreshold) {
       return driverVelocity;
     }
     if (guidanceNorm < 1e-6) {
@@ -1169,16 +1348,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     double alignment = driverVelocity.div(driverNorm).dot(guidanceDir);
     double alignment01 =
         MathUtil.clamp(
-            (alignment - DriveConstants.TRENCH_MIN_ALIGNMENT)
-                / (1.0 - DriveConstants.TRENCH_MIN_ALIGNMENT),
+            (alignment - DriveConstants.TrenchMinAlignment)
+                / (1.0 - DriveConstants.TrenchMinAlignment),
             0.0,
             1.0);
     double crossTrack = ref.robotPose().getTranslation().getDistance(ref.nearestPoint());
     double proximity01 =
-        MathUtil.clamp(1.0 - crossTrack / DriveConstants.TRENCH_MAX_CROSS_TRACK_METERS, 0.0, 1.0);
+        MathUtil.clamp(1.0 - crossTrack / DriveConstants.TrenchMaxCrossTrackMeters, 0.0, 1.0);
     double blend01 = alignment01 * proximity01;
     double assistWeight =
-        Math.pow(blend01, DriveConstants.TRENCH_BLEND_EXPONENT) * DriveConstants.TRENCH_MAX_ASSIST;
+        Math.pow(blend01, DriveConstants.TrenchBlendExponent) * DriveConstants.TrenchMaxAssist;
     double alongGuidance = driverVelocity.dot(guidanceDir);
     Translation2d projected = guidanceDir.times(alongGuidance);
     return driverVelocity.interpolate(projected, assistWeight);
@@ -1211,7 +1390,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   private Rotation2d getDesiredFacingHybridIntake(
       Translation2d blendedVelocity, IntakeMode intakeMode) {
-    if (blendedVelocity.getNorm() < DriveConstants.TRENCH_DRIVER_INTENT_THRESHOLD) {
+    if (blendedVelocity.getNorm() < DriveConstants.TrenchDriveIntentThreshold) {
       return intakeMode == IntakeMode.HYBRID ? getRotation() : snappedSquareEdge;
     }
     Rotation2d travelHeading =
@@ -1239,7 +1418,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       }
     }
     if (Math.abs(snappedSquareEdge.minus(bestEdge).getRadians())
-        < Units.degreesToRadians(DriveConstants.EDGE_SNAP_HYSTERESIS_DEG)) {
+        < Units.degreesToRadians(DriveConstants.EdgeSnapHysteresisDeg)) {
       return snappedSquareEdge;
     }
     snappedSquareEdge = bestEdge;
@@ -1265,6 +1444,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   private double calculateTrenchOmega(Rotation2d desiredFacing) {
     return trenchAngleController.calculate(getRotation().getRadians(), desiredFacing.getRadians());
+  }
+
+  private double calculateHybridIntakeOmega(Rotation2d desiredFacing) {
+    return hybridIntakeAngleController.calculate(
+        getRotation().getRadians(), desiredFacing.getRadians());
   }
 
   public double calculateOmega(Rotation2d desiredFacing) {
@@ -1336,5 +1520,78 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Override
   public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
     return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
+  }
+
+  public void updateOdometry() {
+    LimelightHelpers.SetRobotOrientation(
+        RobotContainer.limelightBack, getPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+    LimelightHelpers.PoseEstimate mt2 =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(RobotContainer.limelightBack);
+    if (mt2 == null) {
+      DriverStation.reportWarning("Limelight Disconnected!", false);
+      Logger.recordOutput("Vision/Connected", false);
+      Logger.recordOutput("Vision/TagCount", 0);
+      Logger.recordOutput("Vision/AvgTagDist", 0.0);
+      Logger.recordOutput("Vision/AvgTagArea", 0.0);
+      Logger.recordOutput("Vision/RawPose", new Pose2d());
+      Logger.recordOutput("Vision/AcceptedPose", new Pose2d[] {});
+      Logger.recordOutput("Vision/RejectedPose", new Pose2d[] {});
+      Logger.recordOutput("Vision/GateOmegaOk", false);
+      Logger.recordOutput("Vision/GateHasTag", false);
+      Logger.recordOutput("Vision/GateDistOk", false);
+      Logger.recordOutput("Vision/GateVelOk", false);
+      Logger.recordOutput("Vision/Accepted", false);
+      return;
+    }
+    var tagDistRobotM = mt2.avgTagDist;
+    var fpgaNow = Timer.getFPGATimestamp();
+    var speeds = getChassisSpeeds();
+    if (this.shouldReject(
+        mt2.avgTagArea, mt2.tagCount, mt2.timestampSeconds, tagDistRobotM, fpgaNow, speeds)) {
+      Logger.recordOutput("VisionFusion/Limelight/Accepted", false);
+      return;
+    }
+    // Raw measurement data — always logged regardless of acceptance
+    Logger.recordOutput("Vision/Connected", true);
+    Logger.recordOutput("Vision/TagCount", mt2.tagCount);
+    Logger.recordOutput("Vision/AvgTagDist", mt2.avgTagDist);
+    Logger.recordOutput("Vision/AvgTagArea", mt2.avgTagArea);
+    Logger.recordOutput("Vision/RawPose", mt2.pose);
+    addVisionMeasurement(
+        mt2.pose,
+        mt2.timestampSeconds,
+        VecBuilder.fill(
+            PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
+            PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
+            100000000));
+    PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea);
+  }
+
+  private boolean shouldReject(
+      double ta,
+      int tagCount,
+      double measurementTimestampSeconds,
+      double tagDistanceMeters,
+      double fpgaNow,
+      ChassisSpeeds chassisSpeeds) {
+
+    if (ta < VisionFusion.REJECT_MIN_TA) {
+      return true;
+    }
+    if (tagCount <= 0) {
+      return true;
+    }
+    if (tagDistanceMeters > VisionFusion.REJECT_MAX_DISTANCE_METERS) {
+      return true;
+    }
+    if (fpgaNow - measurementTimestampSeconds > VisionFusion.REJECT_STALE_SECONDS) {
+      return true;
+    }
+    if (VisionFusion.REJECT_ON_HIGH_OMEGA
+        && Math.abs(chassisSpeeds.omegaRadiansPerSecond)
+            > VisionFusion.REJECT_MAX_OMEGA_RAD_PER_SEC) {
+      return true;
+    }
+    return false;
   }
 }

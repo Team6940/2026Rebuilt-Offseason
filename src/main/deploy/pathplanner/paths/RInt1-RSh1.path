@@ -4,28 +4,28 @@
     {
       "anchor": {
         "x": 7.801559134818412,
-        "y": 3.41128660159716
+        "y": 3.411
       },
       "prevControl": null,
       "nextControl": {
         "x": 6.330452528837622,
-        "y": 3.5722448979591834
+        "y": 3.5719582963620233
       },
       "isLocked": false,
       "linkedName": "R-AftIntake1"
     },
     {
       "anchor": {
-        "x": 5.8545927470439185,
-        "y": 2.5213486460092907
+        "x": 5.984392191659273,
+        "y": 2.558207630878437
       },
       "prevControl": {
-        "x": 6.484654952137406,
-        "y": 2.5213486460092907
+        "x": 6.614454396752761,
+        "y": 2.558207630878437
       },
       "nextControl": {
-        "x": 5.130562105707593,
-        "y": 2.5213486460092907
+        "x": 5.260361550322948,
+        "y": 2.558207630878437
       },
       "isLocked": false,
       "linkedName": null
@@ -46,33 +46,19 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -131.62825787388843
+      "waypointRelativePos": 0.3924583773784355,
+      "rotationDegrees": -136.84269685594967
     },
     {
-      "waypointRelativePos": 1,
-      "rotationDegrees": -91.0
+      "waypointRelativePos": 1.073558648111332,
+      "rotationDegrees": -55.973429923735296
     },
     {
       "waypointRelativePos": 1.7088607594936762,
-      "rotationDegrees": -91.0
+      "rotationDegrees": -55.206
     }
   ],
-  "constraintZones": [
-    {
-      "name": "Constraints Zone",
-      "minWaypointRelativePos": 1.2018272425249161,
-      "maxWaypointRelativePos": 1.732480274086379,
-      "constraints": {
-        "maxVelocity": 2.3,
-        "maxAcceleration": 7.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -88,7 +74,7 @@
     "rotation": -137.229
   },
   "reversed": false,
-  "folder": "Right",
+  "folder": "RStep1",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 90.0

@@ -1,0 +1,100 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.5351154771362996,
+        "y": 0.5828309755067562
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.3928048040046015,
+        "y": 0.5937956694833175
+      },
+      "isLocked": false,
+      "linkedName": "R-StartTrench2"
+    },
+    {
+      "anchor": {
+        "x": 6.162623719911318,
+        "y": 0.5828309755067562
+      },
+      "prevControl": {
+        "x": 5.7609593850116125,
+        "y": 0.5828309755067562
+      },
+      "nextControl": {
+        "x": 6.853241892337058,
+        "y": 0.5828309755067562
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.519485359361136,
+        "y": 1.2222537710736459
+      },
+      "prevControl": {
+        "x": 8.519485359361136,
+        "y": 0.4888892460316686
+      },
+      "nextControl": {
+        "x": 8.519485359361136,
+        "y": 2.037120630602306
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.519485359361136,
+        "y": 3.5320053238686775
+      },
+      "prevControl": {
+        "x": 8.519485359361136,
+        "y": 3.261566121158241
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "R-AftIntake1OverMid"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 2.0698818897637796,
+      "maxWaypointRelativePos": 3.0,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 5.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 90.0
+  },
+  "reversed": false,
+  "folder": "RStep0",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 90.0
+  },
+  "useDefaultConstraints": true
+}

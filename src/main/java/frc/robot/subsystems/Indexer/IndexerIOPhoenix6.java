@@ -1,9 +1,13 @@
 package frc.robot.subsystems.Indexer;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -20,7 +24,9 @@ public class IndexerIOPhoenix6 implements IndexerIO {
       new TalonFX(MotorIDs.kIndexerLeaderMotorId, CANBus.roboRIO());
   protected final TalonFX indexerFollower =
       new TalonFX(MotorIDs.kIndexerFollowerMotorId, CANBus.roboRIO());
-  private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
+  // private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0).withEnableFOC(true);
+  private final VelocityTorqueCurrentFOC focRequestFeeder = new VelocityTorqueCurrentFOC(0.0);
+  private final VelocityTorqueCurrentFOC focRequestIndexer = new VelocityTorqueCurrentFOC(0.0);
 
   public IndexerIOPhoenix6() {
     configureVelocityMotor(
@@ -32,7 +38,9 @@ public class IndexerIOPhoenix6 implements IndexerIO {
         IndexerConstants.FeederkD,
         IndexerConstants.FeederkV,
         IndexerConstants.FeederkS,
-        IndexerConstants.FeederSupplyCurrentLimit);
+        IndexerConstants.FeederSupplyCurrentLimit,
+        IndexerConstants.FeederStatorCurrentLimitEnable,
+        IndexerConstants.FeederStatorCurrentLimit);
     configureVelocityMotor(
         indexerLeader,
         IndexerConstants.IndexerRatio,
@@ -42,7 +50,9 @@ public class IndexerIOPhoenix6 implements IndexerIO {
         IndexerConstants.IndexerkD,
         IndexerConstants.IndexerkV,
         IndexerConstants.IndexerkS,
-        IndexerConstants.IndexerSupplyCurrentLimit);
+        IndexerConstants.IndexerSupplyCurrentLimit,
+        IndexerConstants.IndexerStatorCurrentLimitEnable,
+        IndexerConstants.IndexerStatorCurrentLimit);
     configureFollower(feederFollower, IndexerConstants.FeederInverted);
     configureFollower(indexerFollower, IndexerConstants.IndexerInverted);
     feederFollower.setControl(
@@ -71,6 +81,35 @@ public class IndexerIOPhoenix6 implements IndexerIO {
     config.Slot0.kS = kS;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = supplyLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = false;
+    config.MotorOutput.Inverted = inverted;
+    motor.getConfigurator().apply(config);
+  }
+
+  private void configureVelocityMotor(
+      TalonFX motor,
+      double ratio,
+      InvertedValue inverted,
+      double kP,
+      double kI,
+      double kD,
+      double kV,
+      double kS,
+      double supplyLimit,
+      boolean enableStatorLimit,
+      double statorLimit) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.Feedback.SensorToMechanismRatio = ratio;
+    config.Slot0.kP = kP;
+    config.Slot0.kI = kI;
+    config.Slot0.kD = kD;
+    config.Slot0.kV = kV;
+    config.Slot0.kS = kS;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = supplyLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = enableStatorLimit;
+    config.CurrentLimits.StatorCurrentLimit = statorLimit;
     config.MotorOutput.Inverted = inverted;
     motor.getConfigurator().apply(config);
   }
@@ -88,7 +127,7 @@ public class IndexerIOPhoenix6 implements IndexerIO {
       feederLeader.stopMotor();
       return;
     }
-    feederLeader.setControl(velocityRequest.withVelocity(rps));
+    feederLeader.setControl(focRequestFeeder.withVelocity(rps));
   }
 
   @Override
@@ -97,15 +136,61 @@ public class IndexerIOPhoenix6 implements IndexerIO {
       indexerLeader.stopMotor();
       return;
     }
-    indexerLeader.setControl(velocityRequest.withVelocity(rps));
+    indexerLeader.setControl(focRequestIndexer.withVelocity(rps));
+  }
+
+  @Override
+  public void setStatorCurrentLimits(double feederStatorLimitA, double indexerStatorLimitA) {
+    applyStatorCurrentLimit(
+        feederLeader, IndexerConstants.FeederSupplyCurrentLimit, feederStatorLimitA);
+    applyStatorCurrentLimit(
+        indexerLeader, IndexerConstants.IndexerSupplyCurrentLimit, indexerStatorLimitA);
+  }
+
+  private void applyStatorCurrentLimit(TalonFX motor, double supplyLimitA, double statorLimitA) {
+    CurrentLimitsConfigs limits =
+        new CurrentLimitsConfigs()
+            .withSupplyCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(Amps.of(supplyLimitA))
+            .withStatorCurrentLimitEnable(true)
+            .withStatorCurrentLimit(Amps.of(statorLimitA));
+    motor.getConfigurator().apply(limits);
   }
 
   @Override
   public void updateInputs(IndexerIOInputs inputs) {
-    inputs.feederConnected = BaseStatusSignal.refreshAll(feederLeader.getVelocity()).isOK();
+    inputs.feederConnected =
+        BaseStatusSignal.refreshAll(
+                feederLeader.getVelocity(),
+                feederLeader.getSupplyCurrent(),
+                feederLeader.getSupplyVoltage())
+            .isOK();
     inputs.feederVelocityRps = feederLeader.getVelocity().getValueAsDouble();
+    inputs.feederSupplyCurrentA = feederLeader.getSupplyCurrent().getValueAsDouble();
+    inputs.feederSupplyVoltageV = feederLeader.getSupplyVoltage().getValueAsDouble();
 
-    inputs.indexerConnected = BaseStatusSignal.refreshAll(indexerLeader.getVelocity()).isOK();
+    inputs.indexerConnected =
+        BaseStatusSignal.refreshAll(
+                indexerLeader.getVelocity(),
+                indexerLeader.getSupplyCurrent(),
+                indexerLeader.getSupplyVoltage())
+            .isOK();
     inputs.indexerVelocityRps = indexerLeader.getVelocity().getValueAsDouble();
+    inputs.indexerSupplyCurrentA = indexerLeader.getSupplyCurrent().getValueAsDouble();
+    inputs.indexerSupplyVoltageV = indexerLeader.getSupplyVoltage().getValueAsDouble();
+
+    inputs.feederFollowerConnected =
+        BaseStatusSignal.refreshAll(
+                feederFollower.getSupplyCurrent(), feederFollower.getSupplyVoltage())
+            .isOK();
+    inputs.feederFollowerSupplyCurrentA = feederFollower.getSupplyCurrent().getValueAsDouble();
+    inputs.feederFollowerSupplyVoltageV = feederFollower.getSupplyVoltage().getValueAsDouble();
+
+    inputs.indexerFollowerConnected =
+        BaseStatusSignal.refreshAll(
+                indexerFollower.getSupplyCurrent(), indexerFollower.getSupplyVoltage())
+            .isOK();
+    inputs.indexerFollowerSupplyCurrentA = indexerFollower.getSupplyCurrent().getValueAsDouble();
+    inputs.indexerFollowerSupplyVoltageV = indexerFollower.getSupplyVoltage().getValueAsDouble();
   }
 }

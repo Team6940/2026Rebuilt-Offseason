@@ -12,15 +12,15 @@
         "y": 5.95
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "L-StartDepot"
     },
     {
       "anchor": {
-        "x": 0.5244717261904761,
+        "x": 0.48531994047619054,
         "y": 5.95
       },
       "prevControl": {
-        "x": 1.6058614041729173,
+        "x": 1.5667096184586318,
         "y": 5.95
       },
       "nextControl": null,
@@ -35,7 +35,7 @@
       "minWaypointRelativePos": 0.6525590551181104,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 2.3,
+        "maxVelocity": 0.6,
         "maxAcceleration": 7.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -59,7 +59,7 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "LStep0",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

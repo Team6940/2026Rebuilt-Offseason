@@ -3,41 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.5244717261904761,
+        "x": 0.48531994047619054,
         "y": 5.95
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5880952380952378,
-        "y": 5.959962797619048
+        "x": 0.9151479830793641,
+        "y": 5.936978248302097
       },
       "isLocked": false,
       "linkedName": "L-AftIntakeDepot"
     },
     {
       "anchor": {
-        "x": 1.464114583333333,
-        "y": 5.95
+        "x": 1.2666966807909605,
+        "y": 5.824196515271892
       },
       "prevControl": {
-        "x": 0.9641145833333331,
-        "y": 5.95
+        "x": 1.1653470194347604,
+        "y": 6.052731515092453
       },
       "nextControl": {
-        "x": 1.964114583333333,
-        "y": 5.95
+        "x": 1.3768607508625457,
+        "y": 5.57578576187472
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.6729241071428569,
-        "y": 4.791934523809524
+        "x": 1.0438273525776836,
+        "y": 4.974428573004944
       },
       "prevControl": {
-        "x": 1.8491071428571426,
-        "y": 5.32048363095238
+        "x": 1.1347865349603308,
+        "y": 5.230327925924187
       },
       "nextControl": null,
       "isLocked": false,
@@ -47,7 +47,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.817717206132879,
-      "rotationDegrees": 180.0
+      "rotationDegrees": 179.98948391269744
     }
   ],
   "constraintZones": [],
@@ -63,10 +63,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 167.105
+    "rotation": 163.75641863579142
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "LStep1",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

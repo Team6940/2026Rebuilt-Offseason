@@ -4,7 +4,10 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,6 +35,10 @@ import frc.robot.subsystems.SuperStructure.ControlMode;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.SuperStructure.ShootPhase;
 // import frc.robot.subsystems.Vision.VisionSubsystem;
+import frc.robot.subsystems.Vision.Vision;
+import frc.robot.subsystems.Vision.VisionIO;
+import frc.robot.subsystems.Vision.VisionIOLimelight;
+import frc.robot.subsystems.Vision.VisionIOPhotonVisionSim;
 import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -50,6 +57,7 @@ public class RobotContainer {
 
   // Create all Subsystems
   private final CommandSwerveDrivetrain drive;
+  private final Vision vision;
   // private final VisionSubsystem vision;
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   // private final LEDController leds = LEDController.getInstance();
@@ -78,7 +86,34 @@ public class RobotContainer {
       FieldSimulation.initialize(drive, new Pose2d(0.7, 0.7, new Rotation2d()));
     }
 
-    // vision = new VisionSubsystem(drive);
+    switch (Constants.currentMode) {
+      case REAL:
+        // Real robot, instantiate hardware IO implementations
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOLimelight(limelightBack, drive::getRotation));
+        // new VisionIOLimelight(camera1Name, drive::getRotation));
+        break;
+
+      case SIM:
+        // Sim robot, instantiate physics sim IO implementations
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVisionSim(
+                    limelightBack,
+                    new Transform3d(1., 1., 1., new Rotation3d(1, 1, 1)),
+                    drive::getPose));
+        // new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
+        break;
+
+      default:
+        // Replayed robot, disable IO implementations
+        // (Use same number of dummy implementations as the real robot)
+        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        break;
+    }
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");

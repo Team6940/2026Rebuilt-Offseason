@@ -63,7 +63,7 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.subsystems.GamePeriodReminder;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
-import frc.robot.subsystems.Vision.LimelightHelpers;
+// import frc.robot.subsystems.Vision.LimelightHelpers;
 // import frc.robot.subsystems.Vision.VisionSubsystem;
 import frc.robot.util.LocalADStarAK;
 import java.util.List;
@@ -589,7 +589,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   @Override
   public void periodic() {
-    updateOdometry();
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       DriverStation.getAlliance()
           .ifPresent(
@@ -666,28 +665,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     swerveInputs.pigeonPitchDeg = getPigeon2().getPitch().getValueAsDouble();
     swerveInputs.pigeonRollDeg = getPigeon2().getRoll().getValueAsDouble();
     swerveInputs.pigeonYawRateDegPerSec = Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond);
-  }
-
-  public void applyLimelightGyroForMegaTag2(String limelightName) {
-    if (Logger.hasReplaySource()) {
-      LimelightHelpers.SetRobotOrientation(
-          limelightName,
-          swerveInputs.pose.getRotation().getDegrees(),
-          swerveInputs.pigeonYawRateDegPerSec,
-          swerveInputs.pigeonPitchDeg,
-          0,
-          swerveInputs.pigeonRollDeg,
-          0);
-      return;
-    }
-    LimelightHelpers.SetRobotOrientation(
-        limelightName,
-        getPose().getRotation().getDegrees(),
-        Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond),
-        getPigeon2().getPitch().getValueAsDouble(),
-        0,
-        getPigeon2().getRoll().getValueAsDouble(),
-        0);
   }
 
   public static Translation2d getLinearVelocityMagnitudeFromJoysticks(double x, double y) {
@@ -1516,78 +1493,5 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Override
   public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
     return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
-  }
-
-  public void updateOdometry() {
-    LimelightHelpers.SetRobotOrientation(
-        RobotContainer.limelightBack, getPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-    LimelightHelpers.PoseEstimate mt2 =
-        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(RobotContainer.limelightBack);
-    if (mt2 == null) {
-      DriverStation.reportWarning("Limelight Disconnected!", false);
-      Logger.recordOutput("Vision/Connected", false);
-      Logger.recordOutput("Vision/TagCount", 0);
-      Logger.recordOutput("Vision/AvgTagDist", 0.0);
-      Logger.recordOutput("Vision/AvgTagArea", 0.0);
-      Logger.recordOutput("Vision/RawPose", new Pose2d());
-      Logger.recordOutput("Vision/AcceptedPose", new Pose2d[] {});
-      Logger.recordOutput("Vision/RejectedPose", new Pose2d[] {});
-      Logger.recordOutput("Vision/GateOmegaOk", false);
-      Logger.recordOutput("Vision/GateHasTag", false);
-      Logger.recordOutput("Vision/GateDistOk", false);
-      Logger.recordOutput("Vision/GateVelOk", false);
-      Logger.recordOutput("Vision/Accepted", false);
-      return;
-    }
-    var tagDistRobotM = mt2.avgTagDist;
-    var fpgaNow = Timer.getFPGATimestamp();
-    var speeds = getChassisSpeeds();
-    if (this.shouldReject(
-        mt2.avgTagArea, mt2.tagCount, mt2.timestampSeconds, tagDistRobotM, fpgaNow, speeds)) {
-      Logger.recordOutput("VisionFusion/Limelight/Accepted", false);
-      return;
-    }
-    // Raw measurement data — always logged regardless of acceptance
-    Logger.recordOutput("Vision/Connected", true);
-    Logger.recordOutput("Vision/TagCount", mt2.tagCount);
-    Logger.recordOutput("Vision/AvgTagDist", mt2.avgTagDist);
-    Logger.recordOutput("Vision/AvgTagArea", mt2.avgTagArea);
-    Logger.recordOutput("Vision/RawPose", mt2.pose);
-    addVisionMeasurement(
-        mt2.pose,
-        mt2.timestampSeconds,
-        VecBuilder.fill(
-            PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
-            PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
-            100000000));
-    PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea);
-  }
-
-  private boolean shouldReject(
-      double ta,
-      int tagCount,
-      double measurementTimestampSeconds,
-      double tagDistanceMeters,
-      double fpgaNow,
-      ChassisSpeeds chassisSpeeds) {
-
-    if (ta < VisionFusion.REJECT_MIN_TA) {
-      return true;
-    }
-    if (tagCount <= 0) {
-      return true;
-    }
-    if (tagDistanceMeters > VisionFusion.REJECT_MAX_DISTANCE_METERS) {
-      return true;
-    }
-    if (fpgaNow - measurementTimestampSeconds > VisionFusion.REJECT_STALE_SECONDS) {
-      return true;
-    }
-    if (VisionFusion.REJECT_ON_HIGH_OMEGA
-        && Math.abs(chassisSpeeds.omegaRadiansPerSecond)
-            > VisionFusion.REJECT_MAX_OMEGA_RAD_PER_SEC) {
-      return true;
-    }
-    return false;
   }
 }

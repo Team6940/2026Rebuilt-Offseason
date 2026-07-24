@@ -26,8 +26,8 @@ public enum AutoSegment {
   RSH1_RINT2_OVER_MID("RSh1-RInt2OverMid", true, IntakeMode.INTAKE, List.of("RInt2OverMid-RSh2")),
   RINT2_OVER_MID_RSH2("RInt2OverMid-RSh2", true, IntakeMode.MID, List.of("RSh2-REnd", "RSh2-REndInt3")),
   ROPPHUB_RSH2("ROppHub-RSh2", true, IntakeMode.MID, List.of("RSh2-REnd", "RSh2-REndInt3")),
-  SHOOT_SCORE("Shoot Score", false, IntakeMode.OFF, List.of()),
-  SHOOT_PASS("Shoot Pass", false, IntakeMode.OFF, List.of());
+  SHOOT_SCORE("Shoot Score", false, null, List.of()),
+  SHOOT_PASS("Shoot Pass", false, null, List.of());
 
   private final String displayName;
   private final boolean pathSegment;

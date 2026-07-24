@@ -153,9 +153,18 @@ public class AutoBuilder {
     }
 
     // Rebuild and publish choosers that need updating
+    AutoSegment lastPathSource = null;
     for (int i = 0; i < kMaxSteps; i++) {
       AutoSegment source = (i == 0) ? null : (i <= resolved.size() ? resolved.get(i - 1) : lastPathSegment);
       if (source == AutoSegment.UNUSED) source = null;
+
+      // Track the last path segment; when source is a shoot, use the path before it
+      // so the next chooser shows valid following paths.
+      if (source != null && source.isPathSegment()) {
+        lastPathSource = source;
+      } else if (source != null && source.isShootSegment()) {
+        source = lastPathSource;
+      }
 
       if (stepSources[i] == source && stepChoosers[i] != null) {
         continue;

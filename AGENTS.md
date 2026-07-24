@@ -45,6 +45,8 @@ Main.java → Robot.java (LoggedRobot) → RobotContainer.java → SuperStructur
 - `*IOPhoenix6.java` — real hardware (CTRE Phoenix 6)
 - `*IOSim.java` — maple-sim physics simulation
 
+**Autonomous system:** `autos/` contains `AutoBuilder.java` (dynamic per-step path chooser on SmartDashboard) and `AutoSegment.java`. Specific auto routines live in `commands/Autos/`. `reference/autos/` has reference implementations (not compiled into the robot).
+
 **Library code:** `Library/` contains vendored utilities from other teams (95, 503, 1323, 1678, 1706, 2910, 3476, 6940)
 
 **Simulation:** `simulation/FieldSimulation.java` — maple-sim field sim with fuel physics. Only runs in SIM mode.

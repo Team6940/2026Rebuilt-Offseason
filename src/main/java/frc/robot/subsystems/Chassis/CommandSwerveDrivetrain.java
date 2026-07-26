@@ -915,15 +915,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public void driveAutoAimWithSpeedLimitorLocked(
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      Rotation2d targetRotation,
+      Supplier<Rotation2d> targetRotation,
       boolean operatorTrimmingHeading,
       boolean driverTrimmingTranslation) {
     SuperStructure.getInstance().setChassisMode(SuperStructure.ChassisMode.SHOOTING);
     if (operatorTrimmingHeading
         || driverTrimmingTranslation
-        || !MathUtil.isNear(targetRotation.getDegrees(), getRotation().getDegrees(), 1.5)) {
-      driveAutoAim(
-          xSupplier, ySupplier, () -> targetRotation, getMaxLinearSpeedMetersPerSec() * 0.2);
+        || !MathUtil.isNear(targetRotation.get().getDegrees(), getRotation().getDegrees(), 1.5)) {
+      driveAutoAim(xSupplier, ySupplier, targetRotation, getMaxLinearSpeedMetersPerSec() * 0.2);
     } else {
       stopWithX();
     }
@@ -1452,6 +1451,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         getRotation().getRadians(), desiredFacing.getRadians());
   }
 
+  /*
+   * There is a lack of feedforward for shoot on the move
+   * (the feedforward that converts the tangential velocity of the robot towards the current target point into angular velocity during movement)
+   * making it difficult to pull down to the target point at high speed using only Kp
+   *
+   * But PID only is just enough for dumper
+   * if using a turret, MPC plus PID is better
+   */
   private double calculateAutoAimOmega(Rotation2d desiredFacing) {
     return autoAimAngleController.calculate(getRotation().getRadians(), desiredFacing.getRadians());
   }

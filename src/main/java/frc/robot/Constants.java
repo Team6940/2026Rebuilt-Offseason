@@ -720,7 +720,7 @@ public final class Constants {
     public static final double DumperExitHeightMeters = 0.52;
 
     /** Full-width dumper: m/s per shooter mechanism RPS (lower than flywheel). */
-    public static final double DumperMetersPerSecondPerRps = 0.055 * 4;
+    public static final double DumperMetersPerSecondPerRps = 0.055 * 3.65;
 
     public static final double DumperMinLaunchSpeedMps = 2.5;
 

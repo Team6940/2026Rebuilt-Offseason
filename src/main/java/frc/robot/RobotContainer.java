@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -93,7 +94,7 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIOLimelight(limelightBack, drive::getRotation));
-        // new VisionIOLimelight(camera1Name, drive::getRotation));
+        // new VisionIOPhotonVision();
         break;
 
       case SIM:
@@ -103,7 +104,9 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(
                     limelightBack,
-                    new Transform3d(1., 1., 1., new Rotation3d(1, 1, 1)),
+                    new Transform3d(
+                        new Translation3d(-0.342, 0., 0.501),
+                        new Rotation3d(Math.PI / 12., 0.0, Math.PI)),
                     drive::getPose));
         // new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
         break;

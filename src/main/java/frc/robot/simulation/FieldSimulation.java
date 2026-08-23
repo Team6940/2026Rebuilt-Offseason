@@ -54,7 +54,9 @@ public final class FieldSimulation {
   private FieldSimulation(CommandSwerveDrivetrain drive, Pose2d initialPose) {
     this.drive = drive;
 
-    SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
+    Arena2026Rebuilt arena2026 = new Arena2026Rebuilt(false);
+    arena2026.setEfficiencyMode(true);
+    SimulatedArena.overrideInstance(arena2026);
     driveSimulation = new SwerveDriveSimulation(createMapleSimConfig(), initialPose);
     SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
 
@@ -233,7 +235,7 @@ public final class FieldSimulation {
         .withSwerveModule(
             new SwerveModuleSimulationConfig(
                 DCMotor.getKrakenX60(1),
-                DCMotor.getFalcon500(1),
+                DCMotor.getKrakenX44(1),
                 module.DriveMotorGearRatio,
                 module.SteerMotorGearRatio,
                 Volts.of(module.DriveFrictionVoltage),

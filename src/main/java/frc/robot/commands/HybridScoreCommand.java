@@ -127,7 +127,7 @@ public class HybridScoreCommand extends Command {
         drive.driveAutoAimWithSpeedLimitorLocked(
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            aimHeadingFix,
+            () -> aimHeadingFix,
             Math.abs(shootHeadingFineTuneMagnitude) > ShootHeadingFineTuneDeadband,
             driverInput.getNorm() > DriverTranslationFineTuneDeadband);
 

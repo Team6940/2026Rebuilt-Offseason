@@ -661,7 +661,7 @@ public final class Constants {
     public static final double IndexerRatio = 1.0;
     public static final InvertedValue FeederInverted = InvertedValue.Clockwise_Positive;
     public static final InvertedValue IndexerInverted = InvertedValue.Clockwise_Positive;
-    public static final double FeederSupplyCurrentLimit = 20;
+    public static final double FeederSupplyCurrentLimit = 40;
     public static final double IndexerSupplyCurrentLimit = 20.0;
     public static final double FeederkP = 12;
     public static final double FeederkI = 0.0;
@@ -669,10 +669,10 @@ public final class Constants {
     public static final double FeederkV = 0.04;
     public static final double FeederkS = 4.5;
     public static final boolean FeederStatorCurrentLimitEnable = true;
-    public static final double FeederStatorCurrentLimit = 40.;
+    public static final double FeederStatorCurrentLimit = 60.;
 
     /** Feeder stator limit (A) during endgame low-power (last 50s). */
-    public static final double FeederStatorCurrentLimitLow = 25.;
+    public static final double FeederStatorCurrentLimitLow = 60.;
 
     public static final boolean IndexerStatorCurrentLimitEnable = true;
     public static final double IndexerStatorCurrentLimit = 45.;
@@ -684,12 +684,12 @@ public final class Constants {
     public static final double IndexerkI = 0.0;
     public static final double IndexerkD = 0.0;
     public static final double IndexerkV = 0.05;
-    public static final double IndexerkS = 15.;
+    public static final double IndexerkS = 20.;
     public static final MotorAlignmentValue IndexerFollowerAlignment = MotorAlignmentValue.Opposed;
     public static final MotorAlignmentValue FeederFollowerAlignment = MotorAlignmentValue.Aligned;
     public static final double FeedRps = 43.0;
     public static final double IndexerRps = 67.0;
-    public static final double FeederJamCurrentThresholdA = 160.0;
+    public static final double FeederJamCurrentThresholdA = 120.0;
     public static final double FeederJamDebounceSec = 0.2;
     public static final double FeederJamReverseDurationSec = 0.5;
   }
